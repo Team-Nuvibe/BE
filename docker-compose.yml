@@ -8,9 +8,9 @@ services:
       - "80:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=${PROD_DB_URL}
-      - SPRING_DATASOURCE_USERNAME=${PROD_DB_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${PROD_DB_PASSWORD}
+      - PROD_DB_URL=${PROD_DB_URL}
+      - PROD_DB_USERNAME=${PROD_DB_USERNAME}
+      - PROD_DB_PASSWORD=${PROD_DB_PASSWORD}
     depends_on:
       db:
         condition: service_healthy
@@ -27,10 +27,8 @@ services:
     image: mysql:8.0
     container_name: nuvibe-db
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${PROD_DB_PASSWORD}
       - MYSQL_DATABASE=${PROD_DB_NAME}
-      - MYSQL_USER=${PROD_DB_USERNAME}
-      - MYSQL_PASSWORD=${PROD_DB_PASSWORD}
       - TZ=Asia/Seoul
     volumes:
       - /home/ubuntu/nuvibe_data:/var/lib/mysql
