@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  app:
+    image: ${DOCKERHUB_USERNAME}/nuvibe:latest
+    container_name: nuvibe-app
+    ports:
+      - "80:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=${PROD_DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${PROD_DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${PROD_DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - nuvibe-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  db:
+    image: mysql:8.0
+    container_name: nuvibe-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${PROD_DB_NAME}
+      - MYSQL_USER=${PROD_DB_USERNAME}
+      - MYSQL_PASSWORD=${PROD_DB_PASSWORD}
+      - TZ=Asia/Seoul
+    volumes:
+      - /home/ubuntu/nuvibe_data:/var/lib/mysql
+    networks:
+      - nuvibe-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${PROD_DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  nuvibe-network:
+    driver: bridge
+
