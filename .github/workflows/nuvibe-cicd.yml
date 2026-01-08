@@ -54,7 +54,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew build
+
+      - name: Run tests
+        run: ./gradlew test
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -93,9 +96,9 @@ jobs:
                   - "80:8080"
                 environment:
                   - SPRING_PROFILES_ACTIVE=prod
-                  - SPRING_DATASOURCE_URL=${PROD_DB_URL}
-                  - SPRING_DATASOURCE_USERNAME=${PROD_DB_USERNAME}
-                  - SPRING_DATASOURCE_PASSWORD=${PROD_DB_PASSWORD}
+                  - PROD_DB_URL=${PROD_DB_URL}
+                  - PROD_DB_USERNAME=${PROD_DB_USERNAME}
+                  - PROD_DB_PASSWORD=${PROD_DB_PASSWORD}
                 depends_on:
                   db:
                     condition: service_healthy
@@ -152,5 +155,3 @@ jobs:
           PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
           PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
-
-
