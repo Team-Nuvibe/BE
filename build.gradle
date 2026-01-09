@@ -42,13 +42,14 @@ dependencies {
 		//security
 		implementation 'org.springframework.boot:spring-boot-starter-security'
 
-		// db
-		runtimeOnly 'com.mysql:mysql-connector-j'
+	// db
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	testRuntimeOnly 'com.h2database:h2'
 
-		//test
-		testImplementation 'org.springframework.boot:spring-boot-starter-test'
-		testImplementation 'org.springframework.security:spring-security-test'
-		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	//test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	}
 }
