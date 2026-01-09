@@ -8,12 +8,16 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "user_tribe")
+@Table(
+        name = "user_tribe",
+        uniqueConstraints = @UniqueConstraint(name = "uk_user_tribe_user_tribe", columnNames = {"user_id", "tribe_id"})
+)
 @NoArgsConstructor
 public class UserTribe extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_tribe_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

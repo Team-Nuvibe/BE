@@ -1,18 +1,23 @@
 package com.umc.nuvibe.domain.tribe.entity;
 
 import com.umc.nuvibe.domain.user.entity.User;
+import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import com.umc.nuvibe.domain.image.entity.Image;
 
 @Entity
 @Getter
-@Table(name = "scraped_images")
+@Table(
+        name = "scraped_images",
+        uniqueConstraints = @UniqueConstraint(name = "uk_scraped_images_user_image", columnNames = {"user_id", "image_id"})
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ScrapedImage {
+public class ScrapedImage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "scraped_image_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

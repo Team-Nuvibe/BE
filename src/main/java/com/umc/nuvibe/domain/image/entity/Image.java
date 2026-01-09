@@ -19,5 +19,6 @@ public class Image extends BaseEntity {
     @Column(name = "image_url", length = 512)
     private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
     private ImageTag imageTag;
 }

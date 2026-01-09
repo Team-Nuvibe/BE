@@ -22,6 +22,7 @@ public class User extends BaseEntity {
     @Column(name="user_id")
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     private String nickname;
@@ -39,6 +40,7 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "json")
     private UserSetting setting;
 
+    @Enumerated(EnumType.STRING)
     private ProviderType provider;
 
     private String providerId;

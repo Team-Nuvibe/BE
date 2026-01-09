@@ -18,11 +18,11 @@ public class Notification extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id",  nullable=false)
     private User user;
 
     private String content;
 
     @Column(name = "is_read")
-    private Boolean isRead=false;
+    private boolean isRead=false;
 }

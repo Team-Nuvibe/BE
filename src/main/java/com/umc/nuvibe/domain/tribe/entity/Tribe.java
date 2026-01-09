@@ -1,6 +1,7 @@
 package com.umc.nuvibe.domain.tribe.entity;
 
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
+import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "tribes")
 @NoArgsConstructor
-public class Tribe {
+public class Tribe extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
