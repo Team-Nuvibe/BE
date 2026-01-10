@@ -1,10 +1,11 @@
 package com.umc.nuvibe.domain.user.entity;
 
-import com.umc.nuvibe.domain.user.vo.ProviderType;
+import com.umc.nuvibe.domain.user.vo.AuthProvider;
 import com.umc.nuvibe.domain.user.vo.UserSetting;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,8 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Table(name="users")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User extends BaseEntity {
 
     @Id
@@ -41,16 +44,34 @@ public class User extends BaseEntity {
     private UserSetting setting;
 
     @Enumerated(EnumType.STRING)
-    private ProviderType provider;
+    private AuthProvider provider;
 
     private String providerId;
 
-    @Builder
-    public User (String name, String nickname, String email, ProviderType provider) {
-        this.name = name;
-        this.nickname = nickname;
-        this.email = email;
-        this.provider = provider;
+    private String refreshToken;
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+
+    public static User createLocalUser(String name, String nickName, String email,String password) {
+        return User.builder()
+                .name(name)
+                .nickname(nickName)
+                .email(email)
+                .password(password)
+                .provider(AuthProvider.LOCAL)
+                .build();
+    }
+
+    public static User createSoccialUser(String name,  String email, AuthProvider provider,String providerId) {
+        return User.builder()
+                .name(name)
+                .provider(provider)
+                .email(email)
+                .providerId(providerId)
+                .build();
     }
 
 }
