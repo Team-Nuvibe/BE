@@ -1,6 +1,11 @@
 package com.umc.nuvibe.domain.archive.controller;
 
 import com.umc.nuvibe.domain.archive.code.ArchiveSuccessCode;
+import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
+import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
+import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
+import com.umc.nuvibe.domain.archive.dto.request.BoardNameUpdateRequest;
+import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
 import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
@@ -9,6 +14,7 @@ import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +23,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/archive/boards")
+@RequestMapping("/api/archive")
 @Tag(name = "Archive", description = "아카이브 API")
 public class ArchiveBoardController {
 
@@ -43,5 +49,54 @@ public class ArchiveBoardController {
             @Parameter(description = "태그 필터") @RequestParam(required = false) ImageTag tag
     ) {
         return Response.of(ArchiveSuccessCode.BOARD_DETAIL_SUCCESS, archiveBoardService.getBoardDetail(userId, boardId, tag));
+    }
+
+    
+    // 보드 생성
+    @PostMapping
+    @Operation(summary = "아카이브 보드 생성", description = "새로운 아카이브 보드를 생성합니다.")
+    public Response<BoardCreateResponse> createBoard(
+            @Parameter(description = "사용자 ID") @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody BoardCreateRequest request
+    ) {
+        return Response.of(ArchiveSuccessCode.BOARD_CREATE_SUCCESS, archiveBoardService.createBoard(userId, request));
+    }
+
+    
+    // 보드 삭제 (다중)
+    @DeleteMapping
+    @Operation(summary = "아카이브 보드 삭제", description = "선택한 보드들을 삭제합니다. 보드 내 이미지도 함께 삭제됩니다.")
+    public Response<Void> deleteBoards(
+            @Parameter(description = "사용자 ID") @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody BoardDeleteRequest request
+    ) {
+        archiveBoardService.deleteBoards(userId, request);
+        return Response.of(ArchiveSuccessCode.BOARD_DELETE_SUCCESS);
+    }
+
+    
+    // 보드명 수정 (보드 내부에서)
+    @PatchMapping("/{boardId}/name")
+    @Operation(summary = "아카이브 보드명 수정", description = "보드 이름을 수정합니다.")
+    public Response<Void> updateBoardName(
+            @Parameter(description = "사용자 ID") @RequestHeader("X-User-Id") Long userId,
+            @Parameter(description = "보드 ID") @PathVariable Long boardId,
+            @Valid @RequestBody BoardNameUpdateRequest request
+    ) {
+        archiveBoardService.updateBoardName(userId, boardId, request);
+        return Response.of(ArchiveSuccessCode.BOARD_NAME_UPDATE_SUCCESS);
+    }
+
+    
+    // 보드 내 이미지 삭제 (다중)
+    @DeleteMapping("/{boardId}/images")
+    @Operation(summary = "아카이브 보드 내 이미지 삭제", description = "보드 내 선택한 이미지들을 삭제합니다.")
+    public Response<Void> deleteBoardImages(
+            @Parameter(description = "사용자 ID") @RequestHeader("X-User-Id") Long userId,
+            @Parameter(description = "보드 ID") @PathVariable Long boardId,
+            @Valid @RequestBody BoardImageDeleteRequest request
+    ) {
+        archiveBoardService.deleteBoardImages(userId, boardId, request);
+        return Response.of(ArchiveSuccessCode.BOARD_IMAGE_DELETE_SUCCESS);
     }
 }

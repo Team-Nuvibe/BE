@@ -3,6 +3,7 @@ package com.umc.nuvibe.domain.archive.repository;
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,8 +37,16 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     Optional<BoardImage> findTopByBoardIdOrderByCreatedAtDesc(@Param("boardId") Long boardId);
     
     // 보드 삭제 시 연결된 이미지 전체 삭제
+    @Modifying
     void deleteByBoardId(Long boardId);
     
-    // 특정 보드 이미지 조회 (권한 체크용)
-    Optional<BoardImage> findByIdAndBoard_UserId(Long boardImageId, Long userId);
+    // 여러 보드의 이미지 삭제 (다중 보드 삭제용)
+    @Modifying
+    @Query("DELETE FROM BoardImage bi WHERE bi.board.id IN :boardIds")
+    void deleteByBoardIdIn(@Param("boardIds") List<Long> boardIds);
+    
+    // 특정 보드 이미지들 삭제 (다중 이미지 삭제용)
+    @Modifying
+    @Query("DELETE FROM BoardImage bi WHERE bi.id IN :boardImageIds AND bi.board.user.id = :userId")
+    void deleteByIdInAndUserId(@Param("boardImageIds") List<Long> boardImageIds, @Param("userId") Long userId);
 }
