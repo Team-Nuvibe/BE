@@ -22,4 +22,14 @@ public class ArchiveBoard extends BaseEntity {
 
     private String name;
 
+    @Builder
+    public ArchiveBoard(User user, String name){
+        this.user = user;
+        this.name = name;
+    }
+    // 보드 이름 수정
+    public void updateName(String name){
+        this.name = name;
+    }
+
 }
