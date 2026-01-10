@@ -1,6 +1,6 @@
 package com.umc.nuvibe.domain.user.vo;
 
-public enum ProviderType {
+public enum AuthProvider {
 
     LOCAL,
     GOOGLE,
