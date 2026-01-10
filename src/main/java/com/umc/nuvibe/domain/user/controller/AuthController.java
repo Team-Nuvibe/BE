@@ -4,12 +4,10 @@ import com.umc.nuvibe.domain.user.dto.request.AuthRequest;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.service.AuthService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
-import com.umc.nuvibe.global.apiPayLoad.result.ResultCode;
 import com.umc.nuvibe.global.apiPayLoad.result.UserResultCode;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +41,7 @@ public class AuthController {
         return Response.ok(UserResultCode.USER_LOGOUT_OK, "로그아웃이 완료되었습니다");
     }
 
-    @PostMapping("/sign-up")
+    @DeleteMapping("/withdraw")
     @Operation(summary = "회원가입", description = "새로운 회원 등록")
     public Response<String> withdraw (@AuthUser Long userId) {
         authService.withdraw(userId);
