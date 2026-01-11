@@ -32,7 +32,7 @@ public class ArchiveBoard extends BaseEntity {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("보드 이름은 필수입니다.");
         }
-        if (name.length() > 50) {
+        if (name.length() > 20) {
             throw new IllegalArgumentException("보드 이름은 20자를 초과할 수 없습니다.");
         }
         this.user = user;
@@ -44,7 +44,7 @@ public class ArchiveBoard extends BaseEntity {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("보드 이름은 필수입니다.");
         }
-        if (name.length() > 50) {
+        if (name.length() > 20) {
             throw new IllegalArgumentException("보드 이름은 20자를 초과할 수 없습니다.");
         }
         

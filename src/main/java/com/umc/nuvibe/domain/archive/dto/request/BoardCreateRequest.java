@@ -11,6 +11,6 @@ public record BoardCreateRequest(
     
     @Schema(description = "보드 이름", example = "2026 추구미")
     @NotBlank(message = "보드 이름은 필수입니다.")
-    @Size(max = 20, message = "보드 이름은 50자를 초과할 수 없습니다.")// 길이 제한 추가
+    @Size(max = 20, message = "보드 이름은 20자를 초과할 수 없습니다.")// 길이 제한 추가
     String name
 ) {}

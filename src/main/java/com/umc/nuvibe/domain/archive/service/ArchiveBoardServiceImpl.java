@@ -51,11 +51,12 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 .toList();
         
         Map<Long, String> thumbnailMap = boardImageRepository.findLatestByBoardIds(boardIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        bi -> bi.getBoard().getId(),
-                        bi -> bi.getImage().getImageUrl()
-                ));
+        .stream()
+        .collect(Collectors.toMap(
+                bi -> bi.getBoard().getId(),
+                bi -> bi.getImage().getImageUrl(),
+                (existing, replacement) -> existing  // 중복 시 첫 번째 값 유지
+        ));
         
         return boards.stream()
                 .map(board -> ArchiveBoardConverter.toBoardListResponse(
@@ -86,18 +87,21 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
         
+        String normalizedName = request.name().trim();  // 추가
+        
         // 보드명 중복 체크
-        if (archiveBoardRepository.existsByUserIdAndName(userId, request.name())) {
+        if (archiveBoardRepository.existsByUserIdAndName(userId, normalizedName)) {
             throw new BusinessException(ArchiveErrorCode.DUPLICATE_BOARD_NAME);
         }
         
-        ArchiveBoard board = ArchiveBoardConverter.toArchiveBoard(user, request.name());
+        ArchiveBoard board = ArchiveBoardConverter.toArchiveBoard(user, normalizedName);
         archiveBoardRepository.save(board);
         
         return ArchiveBoardConverter.toBoardCreateResponse(board);
     }
 
     
+    // 보드 삭제 (다중)
     // 보드 삭제 (다중)
     @Override
     @Transactional
@@ -113,11 +117,11 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
             return;
         }
         
-        // 보드 내 이미지 먼저 삭제
+        // 보드 내 이미지 먼저 삭제 (벌크)
         boardImageRepository.deleteByBoardIdIn(ownedBoardIds);
         
-        // 보드 삭제
-        archiveBoardRepository.deleteAllById(ownedBoardIds);
+        // 보드 삭제 (벌크) - 변경!
+        archiveBoardRepository.deleteByIdIn(ownedBoardIds);
     }
 
     
@@ -127,13 +131,15 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     public void updateBoardName(Long userId, Long boardId, BoardNameUpdateRequest request) {
         ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
         
+        String normalizedName = request.name().trim();  // 추가
+        
         // 보드명 중복 체크 (자기 자신 제외)
-        if (!board.getName().equals(request.name()) 
-                && archiveBoardRepository.existsByUserIdAndName(userId, request.name())) {
+        if (!board.getName().equals(normalizedName) 
+                && archiveBoardRepository.existsByUserIdAndName(userId, normalizedName)) {
             throw new BusinessException(ArchiveErrorCode.DUPLICATE_BOARD_NAME);
         }
         
-        board.updateName(request.name());
+        board.updateName(normalizedName);
     }
 
     
@@ -144,8 +150,12 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         // 보드 권한 체크
         findBoardByIdAndUserId(boardId, userId);
         
-        // 이미지 삭제
-        boardImageRepository.deleteByIdInAndBoardIdAndUserId(request.boardImageIds(), boardId, userId);
+        // 이미지 삭제 + 삭제 건수 검증
+        int deletedCount = boardImageRepository.deleteByIdInAndBoardId(request.boardImageIds(), boardId);
+        
+        if (deletedCount == 0) {
+            throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_NOT_FOUND);
+        }
     }
 
     
