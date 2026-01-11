@@ -31,6 +31,10 @@ public class Response <T> {
         return new Response<>(CommonResultCode.OK.getHttpStatus(),CommonResultCode.OK.getCode(), CommonResultCode.OK.getMessage(),data);
     }
 
+    public static <T>Response<T> ok(ResultCode code, T data ) {
+        return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), data);
+    }
+
     public static <T>Response<T> of(ErrorCode code, T data ) {
         return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), data);
     }
