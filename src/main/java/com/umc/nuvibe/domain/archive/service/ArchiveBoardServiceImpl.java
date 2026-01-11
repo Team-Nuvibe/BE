@@ -35,7 +35,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     private final UserRepository userRepository;
 
     
-    // 보드 목록 조회
+    
     // 보드 목록 조회
     @Override
     public List<BoardListResponse> getBoards(Long userId) {
@@ -101,7 +101,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     }
 
     
-    // 보드 삭제 (다중)
+    
     // 보드 삭제 (다중)
     @Override
     @Transactional
@@ -118,10 +118,10 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         }
         
         // 보드 내 이미지 먼저 삭제 (벌크)
-        boardImageRepository.deleteByBoardIdIn(ownedBoardIds);
+        boardImageRepository.deleteByBoardIdInAndUserId(request.boardIds(), userId);
         
         // 보드 삭제 (벌크) - 변경!
-        archiveBoardRepository.deleteByIdIn(ownedBoardIds);
+        archiveBoardRepository.deleteByIdInAndUserId(request.boardIds(), userId);
     }
 
     

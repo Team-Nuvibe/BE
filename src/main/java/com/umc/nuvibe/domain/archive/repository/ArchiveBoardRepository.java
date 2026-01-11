@@ -25,6 +25,6 @@ public interface ArchiveBoardRepository extends JpaRepository<ArchiveBoard, Long
     
     // 여러 보드 삭제 (다중 선택 삭제용)
     @Modifying(clearAutomatically = true) // 벌크 연산 후 캐시 비우기
-    @Query("DELETE FROM ArchiveBoard ab WHERE ab.id IN :boardIds")
-    void deleteByIdIn(@Param("boardIds") List<Long> boardIds);
+    @Query("DELETE FROM ArchiveBoard ab WHERE ab.id IN :boardIds AND ab.user.id = :userId")
+    void deleteByIdInAndUserId(@Param("boardIds") List<Long> boardIds, @Param("userId") Long userId);
 }

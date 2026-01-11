@@ -49,16 +49,12 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     
     // 여러 보드의 이미지 삭제 (다중 보드 삭제용)
     @Modifying(clearAutomatically = true) // 캐시 삭제
-    @Query("DELETE FROM BoardImage bi WHERE bi.board.id IN :boardIds")
-    void deleteByBoardIdIn(@Param("boardIds") List<Long> boardIds);
+    @Query("DELETE FROM BoardImage bi WHERE bi.board.id IN :boardIds AND bi.board.user.id = :userId")
+    void deleteByBoardIdInAndUserId(@Param("boardIds") List<Long> boardIds, @Param("userId") Long userId);
 
     // 보드 내 이미지 삭제 (반환: 삭제 건수)
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM BoardImage bi WHERE bi.id IN :imageIds AND bi.board.id = :boardId")
     int deleteByIdInAndBoardId(@Param("imageIds") List<Long> imageIds, @Param("boardId") Long boardId);
     
-    // 특정 보드 이미지들 삭제 (다중 이미지 삭제용)
-    @Modifying(clearAutomatically = true) // 캐시 삭제
-    @Query("DELETE FROM BoardImage bi WHERE bi.id IN :boardImageIds AND bi.board.id = :boardId AND bi.board.user.id = :userId")
-    void deleteByIdInAndBoardIdAndUserId(@Param("boardImageIds") List<Long> boardImageIds, @Param("boardId") Long boardId, @Param("userId") Long userId);
 }
