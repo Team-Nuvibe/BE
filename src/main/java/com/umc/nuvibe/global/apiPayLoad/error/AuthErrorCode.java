@@ -1,0 +1,28 @@
+package com.umc.nuvibe.global.apiPayLoad.error;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@RequiredArgsConstructor
+public enum AuthErrorCode implements ErrorCode {
+
+    JWT_EXPIRED_TOKEN(HttpStatus.BAD_REQUEST,"AUTH001", "만료된 jwt 토큰입니다."),
+    JWT_INVALID_TOKEN(HttpStatus.BAD_REQUEST,"AUTH002","유효하지 않은 jwt 토큰입니다."),
+    JWT_GENERATED_FAILED(HttpStatus.BAD_REQUEST,"AUTH003", "jwt 토큰 생성 실패했습니다."),
+    JWT_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,"AUTH004", "jwt 토큰ㅇ르 찾을 수 없습니다."),
+    AUTHORIZATION_HEADER_NOT_FOUND(HttpStatus.NOT_FOUND, "AUTH005", "autorization header를 찾을 수 없습니다"),
+    INVALID_AUTHORIZATION_FORMAT(HttpStatus.BAD_REQUEST, "AUTH006", "유효하지 않은 헤더 포맷입니다."),
+    INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST,"AUTH007","비밀번호 형식이 일치하지 않습니다."),
+    CONFIRM_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST,"AUTH008","비밀번호와 비밀번호 확인이 일치하지 않습니다."),
+    INVAILD_EMAIL_FORMAT(HttpStatus.BAD_REQUEST,"AUTH009","이메일 형식이 일치하지 않습니다."),
+    EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"AUTH010","이미 존재하는 이메일입니다."),
+    PASSWORD_UNMATCH_ERROR(HttpStatus.BAD_REQUEST,"AUTH011", "비밀번호가 일치하지 않습니다."),
+
+    ;
+
+    private final HttpStatus httpStatus;
+    private final String code;
+    private final String message;
+}
