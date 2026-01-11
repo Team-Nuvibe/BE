@@ -24,7 +24,7 @@ public class AuthController {
     @Operation(summary = "회원가입", description = "새로운 회원 등록")
     public Response<String> signUp(@RequestBody @Valid AuthRequest.SignUpReq request) {
         authService.signUp(request);
-        return Response.ok(UserResultCode.USER_SIGNUP_OK, "회원가입이 완료되었습니다");
+        return Response.ok(UserResultCode.USER_SIGNUP_OK, "회원가입이 완료되었습니다. ");
     }
 
     @PostMapping("/login")
@@ -34,17 +34,17 @@ public class AuthController {
         return Response.ok(UserResultCode.USER_LOGIN_OK, response);
     }
 
-    @PatchMapping("/logout")
-    @Operation(summary = "로그아웃", description = "db의 리프레쉬 토큰을 무효화합니다")
+    @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "db의 리프레쉬 토큰을 무효화합니다.")
     public Response<String> logout(@AuthUser Long userId) {
         authService.logout(userId);
-        return Response.ok(UserResultCode.USER_LOGOUT_OK, "로그아웃이 완료되었습니다");
+        return Response.ok(UserResultCode.USER_LOGOUT_OK, "로그아웃이 완료되었습니다. ");
     }
 
     @DeleteMapping("/withdraw")
-    @Operation(summary = "회원가입", description = "새로운 회원 등록")
+    @Operation(summary = "회원탈퇴", description = "회원을 삭제합니다.")
     public Response<String> withdraw (@AuthUser Long userId) {
         authService.withdraw(userId);
-        return Response.ok(UserResultCode.USER_WITHDRAW_OK, "회원탈퇴가 완료되었습니다");
+        return Response.ok(UserResultCode.USER_WITHDRAW_OK, "회원탈퇴가 완료되었습니다. ");
     }
 }

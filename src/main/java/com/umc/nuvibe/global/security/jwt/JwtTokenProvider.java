@@ -92,8 +92,7 @@ public class JwtTokenProvider {
 
     // token에서 사용자 id 추출,
     // @AuthUser랑 JwtAuthenticationFilter에서 사용
-    public Long getUserIdFromToken(String bearerToken) {
-        String token= extractBearerToken(bearerToken);
+    public Long getUserIdFromToken(String token) {
         try {
             Claims claims = jwtParser.parseClaimsJws(token).getBody();
             return Long.parseLong(claims.getSubject());

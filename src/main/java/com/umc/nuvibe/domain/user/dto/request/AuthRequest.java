@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,15 +12,15 @@ public class AuthRequest {
     @Setter
     @NoArgsConstructor
     public static class SignUpReq {
-        @NotNull
+        @NotBlank
         private String name;
-        @NotNull
+        @NotBlank
         private String nickname;
-        @NotNull
+        @NotBlank
         private String email;
-        @NotNull
+        @NotBlank
         private String password;
-        @NotNull
+        @NotBlank
         private String confirmPassword;
     }
 
@@ -27,9 +28,9 @@ public class AuthRequest {
     @Setter
     @NoArgsConstructor
     public static class LoginReq {
-        @NotNull
+        @NotBlank
         private String email;
-        @NotNull
+        @NotBlank
         private String password;
     }
 
