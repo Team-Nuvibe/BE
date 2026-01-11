@@ -36,17 +36,24 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
            "LIMIT 1")
     Optional<BoardImage> findTopByBoardIdOrderByCreatedAtDesc(@Param("boardId") Long boardId);
     
+    // 여러 보드의 최신 썸네일 한 번에 조회 (N+1 방지)
+    @Query("SELECT bi FROM BoardImage bi " +
+              "JOIN FETCH bi.image " +
+              "WHERE bi.board.id IN :boardIds " +
+              "AND bi.createdAt = (SELECT MAX(bi2.createdAt) FROM BoardImage bi2 WHERE bi2.board.id = bi.board.id)")
+    List<BoardImage> findLatestByBoardIds(@Param("boardIds") List<Long> boardIds);
+
     // 보드 삭제 시 연결된 이미지 전체 삭제
     @Modifying
     void deleteByBoardId(Long boardId);
     
     // 여러 보드의 이미지 삭제 (다중 보드 삭제용)
-    @Modifying
+    @Modifying(clearAutomatically = true) // 캐시 삭제
     @Query("DELETE FROM BoardImage bi WHERE bi.board.id IN :boardIds")
     void deleteByBoardIdIn(@Param("boardIds") List<Long> boardIds);
     
     // 특정 보드 이미지들 삭제 (다중 이미지 삭제용)
-    @Modifying
-    @Query("DELETE FROM BoardImage bi WHERE bi.id IN :boardImageIds AND bi.board.user.id = :userId")
-    void deleteByIdInAndUserId(@Param("boardImageIds") List<Long> boardImageIds, @Param("userId") Long userId);
+    @Modifying(clearAutomatically = true) // 캐시 삭제
+    @Query("DELETE FROM BoardImage bi WHERE bi.id IN :boardImageIds AND bi.board.id = :boardId AND bi.board.user.id = :userId")
+    void deleteByIdInAndBoardIdAndUserId(@Param("boardImageIds") List<Long> boardImageIds, @Param("boardId") Long boardId, @Param("userId") Long userId);
 }

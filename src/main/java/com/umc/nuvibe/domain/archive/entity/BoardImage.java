@@ -16,11 +16,11 @@ public class BoardImage extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_id", nullable = false) //null 방지 추가
     private ArchiveBoard board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id")
+    @JoinColumn(name = "image_id", nullable = false) //null 방지 추가
     private Image image;
 
     @Builder

@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,6 +58,7 @@ public class ArchiveBoardController {
     
     // 보드 생성
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED) // http 201 반환
     @Operation(summary = "아카이브 보드 생성", description = "새로운 아카이브 보드를 생성합니다.")
     public Response<BoardCreateResponse> createBoard(
             @AuthUser Long user,
@@ -66,7 +69,7 @@ public class ArchiveBoardController {
 
     
     // 보드 삭제 (다중)
-    @DeleteMapping
+    @DeleteMapping()
     @Operation(summary = "아카이브 보드 삭제", description = "선택한 보드들을 삭제합니다. 보드 내 이미지도 함께 삭제됩니다.")
     public Response<Void> deleteBoards(
             @AuthUser Long user,// @AuthUser 적용

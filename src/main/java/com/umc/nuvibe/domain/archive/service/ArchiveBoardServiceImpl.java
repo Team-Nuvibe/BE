@@ -1,5 +1,7 @@
 package com.umc.nuvibe.domain.archive.service;
 
+import java.util.Map;
+import java.util.stream.Collectors;
 import com.umc.nuvibe.domain.archive.code.ArchiveErrorCode;
 import com.umc.nuvibe.domain.archive.converter.ArchiveBoardConverter;
 import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
@@ -34,18 +36,32 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
     
     // 보드 목록 조회
+    // 보드 목록 조회
     @Override
     public List<BoardListResponse> getBoards(Long userId) {
         List<ArchiveBoard> boards = archiveBoardRepository.findByUserId(userId);
         
+        if (boards.isEmpty()) {
+            return List.of();
+        }
+        
+        // 썸네일 한 번에 조회 (n+1 방지)
+        List<Long> boardIds = boards.stream()
+                .map(ArchiveBoard::getId)
+                .toList();
+        
+        Map<Long, String> thumbnailMap = boardImageRepository.findLatestByBoardIds(boardIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        bi -> bi.getBoard().getId(),
+                        bi -> bi.getImage().getImageUrl()
+                ));
+        
         return boards.stream()
-                .map(board -> {
-                    String thumbnailUrl = boardImageRepository
-                            .findTopByBoardIdOrderByCreatedAtDesc(board.getId())
-                            .map(bi -> bi.getImage().getImageUrl())
-                            .orElse(null);
-                    return ArchiveBoardConverter.toBoardListResponse(board, thumbnailUrl);
-                })
+                .map(board -> ArchiveBoardConverter.toBoardListResponse(
+                        board,
+                        thumbnailMap.get(board.getId())  // 없으면 null 반환
+                ))
                 .toList();
     }
 
@@ -83,15 +99,25 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
     
     // 보드 삭제 (다중)
-    // 보드 내 이미지도 함께 삭제
     @Override
     @Transactional
     public void deleteBoards(Long userId, BoardDeleteRequest request) {
+        // 소유권이 확인된 보드 ID만 조회
+        List<Long> ownedBoardIds = archiveBoardRepository
+                .findAllByIdInAndUserId(request.boardIds(), userId)
+                .stream()
+                .map(ArchiveBoard::getId)
+                .toList();
+        
+        if (ownedBoardIds.isEmpty()) {
+            return;
+        }
+        
         // 보드 내 이미지 먼저 삭제
-        boardImageRepository.deleteByBoardIdIn(request.boardIds());
+        boardImageRepository.deleteByBoardIdIn(ownedBoardIds);
         
         // 보드 삭제
-        archiveBoardRepository.deleteByIdInAndUserId(request.boardIds(), userId);
+        archiveBoardRepository.deleteAllById(ownedBoardIds);
     }
 
     
@@ -119,7 +145,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         findBoardByIdAndUserId(boardId, userId);
         
         // 이미지 삭제
-        boardImageRepository.deleteByIdInAndUserId(request.boardImageIds(), userId);
+        boardImageRepository.deleteByIdInAndBoardIdAndUserId(request.boardImageIds(), boardId, userId);
     }
 
     
