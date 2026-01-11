@@ -3,6 +3,7 @@ package com.umc.nuvibe.domain.tribe.entity;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,5 +27,16 @@ public class Tribe extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private TribeStatus status;
+
+    public Tribe(String tagName, Integer counts, Integer version, TribeStatus status) {
+        this.tagName = tagName;
+        this.counts = counts;
+        this.version = version;
+        this.status = status;
+    }
+
+    public void activate(){
+        this.status = TribeStatus.ACTIVE;
+    }
 
 }

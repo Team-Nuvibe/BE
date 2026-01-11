@@ -28,4 +28,9 @@ public class UserTribe extends BaseEntity {
     @JoinColumn(name = "tribe_id")
     private Tribe tribe;
 
+    public UserTribe(User user, Tribe tribe){
+        this.user = user;
+        this.tribe = tribe;
+    }
+
 }
