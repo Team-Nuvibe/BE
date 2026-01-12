@@ -60,9 +60,8 @@ public class UserTribeServiceImpl implements UserTribeService {
         // 원본 Image 엔티티는 유지하고 참조만 삭제
         scrapedImageRepository.deleteAllByUserIdAndTribeId(userId, tribeId);
 
-        tribeRepository.decrementCounts(tribeId);
-
         userTribeRepository.delete(userTribe);
+        tribeRepository.decrementCounts(tribeId);
 
         return new TribeRes.LeaveRes(req.userTribeId(), tribeId);
     }
