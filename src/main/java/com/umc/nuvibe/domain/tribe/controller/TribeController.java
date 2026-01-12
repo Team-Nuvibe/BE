@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/tribe")
 @AllArgsConstructor
 @Tag(name= "Tribe", description = "트라이브 API")
-public class tribeController {
+public class TribeController {
 
     private final TribeService tribeService;
 
