@@ -33,4 +33,9 @@ public class TribeRes {
             Integer version,
             TribeStatus status
           ){}
+
+    public record LeaveRes(
+            Long userTribeId,
+            Long tribeId
+    ){}
 }

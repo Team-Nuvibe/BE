@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.repository;
+package com.umc.nuvibe.domain.tribe.repository.TribeRepository;
 
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +19,8 @@ public interface TribeRepository extends JpaRepository<Tribe, Long> {
     @Modifying
     @Query("UPDATE Tribe t SET t.counts = t.counts + 1 WHERE t.id = :id AND t.counts < 100")
     int incrementCounts(@Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Tribe t SET t.counts = t.counts - 1 WHERE t.id = :tribeId AND t.counts > 0")
+    void decrementCounts(@Param("tribeId") Long tribeId);
 }

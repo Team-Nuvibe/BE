@@ -39,4 +39,9 @@ public class TribeReq {
 //        LATEST_MESSAGE
 //        FAVORITE
     }
+
+    public record LeaveReq(
+            @NotNull
+            Long userTribeId
+    ){}
 }
