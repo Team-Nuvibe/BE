@@ -3,7 +3,7 @@ package com.umc.nuvibe.domain.tribe.controller;
 import com.umc.nuvibe.domain.tribe.code.TribeResultCode;
 import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
-import com.umc.nuvibe.domain.tribe.service.TribeService;
+import com.umc.nuvibe.domain.tribe.service.tribe.TribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;

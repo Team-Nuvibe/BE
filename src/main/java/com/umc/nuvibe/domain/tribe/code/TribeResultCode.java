@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum TribeResultCode implements ResultCode {
 
-    TRIBE_JOIN_SUCCESS(HttpStatus.OK, "TRIBE_200_1", "트라이브 입장 성공"),
-    TRIBE_ACTIVATE_SUCCESS(HttpStatus.OK, "TRIBE_200_2", "트라이브 활성화 성공"),
+    TRIBE_JOIN_SUCCESS(HttpStatus.OK, "TRIBE2001", "트라이브 입장 성공"),
+    TRIBE_ACTIVATE_SUCCESS(HttpStatus.OK, "TRIBE2002", "트라이브 활성화 성공"),
 
-    TRIBE_CREATE_SUCCESS(HttpStatus.CREATED, "TRIBE_201_1", "새로운 버전의 트라이브 생성 및 입장 성공");
+    TRIBE_CREATE_SUCCESS(HttpStatus.CREATED, "TRIBE2011", "새로운 버전의 트라이브 생성 및 입장 성공");
 
     private final HttpStatus httpStatus;
     private final String code;
