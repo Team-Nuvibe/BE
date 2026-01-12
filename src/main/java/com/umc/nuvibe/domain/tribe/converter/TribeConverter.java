@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TribeConverter {
@@ -29,6 +30,9 @@ public class TribeConverter {
     }
 
 
+
+
+
     public static class ToResponse {
         public static TribeRes.JoinRes toJoinRes(Tribe tribe) {
             return new TribeRes.JoinRes(
@@ -39,6 +43,24 @@ public class TribeConverter {
                     tribe.getCounts() + 1, // 반영될 예상 인원수
                     LocalDateTime.now()
             );
+        }
+
+        public static TribeRes.TribeInfo toTribeInfo(UserTribe userTribe){
+
+            Tribe tribe = userTribe.getTribe();
+
+            return new TribeRes.TribeInfo(
+                    userTribe.getId(),
+                    tribe.getId(),
+                    tribe.getTagName(),
+                    userTribe.getCreatedAt(),
+                    tribe.getCounts(),
+                    tribe.getVersion(),
+                    tribe.getStatus()
+            );
+        }
+        public static TribeRes.TribeListRes toTribeListRes(List<TribeRes.TribeInfo> tribeInfoList){
+            return new TribeRes.TribeListRes(tribeInfoList);
         }
     }
 }

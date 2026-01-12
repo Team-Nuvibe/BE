@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.service;
+package com.umc.nuvibe.domain.tribe.service.tribe;
 
 import com.umc.nuvibe.domain.tribe.code.TribeErrorCode;
 import com.umc.nuvibe.domain.tribe.converter.TribeConverter;
@@ -64,4 +64,6 @@ public class TribeServiceImpl implements TribeService {
         Tribe newTribe = TribeConverter.ToEntity.toTribe(tagName, nextVersion);
         return tribeRepository.save(newTribe);
     }
+
+
 }
