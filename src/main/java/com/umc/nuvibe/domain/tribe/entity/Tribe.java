@@ -3,13 +3,18 @@ package com.umc.nuvibe.domain.tribe.entity;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "tribes")
+@Table(name = "tribes",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_tag_name_version",
+                    columnNames = {"tag_name", "version"}
+            )}
+)
 @NoArgsConstructor
 public class Tribe extends BaseEntity {
 
