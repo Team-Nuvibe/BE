@@ -40,7 +40,7 @@ public class TribeConverter {
                     tribe.getTagName(),
                     tribe.getVersion(),
                     tribe.getStatus(),
-                    tribe.getCounts() + 1, // 반영될 예상 인원수
+                    tribe.getCounts(),
                     LocalDateTime.now()
             );
         }

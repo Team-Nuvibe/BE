@@ -5,8 +5,8 @@ import com.umc.nuvibe.domain.tribe.converter.TribeConverter;
 import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
-import com.umc.nuvibe.domain.tribe.repository.TribeRepository.TribeRepository;
-import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository.UserTribeRepository;
+import com.umc.nuvibe.domain.tribe.repository.tribeRepository.TribeRepository;
+import com.umc.nuvibe.domain.tribe.repository.userTribeRepository.UserTribeRepository;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
@@ -33,28 +33,41 @@ public class TribeServiceImpl implements TribeService {
         String selectedTag = request.imageTag();
         int retryCount = 0;
 
+        if (userTribeRepository.existsByUserIdAndTagname(userId, selectedTag)) {
+            throw new BusinessException(TribeErrorCode.ALREADY_JOINED);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
         while (retryCount < MAX_RETRIES) {
-            Tribe targetTribe = tribeRepository.findAvailableRooms(selectedTag).stream()
-                    .findFirst()
-                    .orElseGet(() -> createNewVersionRoom(selectedTag));
+            try {
+                Tribe targetTribe = tribeRepository.findAvailableRooms(selectedTag).stream()
+                        .findFirst()
+                        .orElseGet(() -> createNewVersionRoom(selectedTag));
 
-            if (userTribeRepository.existsByUserIdAndTribeId(userId, targetTribe.getId())) {
-                throw new BusinessException(TribeErrorCode.ALREADY_JOINED);
-            }
 
-            int updatedRows = tribeRepository.incrementCounts(targetTribe.getId());
+                int updatedRows = tribeRepository.incrementCounts(targetTribe.getId());
 
-            if (updatedRows > 0) {
-                User user = userRepository.findById(userId)
-                        .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+                if (updatedRows > 0) {
 
-                userTribeRepository.save(TribeConverter.ToEntity.toUserTribe(user, targetTribe));
+                    Tribe updatedTribe = tribeRepository.findById(targetTribe.getId())
+                            .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
 
-                // 알림 기능 구현 시 추가
+                    userTribeRepository.save(TribeConverter.ToEntity.toUserTribe(user, updatedTribe));
+
+                    // 알림 기능 구현 시 추가
 //              if (targetTribe.getCounts() + 1 == 5 && targetTribe.getStatus() == TribeStatus.INACTIVE) {
 //                  sendActivationNotification(targetTribe);
 //              }
-                return TribeConverter.ToResponse.toJoinRes(targetTribe);
+                    return TribeConverter.ToResponse.toJoinRes(updatedTribe);
+                }
+            } catch (BusinessException e){
+                if (e.getErrorCode() == TribeErrorCode.ALREADY_CREATED_VERSION){
+                    retryCount++;
+                    continue;
+                }
+                throw e;
             }
             retryCount++;
         }

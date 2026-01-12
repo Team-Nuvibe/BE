@@ -2,12 +2,11 @@ package com.umc.nuvibe.domain.tribe.service.userTribe;
 
 import com.umc.nuvibe.domain.tribe.code.UserTribeErrorCode;
 import com.umc.nuvibe.domain.tribe.converter.TribeConverter;
-import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
-import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.TribeRepository.TribeRepository;
-import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository.UserTribeRepository;
+import com.umc.nuvibe.domain.tribe.repository.scrapedImageRepository.ScrapedImageRepository;
+import com.umc.nuvibe.domain.tribe.repository.tribeRepository.TribeRepository;
+import com.umc.nuvibe.domain.tribe.repository.userTribeRepository.UserTribeRepository;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
@@ -35,7 +34,7 @@ public class UserTribeServiceImpl implements UserTribeService {
         }
 
         List<UserTribe> userTribes = userTribeRepository
-                .findAllByUserIdAndTribeStatusOrderByCreatedAtDesc(userId, TribeStatus.ACTIVE);
+                .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.ACTIVE);
 
         List<TribeRes.TribeInfo> tribeInfoList = userTribes.stream()
                 .map(TribeConverter.ToResponse::toTribeInfo)
@@ -46,13 +45,13 @@ public class UserTribeServiceImpl implements UserTribeService {
 
     @Override
     @Transactional
-    public TribeRes.LeaveRes leaveTribe(Long userId, TribeReq.LeaveReq req) {
+    public TribeRes.LeaveRes leaveTribe(Long userId, Long userTribeId) {
 
-        UserTribe userTribe = userTribeRepository.findById(req.userTribeId())
+        UserTribe userTribe = userTribeRepository.findById(userTribeId)
                 .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
 
         if (!userTribe.getUser().getId().equals(userId)) {
-            throw new BusinessException(UserTribeErrorCode.USER_TRIBE_NOT_OWNER); // 본인 것만 삭제 가능
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_OWNER); // 본인 것만 삭제 가능
         }
 
         Long tribeId = userTribe.getTribe().getId();
@@ -63,6 +62,6 @@ public class UserTribeServiceImpl implements UserTribeService {
         userTribeRepository.delete(userTribe);
         tribeRepository.decrementCounts(tribeId);
 
-        return new TribeRes.LeaveRes(req.userTribeId(), tribeId);
+        return new TribeRes.LeaveRes(userTribeId, tribeId);
     }
 }

@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
+package com.umc.nuvibe.domain.tribe.repository.userTribeRepository;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
+package com.umc.nuvibe.domain.tribe.repository.userTribeRepository;
 
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
@@ -9,10 +9,10 @@ import java.util.List;
 
 public interface UserTribeRepository extends JpaRepository<UserTribe, Long>, UserTribeRepositoryCustom {
 
-    Boolean existsByUserIdAndTribeId(Long userId, Long tribeId);
+    Boolean existsByUserIdAndTagname(Long userId, String tagName);
 
     @EntityGraph(attributePaths = {"tribe"})
-    List<UserTribe> findAllByUserIdAndTribeStatusOrderByCreatedAtDesc(Long userId, TribeStatus status);
+    List<UserTribe> findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(Long userId, TribeStatus status);
 
     Boolean existsByIdAndUserId(Long userTribeId, Long userId);
 }

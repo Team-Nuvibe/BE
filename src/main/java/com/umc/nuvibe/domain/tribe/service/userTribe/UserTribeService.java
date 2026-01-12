@@ -7,6 +7,6 @@ public interface UserTribeService {
 
     TribeRes.TribeListRes getTribeList(Long userId);
 
-    TribeRes.LeaveRes leaveTribe(Long userId, TribeReq.LeaveReq req);
+    TribeRes.LeaveRes leaveTribe(Long userId, Long userTribeId);
 }
 
