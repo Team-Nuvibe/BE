@@ -16,10 +16,19 @@ public class BoardImage extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_id", nullable = false) //null 방지 추가
     private ArchiveBoard board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id")
+    @JoinColumn(name = "image_id", nullable = false) //null 방지 추가
     private Image image;
+
+    @Builder
+    public BoardImage(ArchiveBoard board, Image image) {
+        //검증 로직
+        if (board == null) throw new IllegalArgumentException("board는 필수입니다.");
+        if (image == null) throw new IllegalArgumentException("image는 필수입니다.");
+        this.board = board;
+        this.image = image;
+    }
 }

@@ -35,14 +35,19 @@ public class Response <T> {
         return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), data);
     }
 
-    public static <T>Response<T> of(ResultCode code, T data ) {
-        return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), data);
-    }
-
     public static <T>Response<T> of(ErrorCode code, T data ) {
         return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), data);
     }
 
+
+    public static <T>Response<T> of(ResultCode code, T data ) {
+        return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), data);
+    }
+
+    // 데이터 없을 때 메서드 추가(삭제 수정 등)
+    public static Response<Void> of(ResultCode code) {
+    return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), null);
+}
 
     public static <T>Response<T> fail(ErrorCode code, T data ) {
         return new Response<>(code.getHttpStatus(),code.getCode(), code.getMessage(), data);
