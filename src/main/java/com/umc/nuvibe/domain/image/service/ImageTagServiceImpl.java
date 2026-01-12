@@ -12,7 +12,6 @@ import java.util.List;
 public class ImageTagServiceImpl implements ImageTagService {
 
     @Override
-    @Transactional
     public List<ImageTag> findByCategory (ImageTagCategory category){
         return Arrays.stream(ImageTag.values())
                 .filter(imageTag -> imageTag.getImageTagCategory() == category)
@@ -20,7 +19,6 @@ public class ImageTagServiceImpl implements ImageTagService {
     }
 
     @Override
-    @Transactional
     public List<ImageTag> findByNameAndTagKoAndSynonyms(String search){
         if (search == null || search.isEmpty()){
             return List.of();
@@ -28,7 +26,7 @@ public class ImageTagServiceImpl implements ImageTagService {
 
         return Arrays.stream(ImageTag.values())
                 .filter(imageTag
-                        ->imageTag.name().toLowerCase().contains(search) ||
+                        ->imageTag.name().toLowerCase().contains(search.toLowerCase()) ||
                         imageTag.getTagKo().contains(search)||
                         imageTag.getSynonyms().stream()
                                 .anyMatch(synonym -> synonym.contains(search))

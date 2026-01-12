@@ -20,7 +20,7 @@ import java.util.List;
 @Tag(name="Tag", description = "태그 검색 API")
 public class ImageTagController {
 
-    private ImageTagService imageTagService;
+    private final ImageTagService imageTagService;
 
     @GetMapping("/find")
     @Operation(summary = "태그 찾기", description = "카테고리를 선택하여 태그 목록을 불러옵니다.")
