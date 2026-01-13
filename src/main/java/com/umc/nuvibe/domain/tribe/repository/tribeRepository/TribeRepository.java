@@ -10,8 +10,8 @@ import java.util.Optional;
 
 public interface TribeRepository extends JpaRepository<Tribe, Long> {
 
-    @Query(value = "SELECT t FROM Tribe t WHERE t.tagName = :tagName AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
-    Optional<Tribe> findAvailableRooms(@Param("tagName") String tagName);
+    @Query(value = "SELECT * FROM Tribe t WHERE t.tagName = :tagName AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
+    Optional<Tribe> findAvailableRoom(@Param("tagName") String tagName);
 
     Optional<Tribe> findTopByTagNameOrderByVersionDesc(String tagName);
 

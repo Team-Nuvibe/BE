@@ -43,8 +43,7 @@ public class TribeServiceImpl implements TribeService {
 
         while (retryCount < MAX_RETRIES) {
             try {
-                Tribe targetTribe = tribeRepository.findAvailableRooms(selectedTag).stream()
-                        .findFirst()
+                Tribe targetTribe = tribeRepository.findAvailableRoom(selectedTag)
                         .orElseGet(() -> createNewVersionRoom(selectedTag));
 
 
