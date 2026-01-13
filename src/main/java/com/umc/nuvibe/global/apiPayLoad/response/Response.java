@@ -47,7 +47,7 @@ public class Response <T> {
     // 데이터 없을 때 메서드 추가(삭제 수정 등)
     public static Response<Void> of(ResultCode code) {
     return new Response<>(code.getHttpStatus(), code.getCode(), code.getMessage(), null);
-}
+    }
 
     public static <T>Response<T> fail(ErrorCode code, T data ) {
         return new Response<>(code.getHttpStatus(),code.getCode(), code.getMessage(), data);

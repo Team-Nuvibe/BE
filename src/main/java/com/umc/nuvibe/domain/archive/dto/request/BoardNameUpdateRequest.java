@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 @Schema(description = "보드명 수정 요청")
 public record BoardNameUpdateRequest(
     
-    @Schema(description = "새 보드 이름", example = "Model")
+    @Schema(description = "새 보드 이름", example = "model")
     @NotBlank(message = "보드 이름은 필수입니다.")
     String name
 ) {}

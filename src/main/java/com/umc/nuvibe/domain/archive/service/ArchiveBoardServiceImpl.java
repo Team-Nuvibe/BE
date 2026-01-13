@@ -2,8 +2,7 @@ package com.umc.nuvibe.domain.archive.service;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.umc.nuvibe.domain.archive.code.ArchiveErrorCode;
-import com.umc.nuvibe.domain.archive.converter.ArchiveBoardConverter;
+
 import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
@@ -18,6 +17,7 @@ import com.umc.nuvibe.domain.archive.repository.BoardImageRepository;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
+import com.umc.nuvibe.global.apiPayLoad.error.ArchiveErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,18 +51,15 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 .toList();
         
         Map<Long, String> thumbnailMap = boardImageRepository.findLatestByBoardIds(boardIds)
-        .stream()
-        .collect(Collectors.toMap(
-                bi -> bi.getBoard().getId(),
-                bi -> bi.getImage().getImageUrl(),
-                (existing, replacement) -> existing  // 중복 시 첫 번째 값 유지
-        ));
+                .stream()
+                .collect(Collectors.toMap(
+                        bi -> bi.getBoard().getId(),
+                        bi -> bi.getImage().getImageUrl(),
+                        (existing, replacement) -> existing  // 중복 시 첫 번째 값 유지
+                ));
         
         return boards.stream()
-                .map(board -> ArchiveBoardConverter.toBoardListResponse(
-                        board,
-                        thumbnailMap.get(board.getId())  // 없으면 null 반환
-                ))
+                .map(board -> BoardListResponse.from(board, thumbnailMap.get(board.getId())))
                 .toList();
     }
 
@@ -76,7 +73,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 ? boardImageRepository.findByBoardIdOrderByCreatedAtDesc(boardId)
                 : boardImageRepository.findByBoardIdAndImageTagOrderByCreatedAtDesc(boardId, tag);
         
-        return ArchiveBoardConverter.toBoardDetailResponse(board, boardImages);
+        return BoardDetailResponse.from(board, boardImages);
     }
 
     
@@ -87,17 +84,22 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
         
-        String normalizedName = request.name().trim();  // 추가
+        String normalizedName = request.name().trim();
         
         // 보드명 중복 체크
         if (archiveBoardRepository.existsByUserIdAndName(userId, normalizedName)) {
             throw new BusinessException(ArchiveErrorCode.DUPLICATE_BOARD_NAME);
         }
         
-        ArchiveBoard board = ArchiveBoardConverter.toArchiveBoard(user, normalizedName);
+        // Entity 직접 생성
+        ArchiveBoard board = ArchiveBoard.builder()
+                .user(user)
+                .name(normalizedName)
+                .build();
+        
         archiveBoardRepository.save(board);
         
-        return ArchiveBoardConverter.toBoardCreateResponse(board);
+        return BoardCreateResponse.from(board);
     }
 
     
@@ -118,10 +120,10 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         }
         
         // 보드 내 이미지 먼저 삭제 (벌크)
-        boardImageRepository.deleteByBoardIdInAndUserId(request.boardIds(), userId);
+        boardImageRepository.deleteByBoardIdInAndUserId(ownedBoardIds, userId);
         
-        // 보드 삭제 (벌크) - 변경!
-        archiveBoardRepository.deleteByIdInAndUserId(request.boardIds(), userId);
+        // 보드 삭제 (벌크)
+        archiveBoardRepository.deleteByIdInAndUserId(ownedBoardIds, userId);
     }
 
     
@@ -131,7 +133,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     public void updateBoardName(Long userId, Long boardId, BoardNameUpdateRequest request) {
         ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
         
-        String normalizedName = request.name().trim();  // 추가
+        String normalizedName = request.name().trim();
         
         // 보드명 중복 체크 (자기 자신 제외)
         if (!board.getName().equals(normalizedName) 
