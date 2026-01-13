@@ -5,6 +5,7 @@ import com.umc.nuvibe.domain.tribe.converter.TribeConverter;
 import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
+import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.repository.tribeRepository.TribeRepository;
 import com.umc.nuvibe.domain.tribe.repository.userTribeRepository.UserTribeRepository;
 import com.umc.nuvibe.domain.user.entity.User;
@@ -24,7 +25,7 @@ public class TribeServiceImpl implements TribeService {
     private final UserTribeRepository userTribeRepository;
     private final UserRepository userRepository;
 
-    private static final int MAX_RETRIES =3;
+    private static final int MAX_RETRIES = 3;
 
     @Override
     @Transactional
@@ -33,7 +34,7 @@ public class TribeServiceImpl implements TribeService {
         String selectedTag = request.imageTag();
         int retryCount = 0;
 
-        if (userTribeRepository.existsByUserIdAndTagname(userId, selectedTag)) {
+        if (userTribeRepository.existsByUserIdAndTribe_TagName(userId, selectedTag)) {
             throw new BusinessException(TribeErrorCode.ALREADY_JOINED);
         }
 
@@ -54,13 +55,15 @@ public class TribeServiceImpl implements TribeService {
                     Tribe updatedTribe = tribeRepository.findById(targetTribe.getId())
                             .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
 
-                    userTribeRepository.save(TribeConverter.ToEntity.toUserTribe(user, updatedTribe));
+                    UserTribe updatedUserTribe = TribeConverter.ToEntity.toUserTribe(user, updatedTribe);
+
+                    userTribeRepository.save(updatedUserTribe);
 
                     // 알림 기능 구현 시 추가
 //              if (targetTribe.getCounts() + 1 == 5 && targetTribe.getStatus() == TribeStatus.INACTIVE) {
 //                  sendActivationNotification(targetTribe);
 //              }
-                    return TribeConverter.ToResponse.toJoinRes(updatedTribe);
+                    return TribeConverter.ToResponse.toJoinRes(updatedTribe, updatedUserTribe);
                 }
             } catch (BusinessException e){
                 if (e.getErrorCode() == TribeErrorCode.ALREADY_CREATED_VERSION){

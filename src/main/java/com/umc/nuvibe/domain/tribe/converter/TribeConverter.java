@@ -34,14 +34,14 @@ public class TribeConverter {
 
 
     public static class ToResponse {
-        public static TribeRes.JoinRes toJoinRes(Tribe tribe) {
+        public static TribeRes.JoinRes toJoinRes(Tribe tribe, UserTribe userTribe) {
             return new TribeRes.JoinRes(
                     tribe.getId(),
                     tribe.getTagName(),
                     tribe.getVersion(),
                     tribe.getStatus(),
                     tribe.getCounts(),
-                    LocalDateTime.now()
+                    userTribe.getCreatedAt()
             );
         }
 

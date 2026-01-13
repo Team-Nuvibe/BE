@@ -1,14 +1,12 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
 import com.umc.nuvibe.domain.tribe.code.UserTribeResultCode;
-import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
 import com.umc.nuvibe.domain.tribe.service.userTribe.UserTribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,10 +24,10 @@ public class UserTribeController {
             @AuthUser Long userId){
         TribeRes.TribeListRes res = userTribeService.getTribeList(userId);
 
-        return Response.of(UserTribeResultCode.GET_TRIBE_SUCCESS, res);
+        return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
     }
 
-    @DeleteMapping("/leave")
+    @DeleteMapping("/leave/{userTribeId}")
     @Operation(summary = "챗 퇴장", description = "활성화된 트라이브 챗 퇴장")
     public Response<TribeRes.LeaveRes> leaveTribe(
          @AuthUser Long userId,

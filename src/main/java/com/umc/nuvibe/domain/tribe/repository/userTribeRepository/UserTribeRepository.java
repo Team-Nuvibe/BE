@@ -7,12 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface UserTribeRepository extends JpaRepository<UserTribe, Long>, UserTribeRepositoryCustom {
+public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
 
-    Boolean existsByUserIdAndTagname(Long userId, String tagName);
+    Boolean existsByUserIdAndTribe_TagName(Long userId, String tribeTagName);
 
     @EntityGraph(attributePaths = {"tribe"})
     List<UserTribe> findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(Long userId, TribeStatus status);
 
-    Boolean existsByIdAndUserId(Long userTribeId, Long userId);
 }

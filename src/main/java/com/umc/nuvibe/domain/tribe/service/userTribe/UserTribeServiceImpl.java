@@ -51,7 +51,7 @@ public class UserTribeServiceImpl implements UserTribeService {
                 .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
 
         if (!userTribe.getUser().getId().equals(userId)) {
-            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_OWNER); // 본인 것만 삭제 가능
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_JOINED); // 본인 것만 삭제 가능
         }
 
         Long tribeId = userTribe.getTribe().getId();
