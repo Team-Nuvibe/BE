@@ -1,12 +1,12 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
+import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
+import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
 
 public interface UserTribeService {
 
-    TribeRes.TribeListRes getTribeList(Long userId);
+    TribeListRes getTribeList(Long userId);
 
-    TribeRes.LeaveRes leaveTribe(Long userId, Long userTribeId);
+    LeaveRes leaveTribe(Long userId, Long userTribeId);
 }
 

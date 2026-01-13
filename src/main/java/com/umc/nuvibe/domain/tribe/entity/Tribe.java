@@ -3,8 +3,7 @@ package com.umc.nuvibe.domain.tribe.entity;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
@@ -15,7 +14,9 @@ import lombok.NoArgsConstructor;
                     columnNames = {"tag_name", "version"}
             )}
 )
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor
+@Builder
 public class Tribe extends BaseEntity {
 
     @Id
@@ -33,11 +34,13 @@ public class Tribe extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TribeStatus status;
 
-    public Tribe(String tagName, Integer counts, Integer version, TribeStatus status) {
-        this.tagName = tagName;
-        this.counts = counts;
-        this.version = version;
-        this.status = status;
+    public static Tribe create(String tagName, Integer version){
+        return Tribe.builder()
+                .tagName(tagName)
+                .counts(1)
+                .version(version)
+                .status(TribeStatus.INACTIVE)
+                .build();
     }
 
     public void activate(){

@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.repository.userTribeRepository;
+package com.umc.nuvibe.domain.tribe.repository;
 
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;

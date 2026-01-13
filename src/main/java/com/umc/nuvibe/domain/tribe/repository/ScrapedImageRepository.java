@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.repository.scrapedImageRepository;
+package com.umc.nuvibe.domain.tribe.repository;
 
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,12 +1,13 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.code.UserTribeErrorCode;
-import com.umc.nuvibe.domain.tribe.converter.TribeConverter;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
+import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
+import com.umc.nuvibe.domain.tribe.dto.response.TribeInfo;
+import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
+import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
-import com.umc.nuvibe.domain.tribe.repository.scrapedImageRepository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.tribeRepository.TribeRepository;
-import com.umc.nuvibe.domain.tribe.repository.userTribeRepository.UserTribeRepository;
+import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
+import com.umc.nuvibe.domain.tribe.repository.TribeRepository;
+import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
@@ -28,7 +29,7 @@ public class UserTribeServiceImpl implements UserTribeService {
 
     @Override
     @Transactional(readOnly = true)
-    public TribeRes.TribeListRes getTribeList(Long userId) {
+    public TribeListRes getTribeList(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
@@ -36,16 +37,16 @@ public class UserTribeServiceImpl implements UserTribeService {
         List<UserTribe> userTribes = userTribeRepository
                 .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.ACTIVE);
 
-        List<TribeRes.TribeInfo> tribeInfoList = userTribes.stream()
-                .map(TribeConverter.ToResponse::toTribeInfo)
+        List<TribeInfo> tribeInfoList = userTribes.stream()
+                .map(TribeInfo::from)
                 .toList();
 
-        return TribeConverter.ToResponse.toTribeListRes(tribeInfoList);
+        return TribeListRes.of(tribeInfoList);
     }
 
     @Override
     @Transactional
-    public TribeRes.LeaveRes leaveTribe(Long userId, Long userTribeId) {
+    public LeaveRes leaveTribe(Long userId, Long userTribeId) {
 
         UserTribe userTribe = userTribeRepository.findById(userTribeId)
                 .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
@@ -62,6 +63,6 @@ public class UserTribeServiceImpl implements UserTribeService {
         userTribeRepository.delete(userTribe);
         tribeRepository.decrementCounts(tribeId);
 
-        return new TribeRes.LeaveRes(userTribeId, tribeId);
+        return new LeaveRes(userTribeId, tribeId);
     }
 }

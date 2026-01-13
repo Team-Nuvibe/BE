@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.repository.tribeRepository;
+package com.umc.nuvibe.domain.tribe.repository;
 
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface TribeRepository extends JpaRepository<Tribe, Long> {
 
-    @Query(value = "SELECT * FROM Tribe t WHERE t.tagName = :tagName AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM tribes t WHERE t.tag_Name = :tagName AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
     Optional<Tribe> findAvailableRoom(@Param("tagName") String tagName);
 
     Optional<Tribe> findTopByTagNameOrderByVersionDesc(String tagName);

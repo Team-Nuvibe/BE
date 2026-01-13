@@ -1,8 +1,8 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
-import com.umc.nuvibe.domain.tribe.code.TribeResultCode;
-import com.umc.nuvibe.domain.tribe.dto.request.TribeReq;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeRes;
+import com.umc.nuvibe.domain.tribe.dto.request.TribeJoinReq;
+import com.umc.nuvibe.domain.tribe.dto.response.TribeJoinRes;
+import com.umc.nuvibe.global.apiPayLoad.result.TribeResultCode;
 import com.umc.nuvibe.domain.tribe.service.tribe.TribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
@@ -26,11 +26,11 @@ public class TribeController {
 
     @PostMapping("/join")
     @Operation(summary = "트라이브 챗 입장 및 생성", description = "기존 트라이브 챗이 존재 시 입장, 부재 시 새로운 트라이브 챗 생성")
-    public Response<TribeRes.JoinRes> joinTribe(
+    public Response<TribeJoinRes> joinTribe(
             @AuthUser Long userId,
-            @RequestBody @Valid TribeReq.JoinReq request) {
+            @RequestBody @Valid TribeJoinReq request) {
 
-        TribeRes.JoinRes response = tribeService.joinOrCreateTribe(userId, request);
+        TribeJoinRes response = tribeService.joinOrCreateTribe(userId, request);
 
         return Response.of(TribeResultCode.TRIBE_JOIN_SUCCESS, response);
     }
