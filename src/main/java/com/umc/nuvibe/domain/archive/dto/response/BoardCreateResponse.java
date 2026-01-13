@@ -6,7 +6,6 @@ import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 
 // 보드 생성 응답 DTO
 @Schema(description = "보드 생성 응답")
-// BoardCreateResponse.java
 public record BoardCreateResponse(
         Long boardId,
         String name
