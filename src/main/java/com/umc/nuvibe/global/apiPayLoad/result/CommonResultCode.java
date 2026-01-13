@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum CommonResultCode {
+public enum CommonResultCode implements ResultCode {
 
     OK(HttpStatus.OK, "COMMON_200", "성공적으로 처리되었습니다."),
     CREATED(HttpStatus.CREATED, "COMMON_201", "성공적으로 생성되었습니다."),
