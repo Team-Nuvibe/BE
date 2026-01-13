@@ -4,6 +4,7 @@ import com.umc.nuvibe.domain.image.service.ImageTagService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.image.vo.ImageTagCategory;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
+import com.umc.nuvibe.global.apiPayLoad.result.TagResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,9 @@ public class ImageTagController {
     public Response<List<ImageTag>> findTag(
             @RequestParam ImageTagCategory category
     ) {
-        return Response.ok(imageTagService.findByCategory(category));
+        return Response.ok(
+                TagResultCode.TAG_FIND_OK,
+                imageTagService.findByCategory(category));
     }
 
     @GetMapping("/search")
@@ -36,7 +39,7 @@ public class ImageTagController {
             @RequestParam String search
     ){
         return Response.ok(
-                imageTagService.findByNameAndTagKoAndSynonyms(search)
-        );
+                TagResultCode.TAG_SEARCH_OK,
+                imageTagService.findByNameAndTagKoAndSynonyms(search));
     }
 }
