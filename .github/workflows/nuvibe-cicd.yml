@@ -7,9 +7,10 @@ on:
   pull_request:
     branches:
       - dev
+      - main
 
 jobs:
-  # CI, dev로 pr 날리면 발생
+  # CI, main과 dev로 pr 날리면 발생
   ci:
     name: Build and Test
     runs-on: ubuntu-latest
@@ -24,12 +25,10 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew build -x test
 
       - name: Run tests
         run: ./gradlew test
@@ -49,15 +48,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
-
-      - name: Run tests
-        run: ./gradlew test
+        run: ./gradlew build -x test
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -78,7 +75,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DOCKERHUB_USERNAME,PROD_DB_URL,PROD_DB_USERNAME,PROD_DB_NAME,PROD_DB_PASSWORD
+          envs: DOCKERHUB_USERNAME,PROD_DB_URL,PROD_DB_USERNAME,PROD_DB_NAME,PROD_DB_PASSWORD,AWS_ACCESS_KEY,AWS_SECRET_KEY,AWS_S3_BUCKET,JWT_SECRET_KEY,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY
           script: |
             # 배포 디렉토리 생성
             mkdir -p /home/ubuntu/nuvibe
@@ -96,14 +93,22 @@ jobs:
                   - "80:8080"
                 environment:
                   - SPRING_PROFILES_ACTIVE=prod
+                  
+                  # db 설정
                   - PROD_DB_URL=${PROD_DB_URL}
                   - PROD_DB_USERNAME=${PROD_DB_USERNAME}
                   - PROD_DB_PASSWORD=${PROD_DB_PASSWORD}
-                depends_on:
-                  db:
-                    condition: service_healthy
-                networks:
-                  - nuvibe-network
+                  
+                  # AWS 설정
+                  - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+                  - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+                  - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+            
+                  # JWT 설정
+                  - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+                  - JWT_ACCESS_TOKEN_VALIDITY=${JWT_ACCESS_TOKEN_VALIDITY}
+                  - JWT_REFRESH_TOKEN_VALIDITY=${JWT_REFRESH_TOKEN_VALIDITY}
+            
                 restart: unless-stopped
                 logging:
                   driver: "json-file"
@@ -111,33 +116,6 @@ jobs:
                     max-size: "10m"
                     max-file: "3"
 
-              db:
-                image: mysql:8.0
-                container_name: nuvibe-db
-                environment:
-                  - MYSQL_ROOT_PASSWORD=${PROD_DB_PASSWORD}
-                  - MYSQL_DATABASE=${PROD_DB_NAME}
-                  - TZ=Asia/Seoul
-                volumes:
-                  - /home/ubuntu/nuvibe_data:/var/lib/mysql
-                networks:
-                  - nuvibe-network
-                restart: unless-stopped
-                healthcheck:
-                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${PROD_DB_PASSWORD}"]
-                  interval: 10s
-                  timeout: 5s
-                  retries: 5
-                  start_period: 30s
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "10m"
-                    max-file: "3"
-
-            networks:
-              nuvibe-network:
-                driver: bridge
             COMPOSE_EOF
 
             # 최신 이미지 Pull
@@ -155,3 +133,9 @@ jobs:
           PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
           PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_ACCESS_TOKEN_VALIDITY: ${{ secrets.JWT_ACCESS_TOKEN_VALIDITY }}
+          JWT_REFRESH_TOKEN_VALIDITY: ${{ secrets.JWT_REFRESH_TOKEN_VALIDITY }}
