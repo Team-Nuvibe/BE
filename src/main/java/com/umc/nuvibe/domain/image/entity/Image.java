@@ -3,6 +3,8 @@ package com.umc.nuvibe.domain.image.entity;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "images")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Image extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,4 +25,6 @@ public class Image extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ImageTag imageTag;
+
+
 }
