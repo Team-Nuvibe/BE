@@ -25,9 +25,6 @@ public class BoardImage extends BaseEntity {
 
     @Builder
     public BoardImage(ArchiveBoard board, Image image) {
-        //검증 로직
-        if (board == null) throw new IllegalArgumentException("board는 필수입니다.");
-        if (image == null) throw new IllegalArgumentException("image는 필수입니다.");
         this.board = board;
         this.image = image;
     }

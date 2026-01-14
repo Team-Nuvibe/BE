@@ -1,6 +1,5 @@
 package com.umc.nuvibe.domain.archive.controller;
 
-import com.umc.nuvibe.domain.archive.code.ArchiveSuccessCode;
 import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
@@ -11,6 +10,7 @@ import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
 import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
+import com.umc.nuvibe.global.apiPayLoad.result.ArchiveResultCode;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,7 +40,7 @@ public class ArchiveBoardController {
     public Response<List<BoardListResponse>> getBoards(
             @AuthUser Long userId
     ) {
-        return Response.of(ArchiveSuccessCode.BOARD_LIST_SUCCESS, archiveBoardService.getBoards(userId));
+        return Response.of(ArchiveResultCode.BOARD_LIST_SUCCESS, archiveBoardService.getBoards(userId));
     }
 
     
@@ -52,7 +52,7 @@ public class ArchiveBoardController {
             @Parameter(description = "보드 ID") @PathVariable Long boardId,
             @Parameter(description = "태그 필터") @RequestParam(required = false) ImageTag tag
     ) {
-        return Response.of(ArchiveSuccessCode.BOARD_DETAIL_SUCCESS, archiveBoardService.getBoardDetail(userId, boardId, tag));
+        return Response.of(ArchiveResultCode.BOARD_DETAIL_SUCCESS, archiveBoardService.getBoardDetail(userId, boardId, tag));
     }
 
     
@@ -64,7 +64,7 @@ public class ArchiveBoardController {
             @AuthUser Long userId,
             @Valid @RequestBody BoardCreateRequest request
     ) {
-        return Response.of(ArchiveSuccessCode.BOARD_CREATE_SUCCESS, archiveBoardService.createBoard(userId, request));
+        return Response.of(ArchiveResultCode.BOARD_CREATE_SUCCESS, archiveBoardService.createBoard(userId, request));
     }
 
     
@@ -76,7 +76,7 @@ public class ArchiveBoardController {
             @Valid @RequestBody BoardDeleteRequest request
     ) {
         archiveBoardService.deleteBoards(userId, request);
-        return Response.of(ArchiveSuccessCode.BOARD_DELETE_SUCCESS);
+        return Response.of(ArchiveResultCode.BOARD_DELETE_SUCCESS);
     }
 
     
@@ -89,7 +89,7 @@ public class ArchiveBoardController {
             @Valid @RequestBody BoardNameUpdateRequest request
     ) {
         archiveBoardService.updateBoardName(userId, boardId, request);
-        return Response.of(ArchiveSuccessCode.BOARD_NAME_UPDATE_SUCCESS);
+        return Response.of(ArchiveResultCode.BOARD_NAME_UPDATE_SUCCESS);
     }
 
     
@@ -102,6 +102,6 @@ public class ArchiveBoardController {
             @Valid @RequestBody BoardImageDeleteRequest request
     ) {
         archiveBoardService.deleteBoardImages(userId, boardId, request);
-        return Response.of(ArchiveSuccessCode.BOARD_IMAGE_DELETE_SUCCESS);
+        return Response.of(ArchiveResultCode.BOARD_IMAGE_DELETE_SUCCESS);
     }
 }
