@@ -14,6 +14,16 @@ spring:
         format_sql: true
     show-sql: true
 
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      region:
+        static: ap-northeast-2 # 서울
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY}
