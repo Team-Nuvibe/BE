@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.image.controller;
 
 import com.umc.nuvibe.domain.image.dto.response.ImageRes;
 import com.umc.nuvibe.domain.image.service.ImageService;
+import com.umc.nuvibe.domain.image.service.ImageServiceImpl;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.ImageResultCode;
@@ -12,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("api/images")
+@RequestMapping("/api/images")
 public class ImageController {
 
     private final ImageService imageService;

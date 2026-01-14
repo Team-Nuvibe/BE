@@ -40,6 +40,9 @@ public class S3Service {
 
         // 파일 검증
         String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new BusinessException(ImageErrorCode.INVALID_FILE_EXTENSION);
+        }
         validateFileExtension(originalFilename);
 
         // UUID로 파일명 안 겹치게 난수화
@@ -71,13 +74,21 @@ public class S3Service {
 
     // 확장자 추출
     private String getFileExtension(String fileName) {
-        try {
-            // .jpg 할 때 . 이후로 jpg만 자르기
-            return fileName.substring(fileName.lastIndexOf(".")+1);
+
+        int dotIndex=fileName.lastIndexOf(".");
+
+        // .이 없거나 맨 앞에 있을 때
+        if (dotIndex==-1||dotIndex==0) {
+            throw new BusinessException(ImageErrorCode.INVALID_FILE_EXTENSION);
         }
-        catch (StringIndexOutOfBoundsException e) {
-            throw new BusinessException(ImageErrorCode.EXTENSION_IS_EMPTY);
+
+        // .이 맨 껕에 있을 때
+        if (dotIndex==fileName.length()-1) {
+            return "";
         }
+
+        return fileName.substring(dotIndex+1);
+
     }
 
     // UUID로 랜덤 파일명 생성
