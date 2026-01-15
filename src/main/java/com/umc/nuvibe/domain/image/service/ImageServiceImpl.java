@@ -1,9 +1,14 @@
 package com.umc.nuvibe.domain.image.service;
 
+import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
+import com.umc.nuvibe.domain.archive.entity.BoardImage;
+import com.umc.nuvibe.domain.archive.repository.BoardImageRepository;
+import com.umc.nuvibe.domain.image.dto.response.ImageDetailRes;
 import com.umc.nuvibe.domain.image.dto.response.ImageRes;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.s3.S3Service;
@@ -19,6 +24,7 @@ public class ImageServiceImpl implements ImageService {
 
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
+    private final BoardImageRepository boardImageRepository;
 
     @Transactional
     public ImageRes uploadAndSave(MultipartFile file, ImageTag tag) {
@@ -46,5 +52,22 @@ public class ImageServiceImpl implements ImageService {
 
         return new ImageRes(imageURL, tag);
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ImageDetailRes getImageDetail (Long userId, Long imageId) {
+        BoardImage boardImage = boardImageRepository.findByImageId(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+
+        Image image = boardImage.getImage();
+        ArchiveBoard board = boardImage.getBoard();
+        User user = board.getUser();
+
+        if (!user.getId().equals(userId)) {
+            throw new BusinessException(ImageErrorCode.IMAGE_ACCESS_DENIED);
+        }
+
+        return ImageDetailRes.from(image, user, board);
     }
 }
