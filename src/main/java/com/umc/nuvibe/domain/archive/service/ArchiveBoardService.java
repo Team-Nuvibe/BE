@@ -3,8 +3,11 @@ package com.umc.nuvibe.domain.archive.service;
 import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
+import com.umc.nuvibe.domain.archive.dto.response.BoardImageResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -27,6 +30,9 @@ public interface ArchiveBoardService {
 
     // 보드 내 이미지 삭제(다중)
     void deleteBoardImages(Long userId, Long boardId, BoardImageDeleteRequest request);
+
+    // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
+    Page<BoardImageResponse> getBoardImages(Long userId, Pageable pageable);
 
     // 보드 내 이미지 추가
     void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request);

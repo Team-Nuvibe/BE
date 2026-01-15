@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +59,16 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     @Query("DELETE FROM BoardImage bi WHERE bi.id IN :imageIds AND bi.board.id = :boardId")
     int deleteByIdInAndBoardId(@Param("imageIds") List<Long> imageIds, @Param("boardId") Long boardId);
 
+    // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
+    @Query("SELECT bi FROM BoardImage bi " +
+              "JOIN FETCH bi.image " +
+              "JOIN FETCH bi.board b " +
+              "WHERE b.user.id = :userId " +
+              "ORDER BY bi.createdAt DESC")
+    Page<BoardImage> findAllByUserIdOrderByCreatedAtDesc(
+       @Param("userId") Long userId,
+       Pageable pageable
+     );
 
     //이미지가 보드에 포함되어 있는 지
     boolean existsByImageId(Long imageId);

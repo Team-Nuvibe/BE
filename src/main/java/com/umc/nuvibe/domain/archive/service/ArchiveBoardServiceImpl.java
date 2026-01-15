@@ -25,6 +25,10 @@ import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.umc.nuvibe.domain.archive.dto.response.BoardImageResponse;
+
 
 import java.util.List;
 
@@ -165,12 +169,24 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         }
     }
 
-    
     // 보드 조회 + 권한 체크
     private ArchiveBoard findBoardByIdAndUserId(Long boardId, Long userId) {
         return archiveBoardRepository.findByIdAndUserId(boardId, userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_NOT_FOUND));
     }
+    // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
+    @Override
+    public Page<BoardImageResponse> getBoardImages(Long userId, Pageable pageable) {
+        // 사용자 존재 여부 확인
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
+
+        Page<BoardImage> boardImages = boardImageRepository
+            .findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+
+        return boardImages.map(BoardImageResponse::from);
+    }
+
 
     //보드 이미지 추가
     @Override
