@@ -14,12 +14,12 @@ spring:
   cloud:
     aws:
       credentials:
-        access-key: temp_access_key
-        secret-key: temp_access_key
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
       region:
         static: ap-northeast-2 # 서울
       s3:
-        bucket: temp_access_key
+        bucket: ${AWS_S3_BUCKET}
   servlet:
     multipart:
       max-file-size: 10MB
