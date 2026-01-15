@@ -18,7 +18,9 @@ public enum ArchiveResultCode implements ResultCode {
     BOARD_NAME_UPDATE_SUCCESS(HttpStatus.OK, "ARCHIVE004", "보드명 수정 성공"),
     // 삭제
     BOARD_DELETE_SUCCESS(HttpStatus.OK, "ARCHIVE005", "보드 삭제 성공"),
-    BOARD_IMAGE_DELETE_SUCCESS(HttpStatus.OK, "ARCHIVE006", "이미지 삭제 성공");
+    BOARD_IMAGE_DELETE_SUCCESS(HttpStatus.OK, "ARCHIVE006", "이미지 삭제 성공"),
+    //추가
+    BOARD_IMAGE_ADD_SUCCESS(HttpStatus.OK, "ARCHIVE007", "이미지가 보드에 추가되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

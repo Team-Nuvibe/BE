@@ -56,5 +56,18 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM BoardImage bi WHERE bi.id IN :imageIds AND bi.board.id = :boardId")
     int deleteByIdInAndBoardId(@Param("imageIds") List<Long> imageIds, @Param("boardId") Long boardId);
-    
+
+
+    //이미지가 보드에 포함되어 있는 지 확인
+    boolean existsByImageId(Long ImageId);
+
+    //이미지 상세 정보 조회
+    @Query("""
+        select bi from BoardImage bi
+        join fetch bi.image i
+        join fetch bi.board b
+        join fetch b.user u
+        where bi.image.id = :imageId
+    """)
+    Optional<BoardImage> findByImageId(@Param("imageId") Long imageId);
 }

@@ -1,9 +1,6 @@
 package com.umc.nuvibe.domain.archive.service;
 
-import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
-import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
-import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
-import com.umc.nuvibe.domain.archive.dto.request.BoardNameUpdateRequest;
+import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
@@ -31,5 +28,7 @@ public interface ArchiveBoardService {
     // 보드 내 이미지 삭제(다중)
     void deleteBoardImages(Long userId, Long boardId, BoardImageDeleteRequest request);
 
+    // 보드 내 이미지 추가
+    void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request);
 
 }

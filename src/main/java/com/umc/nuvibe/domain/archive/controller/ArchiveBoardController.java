@@ -4,6 +4,7 @@ import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardNameUpdateRequest;
+import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
@@ -103,5 +104,17 @@ public class ArchiveBoardController {
     ) {
         archiveBoardService.deleteBoardImages(userId, boardId, request);
         return Response.of(ArchiveResultCode.BOARD_IMAGE_DELETE_SUCCESS);
+    }
+
+    //보드에 이미지 추가
+    @PostMapping("/{boardId}/images")
+    @Operation(summary = "아카이브 보드에 이미지 추가", description = "이미지를 지정한 아카이브 보드에 추가합니다.")
+    public Response<Void> addBoardImage(
+            @AuthUser Long userId,
+            @Parameter(description = "보드 ID") @PathVariable Long boardId,
+            @Valid @RequestBody BoardImageAddRequest request
+            ){
+        archiveBoardService.addBoardImage(userId, boardId, request);
+        return Response.of(ArchiveResultCode.BOARD_IMAGE_ADD_SUCCESS);
     }
 }

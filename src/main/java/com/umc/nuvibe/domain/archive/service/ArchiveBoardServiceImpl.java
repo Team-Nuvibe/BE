@@ -2,11 +2,11 @@ package com.umc.nuvibe.domain.archive.service;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardNameUpdateRequest;
+import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
@@ -14,6 +14,8 @@ import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.archive.repository.ArchiveBoardRepository;
 import com.umc.nuvibe.domain.archive.repository.BoardImageRepository;
+import com.umc.nuvibe.domain.image.entity.Image;
+import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -33,9 +35,8 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     private final ArchiveBoardRepository archiveBoardRepository;
     private final BoardImageRepository boardImageRepository;
     private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
 
-    
-    
     // 보드 목록 조회
     @Override
     public List<BoardListResponse> getBoards(Long userId) {
@@ -165,5 +166,29 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     private ArchiveBoard findBoardByIdAndUserId(Long boardId, Long userId) {
         return archiveBoardRepository.findByIdAndUserId(boardId, userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_NOT_FOUND));
+    }
+
+    //보드 이미지 추가
+    @Override
+    @Transactional
+    public void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request) {
+        //유저가 소유한 보드인지 확인
+        ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
+
+        //이미지 id가 존재하는 지 확인
+        Image image = imageRepository.findById(request.imageId())
+                        .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_IMAGE_NOT_FOUND));
+
+        //이미지가 이미 보드에 저장되어 있는 지 확인
+        if (boardImageRepository.existsByImageId(request.imageId())){
+            throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_ALREADY_EXISTS);
+        }
+
+        //이미지를 보드에 저장
+        boardImageRepository.save(BoardImage.builder().
+                board(board).
+                image(image).
+                build());
+
     }
 }
