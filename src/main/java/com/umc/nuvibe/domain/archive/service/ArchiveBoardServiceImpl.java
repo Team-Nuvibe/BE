@@ -40,8 +40,11 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
     // 보드 목록 조회
     @Override
-    public List<BoardListResponse> getBoards(Long userId) {
-        List<ArchiveBoard> boards = archiveBoardRepository.findByUserId(userId);
+    public List<BoardListResponse> getBoards(Long userId, String keyword) {
+    // keyword가 null이거나 공백이면 전체 조회, 있으면 검색
+    List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
+            ? archiveBoardRepository.findByUserId(userId)
+            : archiveBoardRepository.findByUserIdAndNameContaining(userId, keyword.trim());
         
         if (boards.isEmpty()) {
             return List.of();

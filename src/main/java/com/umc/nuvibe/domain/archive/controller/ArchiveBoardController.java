@@ -35,13 +35,17 @@ public class ArchiveBoardController {
     private final ArchiveBoardService archiveBoardService;
 
     
-    // 보드 목록 조회
+    // 보드 목록 조회 및 검색
     @GetMapping
-    @Operation(summary = "아카이브 목록 조회", description = "사용자의 아카이브 보드 목록을 조회합니다.")
+    @Operation(summary = "아카이브 목록 조회 및 검색", description = "보드 내 이미지 목록을 조회합니다. 검색어를 이용해 보드 검색이 가능합니다")
     public Response<List<BoardListResponse>> getBoards(
-            @AuthUser Long userId
+        @AuthUser Long userId,
+        @Parameter(description = "보드명 검색어") @RequestParam(required = false) String keyword
     ) {
-        return Response.of(ArchiveResultCode.BOARD_LIST_SUCCESS, archiveBoardService.getBoards(userId));
+        return Response.of(
+            ArchiveResultCode.BOARD_LIST_SUCCESS, 
+            archiveBoardService.getBoards(userId, keyword)
+        );
     }
 
     

@@ -11,7 +11,7 @@ import java.util.List;
 public interface ArchiveBoardService {
     
     // 보드 목록 조회
-    List<BoardListResponse> getBoards(Long userId);
+    List<BoardListResponse> getBoards(Long userId, String keyword);
     
     // 보드 상세 조회 (태그 필터 옵션)
     BoardDetailResponse getBoardDetail(Long userId, Long boardId, ImageTag tag);
