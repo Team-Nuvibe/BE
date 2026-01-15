@@ -175,6 +175,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         return archiveBoardRepository.findByIdAndUserId(boardId, userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_NOT_FOUND));
     }
+
     // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
     @Override
     public Page<BoardImageResponse> getBoardImages(Long userId, Pageable pageable) {
@@ -187,6 +188,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
         return boardImages.map(BoardImageResponse::from);
     }
+
     // vibe 톤 입구
     @Override
     public BoardSummaryResponse getSummary(Long userId) {

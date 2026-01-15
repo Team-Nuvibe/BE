@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.archive.repository;
 
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -60,23 +61,22 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     int deleteByIdInAndBoardId(@Param("imageIds") List<Long> imageIds, @Param("boardId") Long boardId);
 
     // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
+    @EntityGraph(attributePaths = {"image", "board"})
     @Query("SELECT bi FROM BoardImage bi " +
-              "JOIN FETCH bi.image " +
-              "JOIN FETCH bi.board b " +
-              "WHERE b.user.id = :userId " +
-              "ORDER BY bi.createdAt DESC")
+    "WHERE bi.board.user.id = :userId " +
+    "ORDER BY bi.createdAt DESC")
     Page<BoardImage> findAllByUserIdOrderByCreatedAtDesc(
        @Param("userId") Long userId,
        Pageable pageable
      );
     // 사용자가 가장 많이 사용한 태그 Top 4 조회
-    @Query("SELECT i.imageTag, COUNT(i.imageTag) as cnt " +
+    @Query("SELECT i.imageTag " +
               "FROM BoardImage bi " +
               "JOIN bi.image i " +
               "JOIN bi.board b " +
               "WHERE b.user.id = :userId AND i.imageTag IS NOT NULL " +
               "GROUP BY i.imageTag " +
-              "ORDER BY cnt DESC " +
+              "ORDER BY COUNT(i.imageTag) DESC " +
               "LIMIT 4")
     List<ImageTag> findTop4TagsByUserId(@Param("userId") Long userId);
 
