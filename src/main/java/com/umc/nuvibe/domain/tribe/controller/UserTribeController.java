@@ -3,6 +3,7 @@ package com.umc.nuvibe.domain.tribe.controller;
 import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.UserTribeActivateRes;
+import com.umc.nuvibe.domain.tribe.dto.response.UserTribeFavoriteRes;
 import com.umc.nuvibe.global.apiPayLoad.result.UserTribeResultCode;
 import com.umc.nuvibe.domain.tribe.service.userTribe.UserTribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
@@ -37,6 +38,16 @@ public class UserTribeController {
     ){
         UserTribeActivateRes res = userTribeService.activateUserTribe(userId, userTribeId);
         return Response.of(UserTribeResultCode.USERTRIBE_ACTIVATE_SUCCESS, res);
+    }
+
+    @PatchMapping("/{userTribeId}/favorite")
+    @Operation(summary = "트라이브 챗 즐겨찾기", description = "원하는 트라이브 챗을 즐겨찾기로 등록")
+    public Response<UserTribeFavoriteRes> favoriteUserTribe(
+            @AuthUser Long userId,
+            @PathVariable Long userTribeId
+    ){
+        UserTribeFavoriteRes res = userTribeService.toggleFavorite(userId, userTribeId);
+        return Response.of(UserTribeResultCode.USERTRIBE_FAVORITE_SUCCESS, res);
     }
 
     @DeleteMapping("{userTribeId}")

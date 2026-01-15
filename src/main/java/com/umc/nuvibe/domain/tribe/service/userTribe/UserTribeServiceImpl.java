@@ -1,9 +1,6 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeInfo;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.UserTribeActivateRes;
+import com.umc.nuvibe.domain.tribe.dto.response.*;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
@@ -91,5 +88,21 @@ public class UserTribeServiceImpl implements UserTribeService {
         userTribe.activate();
 
         return UserTribeActivateRes.from(userTribe);
+    }
+
+    @Override
+    @Transactional
+    public UserTribeFavoriteRes toggleFavorite(Long userId, Long userTribeId) {
+
+        UserTribe userTribe = userTribeRepository.findById(userTribeId)
+                .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
+
+        if (!userTribe.getUser().getId().equals(userId)) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_JOINED);
+        }
+
+        userTribe.toggleFavorite();
+
+        return UserTribeFavoriteRes.from(userTribe);
     }
 }
