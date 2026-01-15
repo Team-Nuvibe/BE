@@ -46,10 +46,17 @@ public class TribeServiceImpl implements TribeService {
             throw new BusinessException(TribeErrorCode.TRIBE_FULL_RETRY);
         }
 
-        UserTribe userTribe = UserTribe.of(user, targetTribe);
+        Tribe tribe = tribeRepository.findById(targetTribe.getId())
+                .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
+
+        if (tribe.getCounts() >= 5) {
+            tribe.changeStatus();
+        }
+
+        UserTribe userTribe = UserTribe.of(user, tribe);
         userTribeRepository.save(userTribe);
 
-        return TribeJoinRes.from(targetTribe, userTribe);
+        return TribeJoinRes.from(tribe, userTribe);
         }
 
 

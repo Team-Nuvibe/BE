@@ -39,13 +39,13 @@ public class Tribe extends BaseEntity {
     public static Tribe create(ImageTag imageTag, Integer version){
         return Tribe.builder()
                 .imageTag(imageTag)
-                .counts(1)
+                .counts(0)
                 .version(version)
                 .status(TribeStatus.INACTIVE)
                 .build();
     }
 
-    public void activate(){
+    public void changeStatus(){
         this.status = TribeStatus.WAITING;
     }
 

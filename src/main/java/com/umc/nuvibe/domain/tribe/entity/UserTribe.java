@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.entity;
 
+import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
@@ -28,6 +29,9 @@ public class UserTribe extends BaseEntity {
     @JoinColumn(name = "tribe_id")
     private Tribe tribe;
 
+    @Enumerated(EnumType.STRING)
+    private UserTribeStatus userTribeStatus;
+
     private UserTribe(User user, Tribe tribe) {
         this.user = user;
         this.tribe = tribe;
@@ -35,6 +39,10 @@ public class UserTribe extends BaseEntity {
 
     public static UserTribe of(User user, Tribe tribe){
         return new UserTribe(user, tribe);
+    }
+
+    public void activate() {
+        this.userTribeStatus = UserTribeStatus.ACTIVE;
     }
 
 }

@@ -11,8 +11,11 @@ import java.util.Optional;
 
 public interface TribeRepository extends JpaRepository<Tribe, Long> {
 
-    @Query(value = "SELECT * FROM tribes t WHERE t.tag_name = :imageTag AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
-    Optional<Tribe> findAvailableRoom(@Param("imageTag") ImageTag imageTag);
+    Optional<Tribe> findFirstByImageTagAndCountsLessThanOrderByVersionAsc(ImageTag imageTag, int counts);
+
+    default Optional<Tribe> findAvailableRoom(ImageTag imageTag) {
+        return findFirstByImageTagAndCountsLessThanOrderByVersionAsc(imageTag, 100);
+    }
 
     Optional<Tribe> findTopByImageTagOrderByVersionDesc(ImageTag imageTag);
 
