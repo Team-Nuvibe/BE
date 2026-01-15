@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.repository;
 
+import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,10 +11,10 @@ import java.util.Optional;
 
 public interface TribeRepository extends JpaRepository<Tribe, Long> {
 
-    @Query(value = "SELECT * FROM tribes t WHERE t.tag_Name = :tagName AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
-    Optional<Tribe> findAvailableRoom(@Param("tagName") String tagName);
+    @Query(value = "SELECT * FROM tribes t WHERE t.tag_name = :imageTag AND t.counts < 100 ORDER BY t.version ASC LIMIT 1", nativeQuery = true)
+    Optional<Tribe> findAvailableRoom(@Param("imageTag") ImageTag imageTag);
 
-    Optional<Tribe> findTopByTagNameOrderByVersionDesc(String tagName);
+    Optional<Tribe> findTopByImageTagOrderByVersionDesc(ImageTag imageTag);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Tribe t SET t.counts = t.counts + 1 WHERE t.id = :id AND t.counts < 100")

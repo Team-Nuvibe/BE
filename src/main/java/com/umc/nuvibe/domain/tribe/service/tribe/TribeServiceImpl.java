@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.service.tribe;
 
+import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.dto.request.TribeJoinReq;
 import com.umc.nuvibe.domain.tribe.dto.response.TribeJoinRes;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
@@ -27,9 +28,9 @@ public class TribeServiceImpl implements TribeService {
     @Override
     @Transactional
     public TribeJoinRes joinOrCreateTribe(Long userId, TribeJoinReq request) {
-        String selectedTag = request.imageTag();
+        ImageTag selectedTag = request.imageTag();
 
-        if (userTribeRepository.existsByUserIdAndTribe_TagName(userId, selectedTag)) {
+        if (userTribeRepository.existsByUserIdAndTribe_ImageTag(userId, selectedTag)) {
             throw new BusinessException(TribeErrorCode.ALREADY_JOINED);
         }
 
@@ -52,13 +53,13 @@ public class TribeServiceImpl implements TribeService {
         }
 
 
-    private Tribe createNewVersionRoom(String tagName) {
-            int nextVersion =tribeRepository.findTopByTagNameOrderByVersionDesc(tagName)
+    private Tribe createNewVersionRoom(ImageTag imageTag) {
+            int nextVersion =tribeRepository.findTopByImageTagOrderByVersionDesc(imageTag)
                     .map(Tribe::getVersion)
                     .map(v -> v + 1)
                     .orElse(1);
 
-            Tribe newTribe = Tribe.create(tagName, nextVersion);
+            Tribe newTribe = Tribe.create(imageTag, nextVersion);
             return tribeRepository.save(newTribe);
     }
 

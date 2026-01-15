@@ -35,7 +35,7 @@ public class UserTribeServiceImpl implements UserTribeService {
         }
 
         List<UserTribe> userTribes = userTribeRepository
-                .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.ACTIVE);
+                .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.WAITING);
 
         List<TribeInfo> tribeInfoList = userTribes.stream()
                 .map(TribeInfo::from)

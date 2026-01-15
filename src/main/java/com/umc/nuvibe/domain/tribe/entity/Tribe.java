@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.entity;
 
+import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
@@ -25,7 +26,8 @@ public class Tribe extends BaseEntity {
     private Long id;
 
     @Column(name = "tag_name")
-    private String tagName;
+    @Enumerated(EnumType.STRING)
+    private ImageTag imageTag;
 
     private Integer counts; // 현재 인원
 
@@ -34,9 +36,9 @@ public class Tribe extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TribeStatus status;
 
-    public static Tribe create(String tagName, Integer version){
+    public static Tribe create(ImageTag imageTag, Integer version){
         return Tribe.builder()
-                .tagName(tagName)
+                .imageTag(imageTag)
                 .counts(1)
                 .version(version)
                 .status(TribeStatus.INACTIVE)
@@ -44,7 +46,7 @@ public class Tribe extends BaseEntity {
     }
 
     public void activate(){
-        this.status = TribeStatus.ACTIVE;
+        this.status = TribeStatus.WAITING;
     }
 
 }
