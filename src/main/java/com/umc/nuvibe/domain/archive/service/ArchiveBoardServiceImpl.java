@@ -10,6 +10,7 @@ import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
+import com.umc.nuvibe.domain.archive.dto.response.BoardSummaryResponse;
 import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.archive.repository.ArchiveBoardRepository;
@@ -186,7 +187,18 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
         return boardImages.map(BoardImageResponse::from);
     }
+    // vibe 톤 입구
+    @Override
+    public BoardSummaryResponse getSummary(Long userId) {
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
 
+        // Top 4 태그 조회
+        List<ImageTag> topTags = boardImageRepository.findTop4TagsByUserId(userId);
+
+        return BoardSummaryResponse.of(user.getNickname(), topTags);
+    }
 
     //보드 이미지 추가
     @Override

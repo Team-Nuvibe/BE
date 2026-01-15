@@ -8,6 +8,7 @@ import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
+import com.umc.nuvibe.domain.archive.dto.response.BoardSummaryResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardImageResponse;
 import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
@@ -131,6 +132,19 @@ public class ArchiveBoardController {
             archiveBoardService.getBoardImages(userId, pageable)
         );
     }
+    // Vibe 톤 입구
+    @GetMapping("/vibe")
+    @Operation(summary = "아카이브 Vibe 톤 입구",
+            description = "사용자 닉네임과 가장 많이 사용한 태그 Top 4를 조회합니다.")
+    public Response<BoardSummaryResponse> getSummary(
+        @AuthUser Long userId
+    ) {
+        return Response.of(
+            ArchiveResultCode.BOARD_VIBE_SUCCESS,
+            archiveBoardService.getSummary(userId)
+        );
+    }
+
 
     //보드에 이미지 추가
     @PostMapping("/{boardId}/images")

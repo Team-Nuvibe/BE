@@ -69,6 +69,16 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
        @Param("userId") Long userId,
        Pageable pageable
      );
+    // 사용자가 가장 많이 사용한 태그 Top 4 조회
+    @Query("SELECT i.imageTag, COUNT(i.imageTag) as cnt " +
+              "FROM BoardImage bi " +
+              "JOIN bi.image i " +
+              "JOIN bi.board b " +
+              "WHERE b.user.id = :userId AND i.imageTag IS NOT NULL " +
+              "GROUP BY i.imageTag " +
+              "ORDER BY cnt DESC " +
+              "LIMIT 4")
+    List<ImageTag> findTop4TagsByUserId(@Param("userId") Long userId);
 
     //이미지가 보드에 포함되어 있는 지
     boolean existsByImageId(Long imageId);

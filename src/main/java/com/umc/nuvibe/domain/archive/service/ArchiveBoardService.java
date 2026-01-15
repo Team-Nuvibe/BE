@@ -5,6 +5,7 @@ import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardImageResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
+import com.umc.nuvibe.domain.archive.dto.response.BoardSummaryResponse;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,9 @@ public interface ArchiveBoardService {
 
     // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
     Page<BoardImageResponse> getBoardImages(Long userId, Pageable pageable);
+
+    // vibe 톤 입구
+    BoardSummaryResponse getSummary(Long userId);
 
     // 보드 내 이미지 추가
     void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request);
