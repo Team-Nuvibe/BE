@@ -20,6 +20,7 @@ import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.ArchiveErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -177,7 +178,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
         //이미지 id가 존재하는 지 확인
         Image image = imageRepository.findById(request.imageId())
-                        .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_IMAGE_NOT_FOUND));
+                        .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
 
         //이미지가 이미 보드에 저장되어 있는 지 확인
         if (boardImageRepository.existsByImageId(request.imageId())){

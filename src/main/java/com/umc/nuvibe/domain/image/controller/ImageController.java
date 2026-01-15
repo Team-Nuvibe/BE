@@ -31,7 +31,7 @@ public class ImageController {
     @Operation(summary = "이미지 상세 정보 조회", description = "업로드한 이미지의 상세정보를 불러옵니다.")
     public Response<ImageDetailRes> getImageDetail(
             @AuthUser Long userId,
-            @Parameter @PathVariable Long imageId
+            @Parameter(description = "조회할 이미지 ID") @PathVariable Long imageId
     ){
         ImageDetailRes response = imageService.getImageDetail(userId,imageId);
         return Response.ok(ImageResultCode.IMAGE_DETAIL_OK, response);
