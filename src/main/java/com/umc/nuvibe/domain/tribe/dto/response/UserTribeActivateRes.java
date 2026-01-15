@@ -11,6 +11,7 @@ public record UserTribeActivateRes(
         Long userTribeId,
         Long tribeId,
         ImageTag imageTag,
+        Boolean isFavourite,
         TribeStatus tribeStatus,
         UserTribeStatus userTribeStatus,
         LocalDateTime createdAt
@@ -20,6 +21,7 @@ public record UserTribeActivateRes(
                 userTribe.getId(),
                 userTribe.getTribe().getId(),
                 userTribe.getTribe().getImageTag(),
+                userTribe.isFavorite(),
                 userTribe.getTribe().getStatus(),
                 userTribe.getUserTribeStatus(),
                 userTribe.getCreatedAt()

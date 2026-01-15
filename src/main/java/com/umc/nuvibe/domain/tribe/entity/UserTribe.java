@@ -29,8 +29,13 @@ public class UserTribe extends BaseEntity {
     @JoinColumn(name = "tribe_id")
     private Tribe tribe;
 
+    @Column(name = "is_favorite")
+    private boolean isFavorite;
+
     @Enumerated(EnumType.STRING)
     private UserTribeStatus userTribeStatus;
+
+
 
     private UserTribe(User user, Tribe tribe) {
         this.user = user;
