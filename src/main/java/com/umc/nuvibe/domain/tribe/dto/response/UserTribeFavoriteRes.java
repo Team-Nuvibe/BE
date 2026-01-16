@@ -9,7 +9,7 @@ public record UserTribeFavoriteRes(
         Long tribeId,
         ImageTag imageTag,
         Boolean isFavorite,
-        UserTribeStatus status
+        UserTribeStatus userTribeStatus
 ) {
     public static UserTribeFavoriteRes from(UserTribe userTribe) {
         return new UserTribeFavoriteRes(

@@ -50,7 +50,7 @@ public class UserTribeController {
         return Response.of(UserTribeResultCode.USERTRIBE_FAVORITE_SUCCESS, res);
     }
 
-    @DeleteMapping("{userTribeId}")
+    @DeleteMapping("/{userTribeId}")
     @Operation(summary = "챗 퇴장", description = "활성화된 트라이브 챗 퇴장")
     public Response<LeaveRes> leaveTribe(
          @AuthUser Long userId,

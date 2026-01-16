@@ -11,7 +11,7 @@ public record UserTribeActivateRes(
         Long userTribeId,
         Long tribeId,
         ImageTag imageTag,
-        Boolean isFavourite,
+        Boolean isFavorite,
         TribeStatus tribeStatus,
         UserTribeStatus userTribeStatus,
         LocalDateTime createdAt

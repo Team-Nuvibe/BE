@@ -39,10 +39,10 @@ public class UserTribe extends BaseEntity {
 
 
     @Builder
-    private UserTribe(User user, Tribe tribe, UserTribeStatus status, boolean isFavorite) {
+    private UserTribe(User user, Tribe tribe, UserTribeStatus userTribeStatus, boolean isFavorite) {
         this.user = user;
         this.tribe = tribe;
-        this.userTribeStatus = status;
+        this.userTribeStatus = userTribeStatus;
         this.isFavorite = isFavorite;
     }
 
@@ -50,7 +50,7 @@ public class UserTribe extends BaseEntity {
         return UserTribe.builder()
                 .user(user)
                 .tribe(tribe)
-                .status(UserTribeStatus.WAITING)
+                .userTribeStatus(UserTribeStatus.WAITING)
                 .isFavorite(false)
                 .build();
     }
