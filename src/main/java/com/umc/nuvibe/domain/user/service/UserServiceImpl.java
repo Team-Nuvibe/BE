@@ -3,8 +3,12 @@ package com.umc.nuvibe.domain.user.service;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
+import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.CommonErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.MailErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
+import com.umc.nuvibe.global.service.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +22,7 @@ public class UserServiceImpl implements UserService {
 
     private final ImageService imageService;
     private final UserRepository userRepository;
+    private final EmailVerificationService verificationService;
 
     @Override
     @Transactional
@@ -46,8 +51,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateEmail(Long userId, String email) {
+    public void requestEmailUpdate(Long userId, String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
+        }
+        verificationService.sendVerificationEmail(email);
+    }
 
+    @Override
+    @Transactional
+    public void completeEmailUpdate(Long userId, String token) {
+        String verifiedEmail=verificationService.verifyToken(token);
+
+        User user=userRepository.findById(userId)
+                .orElseThrow(()->new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        user.updateEmail(verifiedEmail);
     }
 
     @Override
