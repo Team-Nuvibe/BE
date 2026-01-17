@@ -1,7 +1,6 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageToggleReq;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
 import com.umc.nuvibe.domain.tribe.service.scrapedImage.ScrapedImageService;
@@ -23,14 +22,14 @@ public class ScrapedImageController {
 
     private final ScrapedImageService scrapedImageService;
 
-    @PostMapping
+    @PostMapping("/chat/{chatId}")
     @Operation(summary = "이미지 스크랩 토글", description = "기존 스크랩 존재 시 삭제, 부재 시 새로운 스크랩 생성")
     public Response<ScrapedImageToggleRes> scrapedImageToggle(
             @AuthUser Long userId,
-            @RequestBody @Valid ScrapedImageToggleReq req
+            @PathVariable Long chatId
     ){
         ScrapedImageToggleRes res =
-                scrapedImageService.toggleScrapedImage(userId, req);
+                scrapedImageService.toggleScrapedImage(userId, chatId);
 
         /*
          * - scrapedImageId != null : 스크랩 생성

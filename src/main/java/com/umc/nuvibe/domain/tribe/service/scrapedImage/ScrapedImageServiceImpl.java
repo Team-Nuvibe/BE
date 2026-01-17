@@ -3,21 +3,19 @@ package com.umc.nuvibe.domain.tribe.service.scrapedImage;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageToggleReq;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageInfoRes;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
+import com.umc.nuvibe.domain.tribe.entity.Chat;
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
+import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
 import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
 import com.umc.nuvibe.domain.tribe.repository.TribeRepository;
 import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
-import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
-import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
-import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
-import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.*;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -33,34 +31,27 @@ import java.util.List;
 public class ScrapedImageServiceImpl implements ScrapedImageService {
 
     private final ScrapedImageRepository scrapedImageRepository;
-    private final ImageRepository imageRepository;
     private final UserRepository userRepository;
-    private final TribeRepository tribeRepository;
     private final UserTribeRepository userTribeRepository;
+    private final ChatRepository chatRepository;
 
     @Override
     @Transactional
-    public ScrapedImageToggleRes toggleScrapedImage(Long userId, ScrapedImageToggleReq req) {
+    public ScrapedImageToggleRes toggleScrapedImage(Long userId, Long chatId) {
 
-        // 1. 트라이브 검증
-        Tribe tribe = tribeRepository.findById(req.tribeId())
-                .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
+        Chat chat = chatRepository.findByIdWithImageAndTribe(chatId)
+                .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_NOT_FOUND));
 
-        // 2. 이미지 검증
-        Image image = imageRepository.findById(req.imageId())
-                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+        // 1. 관련 엔티티 조회
+        Tribe tribe = chat.getTribe();
+        Image image = chat.getImage();
+        User user = getUserOrThrow(userId);
 
-        // 3. 유저 검증
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-
-        // 4. 유저-트라이브 참여 검증
-        if (!userTribeRepository.existsByUser_IdAndTribe_Id(userId, req.tribeId())) {
-            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND);
-        }
+        // 2. 해당 트라이브 챗에 대한 유저의 접근 권한 체크
+        validateUserInTribe(userId, tribe.getId());
 
         //스크랩된 이미지가 이미 있을 시 삭제 후 null 반환, 없을 시 저장 후 스크랩 이미지 ID 반환
-        return scrapedImageRepository.findByUser_IdAndTribe_IdAndImage_Id(userId, req.tribeId(), req.imageId())
+        return scrapedImageRepository.findByUser_IdAndTribe_IdAndImage_Id(userId, tribe.getId(), image.getId())
                 .map(existing -> {
                     scrapedImageRepository.delete(existing);
                     return new ScrapedImageToggleRes(null);
@@ -117,18 +108,6 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
         return new ScrapedImageListRes(items, nextCursorCreatedAt, nextCursorId, hasNext);
     }
 
-
-    //트라이브 존재 검증
-    private Tribe getTribeOrThrow(Long tribeId) {
-        return tribeRepository.findById(tribeId)
-                .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
-    }
-
-    // 이미지 존재 검증
-    private Image getImageOrThrow(Long imageId) {
-        return imageRepository.findById(imageId)
-                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
-    }
 
     // 유저 존재 검증
     private User getUserOrThrow(Long userId) {

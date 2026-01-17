@@ -1,7 +1,6 @@
 package com.umc.nuvibe.domain.tribe.service.scrapedImage;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageToggleReq;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
 
@@ -11,7 +10,7 @@ public interface ScrapedImageService {
      * 이미지 스크랩 토글
      * 스크랩이 없을 시 스크랩 이미지 생성, 이미 존재할 시 삭제
      */
-    ScrapedImageToggleRes toggleScrapedImage(Long userId, ScrapedImageToggleReq req);
+    ScrapedImageToggleRes toggleScrapedImage(Long userId, Long chatId);
 
     /**
      * 스크랩한 전체 이미지 목록 조회

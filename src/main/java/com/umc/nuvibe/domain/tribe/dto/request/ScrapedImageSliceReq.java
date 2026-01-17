@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Min;
 
 import java.time.LocalDateTime;
 
-@Schema(description = "스크랩한 이미지 전체 목록 요청")
+@Schema(description = "스크랩한 이미지 목록 요청")
 public record ScrapedImageSliceReq(
 
         @Schema(description = "필터링할 태그 (null이면 전체 최신순 조회)", example = "CAFE")
