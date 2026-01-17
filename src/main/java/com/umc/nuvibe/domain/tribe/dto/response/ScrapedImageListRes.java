@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Schema(description = "전체 스크랩 목록 조회 응답 (무한 스크롤)")
-public record ScrapedImageTotalRes(
+public record ScrapedImageListRes(
 
         @Schema(description = "정렬된 스크랩 이미지 목록 (flat List)")
         List<ScrapedImageInfoRes> items,

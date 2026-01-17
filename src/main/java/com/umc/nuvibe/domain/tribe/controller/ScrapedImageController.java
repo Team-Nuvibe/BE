@@ -3,7 +3,7 @@ package com.umc.nuvibe.domain.tribe.controller;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageToggleReq;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageTotalRes;
+import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
 import com.umc.nuvibe.domain.tribe.service.scrapedImage.ScrapedImageService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.ScrapedImageResultCode;
@@ -46,12 +46,23 @@ public class ScrapedImageController {
 
     @GetMapping
     @Operation(summary = "스크랩 이미지 전체 목록 조회", description = "최신순 전체 조회 또는 태그별 조회 제공 (무한 스크롤 기능)")
-    public Response<ScrapedImageTotalRes> getTotalScrapedImage(
+    public Response<ScrapedImageListRes> getTotalScrapedImage(
             @AuthUser Long userId,
             @ParameterObject @ModelAttribute @Valid ScrapedImageSliceReq req
             ){
-        ScrapedImageTotalRes res = scrapedImageService.getTotalScrapedImage(userId, req);
+        ScrapedImageListRes res = scrapedImageService.getTotalScrapedImage(userId, req);
 
         return Response.of(ScrapedImageResultCode.SCRAPEDIMAGE_TOTAL_LIST_SUCCESS, res);
+    }
+
+    @GetMapping("/tribe/{tribeId}")
+    @Operation(summary = "해당 트라이브 챗 내 스크랩 이미지 목록 조회", description = "최신순으로 조회 (무한 스크롤 기능)")
+    public Response<ScrapedImageListRes> getTribeScrapedImage(
+            @AuthUser Long userId,
+            @PathVariable Long tribeId,
+            @ParameterObject @ModelAttribute @Valid ScrapedImageSliceReq req
+    ){
+        ScrapedImageListRes res = scrapedImageService.getTribeScrapedImage(userId, tribeId, req);
+        return Response.of(ScrapedImageResultCode.SCRAPEDIMAGE_TRIBE_LIST_SUCCESS, res);
     }
 }

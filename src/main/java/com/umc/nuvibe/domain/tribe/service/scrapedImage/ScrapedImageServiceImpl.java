@@ -6,7 +6,7 @@ import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageToggleReq;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageInfoRes;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageTotalRes;
+import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
@@ -73,7 +73,18 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
 
     @Override
     @Transactional(readOnly = true)
-    public ScrapedImageTotalRes getTotalScrapedImage(Long userId, ScrapedImageSliceReq req){
+    public ScrapedImageListRes getTotalScrapedImage(Long userId, ScrapedImageSliceReq req){
+        return getScrapedImageInternal(userId, null, req);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ScrapedImageListRes getTribeScrapedImage(Long userId, Long tribeId, ScrapedImageSliceReq req){
+        validateUserInTribe(userId, tribeId);
+        return getScrapedImageInternal(userId, tribeId, req);
+    }
+
+    private ScrapedImageListRes getScrapedImageInternal(Long userId, Long tribeId, ScrapedImageSliceReq req){
 
         // 1. hasNext 판단을 위해 요청 size보다 1개 더 조회
         int limit = req.size();
@@ -81,8 +92,8 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
 
         // 2. 첫 페이지인지 여부에 따라 메서드 호출
         List<ScrapedImage> scraps = (req.lastCreatedAt() == null)
-                ? scrapedImageRepository.findMyScrapsFirstPage(userId, req.imageTag(), pageable)
-                : scrapedImageRepository.findMyScrapsNextPage(userId, req.imageTag(), req.lastCreatedAt(), req.lastId(), pageable);
+                ? scrapedImageRepository.findMyScrapsFirstPage(userId, tribeId, req.imageTag(), pageable)
+                : scrapedImageRepository.findMyScrapsNextPage(userId, tribeId, req.imageTag(), req.lastCreatedAt(), req.lastId(), pageable);
 
         // 3. 다음 페이지 여부 판단 및 다음 페이지 존재 시 1개 더 조회한 데이터 삭제 후 반환
         boolean hasNext = scraps.size() > limit;
@@ -103,6 +114,33 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
             nextCursorId = lastItem.scrapImageId();
         }
 
-        return new ScrapedImageTotalRes(items, nextCursorCreatedAt, nextCursorId, hasNext);
+        return new ScrapedImageListRes(items, nextCursorCreatedAt, nextCursorId, hasNext);
     }
+
+
+    //트라이브 존재 검증
+    private Tribe getTribeOrThrow(Long tribeId) {
+        return tribeRepository.findById(tribeId)
+                .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
+    }
+
+    // 이미지 존재 검증
+    private Image getImageOrThrow(Long imageId) {
+        return imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+    }
+
+    // 유저 존재 검증
+    private User getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    // 해당 트라이브 챗에 대한 유저의 접근 권한 체크
+    private void validateUserInTribe(Long userId, Long tribeId) {
+        if (!userTribeRepository.existsByUser_IdAndTribe_Id(userId, tribeId)) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND);
+        }
+    }
+
 }
