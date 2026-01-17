@@ -10,6 +10,8 @@ import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.security.jwt.JwtTokenProvider;
+import com.umc.nuvibe.global.service.EmailVerificationService;
+import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.regex.Pattern;
 
 @Service
+@AllArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
+    private final EmailVerificationService verificationService;
 
     @Override
     @Transactional
@@ -37,6 +35,9 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByEmail(request.email())) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
+
+        // 이메일이 인증되었는지 확인
+        verificationService.checkEmailIsVerified(request.email());
 
         String encodedPassword=passwordEncoder.encode(request.password());
 
@@ -87,6 +88,15 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         userRepository.delete(user);
+    }
+
+    @Override
+    // 사용하는 이메일인지 인증하기 위한 메서드
+    public void sendJoinVerificationEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
+        }
+        verificationService.sendVerificationEmail(email);
     }
 
 

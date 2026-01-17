@@ -9,4 +9,5 @@ public interface AuthService {
     TokenRes login(LoginReq request);
     void logout(Long userId);
     void withdraw(Long userId);
+    void sendJoinVerificationEmail(String email);
 }
