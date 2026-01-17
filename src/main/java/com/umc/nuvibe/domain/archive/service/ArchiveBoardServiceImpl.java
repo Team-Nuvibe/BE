@@ -10,6 +10,7 @@ import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
+import com.umc.nuvibe.domain.archive.dto.response.BoardSummaryResponse;
 import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.archive.repository.ArchiveBoardRepository;
@@ -23,8 +24,13 @@ import com.umc.nuvibe.global.apiPayLoad.error.ArchiveErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.umc.nuvibe.domain.archive.dto.response.BoardImageResponse;
+
 
 import java.util.List;
 
@@ -40,8 +46,11 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
     // 보드 목록 조회
     @Override
-    public List<BoardListResponse> getBoards(Long userId) {
-        List<ArchiveBoard> boards = archiveBoardRepository.findByUserId(userId);
+    public List<BoardListResponse> getBoards(Long userId, String keyword) {
+    // keyword가 null이거나 공백이면 전체 조회, 있으면 검색
+    List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
+            ? archiveBoardRepository.findByUserId(userId)
+            : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
         
         if (boards.isEmpty()) {
             return List.of();
@@ -162,11 +171,40 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         }
     }
 
-    
     // 보드 조회 + 권한 체크
     private ArchiveBoard findBoardByIdAndUserId(Long boardId, Long userId) {
         return archiveBoardRepository.findByIdAndUserId(boardId, userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_NOT_FOUND));
+    }
+
+    // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
+    @Override
+    public Page<BoardImageResponse> getBoardImages(Long userId, Pageable pageable) {
+        // 사용자 존재 여부 확인
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
+
+        Page<BoardImage> boardImages = boardImageRepository
+            .findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+
+        return boardImages.map(BoardImageResponse::from);
+    }
+
+    // vibe 톤 입구
+    @Override
+    @Transactional(readOnly = true) // 조회 성능 최적화 (선택 사항)
+    public BoardSummaryResponse getSummary(Long userId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
+
+        // 2. Top 4 태그 조회 (Pageable 사용)
+        // PageRequest.of(페이지번호, 사이즈) -> 0페이지, 4개 = LIMIT 4 효과
+        Pageable limit4 = PageRequest.of(0, 4);
+
+        List<ImageTag> topTags = boardImageRepository.findTopTagsByUserId(userId, limit4);
+
+        return BoardSummaryResponse.of(user.getNickname(), topTags);
     }
 
     //보드 이미지 추가
