@@ -24,6 +24,7 @@ import com.umc.nuvibe.global.apiPayLoad.error.ArchiveErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -191,13 +192,17 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
 
     // vibe 톤 입구
     @Override
+    @Transactional(readOnly = true) // 조회 성능 최적화 (선택 사항)
     public BoardSummaryResponse getSummary(Long userId) {
-        // 사용자 조회
+        // 1. 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
 
-        // Top 4 태그 조회
-        List<ImageTag> topTags = boardImageRepository.findTop4TagsByUserId(userId);
+        // 2. Top 4 태그 조회 (Pageable 사용)
+        // PageRequest.of(페이지번호, 사이즈) -> 0페이지, 4개 = LIMIT 4 효과
+        Pageable limit4 = PageRequest.of(0, 4);
+
+        List<ImageTag> topTags = boardImageRepository.findTopTagsByUserId(userId, limit4);
 
         return BoardSummaryResponse.of(user.getNickname(), topTags);
     }
