@@ -1,7 +1,9 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
+import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageToggleReq;
 import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
+import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageTotalRes;
 import com.umc.nuvibe.domain.tribe.service.scrapedImage.ScrapedImageService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.ScrapedImageResultCode;
@@ -10,10 +12,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/scrapedImage")
@@ -42,5 +42,16 @@ public class ScrapedImageController {
                         : ScrapedImageResultCode.SCRAPEDIMAGE_DELETED;
 
         return Response.of(resultCode, res);
+    }
+
+    @GetMapping
+    @Operation(summary = "스크랩 이미지 전체 목록 조회", description = "최신순 전체 조회 또는 태그별 조회 제공 (무한 스크롤 기능)")
+    public Response<ScrapedImageTotalRes> getTotalScrapedImage(
+            @AuthUser Long userId,
+            @ParameterObject @ModelAttribute @Valid ScrapedImageSliceReq req
+            ){
+        ScrapedImageTotalRes res = scrapedImageService.getTotalScrapedImage(userId, req);
+
+        return Response.of(ScrapedImageResultCode.SCRAPEDIMAGE_TOTAL_LIST_SUCCESS, res);
     }
 }
