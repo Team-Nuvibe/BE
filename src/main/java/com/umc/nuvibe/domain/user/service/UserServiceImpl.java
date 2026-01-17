@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -28,7 +30,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateNickname(Long userId, String nickname) {
+    public void updateUserNickname(Long userId, String nickname) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        LocalDateTime lastUpdated=user.getLastNicknameUpdatedDate();
+
+        if (!(lastUpdated==null || lastUpdated.plusDays(14).isBefore(LocalDateTime.now()))) {
+            throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED);
+        }
+
+        user.updateNickname(nickname);
 
     }
 

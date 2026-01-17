@@ -4,7 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     void updateProfileImage(Long userId, MultipartFile file);
-    void updateNickname(Long userId, String nickname);
+    void updateUserNickname(Long userId, String nickname);
     void updateEmail(Long userId, String email);
     void updatePassword(Long userId, String password);
     void updateSetting(Long userId);

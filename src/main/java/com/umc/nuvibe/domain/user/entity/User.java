@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Table(name="users")
@@ -50,12 +52,27 @@ public class User extends BaseEntity {
 
     private String refreshToken;
 
+    private LocalDateTime lastNicknameUpdatedDate;
+
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 
     public void updateProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+        this.lastNicknameUpdatedDate = LocalDateTime.now();
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
     }
 
     public static User createLocalUser(String name, String nickName, String email,String password) {
