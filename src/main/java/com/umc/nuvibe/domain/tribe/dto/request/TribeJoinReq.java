@@ -1,8 +1,10 @@
 package com.umc.nuvibe.domain.tribe.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import com.umc.nuvibe.domain.image.vo.ImageTag;
+import jakarta.validation.constraints.NotNull;
+
 
 public record TribeJoinReq (
-        @NotBlank
-        String imageTag
+        @NotNull
+        ImageTag imageTag
 ){}

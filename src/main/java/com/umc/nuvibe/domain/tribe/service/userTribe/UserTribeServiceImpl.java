@@ -1,8 +1,8 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeInfo;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.*;
+import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
@@ -35,7 +35,7 @@ public class UserTribeServiceImpl implements UserTribeService {
         }
 
         List<UserTribe> userTribes = userTribeRepository
-                .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.ACTIVE);
+                .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.WAITING);
 
         List<TribeInfo> tribeInfoList = userTribes.stream()
                 .map(TribeInfo::from)
@@ -64,5 +64,45 @@ public class UserTribeServiceImpl implements UserTribeService {
         tribeRepository.decrementCounts(tribeId);
 
         return new LeaveRes(userTribeId, tribeId);
+    }
+
+    @Override
+    @Transactional
+    public UserTribeActivateRes activateUserTribe(Long userId, Long userTribeId) {
+
+        UserTribe userTribe = userTribeRepository.findById(userTribeId)
+                .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
+
+        if (!userTribe.getUser().getId().equals(userId)) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_JOINED);
+        }
+
+        if (userTribe.getUserTribeStatus() == UserTribeStatus.ACTIVE) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_ALREADY_ACTIVE);
+        }
+
+        if (userTribe.getTribe().getStatus() != TribeStatus.WAITING) {
+            throw new BusinessException(TribeErrorCode.ACTIVATION_NOT_READY);
+        }
+
+        userTribe.activate();
+
+        return UserTribeActivateRes.from(userTribe);
+    }
+
+    @Override
+    @Transactional
+    public UserTribeFavoriteRes toggleFavorite(Long userId, Long userTribeId) {
+
+        UserTribe userTribe = userTribeRepository.findById(userTribeId)
+                .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
+
+        if (!userTribe.getUser().getId().equals(userId)) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_JOINED);
+        }
+
+        userTribe.toggleFavorite();
+
+        return UserTribeFavoriteRes.from(userTribe);
     }
 }

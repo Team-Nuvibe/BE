@@ -2,6 +2,9 @@ package com.umc.nuvibe.domain.archive.repository;
 
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,7 +31,7 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
                      @Param("boardId") Long boardId,
                      @Param("tag") ImageTag tag);
 
-       // 보드의 가장 최근 이미지 조회 (썸네일용)
+       // 보드의 가장 최근 이미지 조회 (썸네일용) - HEAD
        @Query("SELECT bi FROM BoardImage bi " +
                      "JOIN FETCH bi.image " +
                      "WHERE bi.board.id = :boardId " +
@@ -43,7 +46,7 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
                      "AND bi.createdAt = (SELECT MAX(bi2.createdAt) FROM BoardImage bi2 WHERE bi2.board.id = bi.board.id)")
        List<BoardImage> findLatestByBoardIds(@Param("boardIds") List<Long> boardIds);
 
-       // 보드 삭제 시 연결된 이미지 전체 삭제
+       // 보드 삭제 시 연결된 이미지 전체 삭제 - HEAD
        @Modifying
        void deleteByBoardId(Long boardId);
 
@@ -57,9 +60,41 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
        @Query("DELETE FROM BoardImage bi WHERE bi.id IN :imageIds AND bi.board.id = :boardId")
        int deleteByIdInAndBoardId(@Param("imageIds") List<Long> imageIds, @Param("boardId") Long boardId);
 
-       // 여러 보드의 가장 오래된 이미지 업로드 시간 조회 (홈 화면 정렬용)
+       // 여러 보드의 가장 오래된 이미지 업로드 시간 조회 (홈 화면 정렬용) - HEAD
        @Query("SELECT bi.board.id, MIN(bi.createdAt) FROM BoardImage bi " +
                      "WHERE bi.board.id IN :boardIds " +
                      "GROUP BY bi.board.id")
        List<Object[]> findOldestCreatedAtByBoardIds(@Param("boardIds") List<Long> boardIds);
+
+       // 사용자가 올린 모든 이미지 조회 (페이징, 최신순) - DEV
+       @EntityGraph(attributePaths = { "image", "board" })
+       @Query("SELECT bi FROM BoardImage bi " +
+                     "WHERE bi.board.user.id = :userId " +
+                     "ORDER BY bi.createdAt DESC")
+       Page<BoardImage> findAllByUserIdOrderByCreatedAtDesc(
+                     @Param("userId") Long userId,
+                     Pageable pageable);
+
+       // 사용자가 가장 많이 사용한 태그 Top 4 조회 - DEV
+       @Query("SELECT i.imageTag " +
+                     "FROM BoardImage bi " +
+                     "JOIN bi.image i " +
+                     "JOIN bi.board b " +
+                     "WHERE b.user.id = :userId AND i.imageTag IS NOT NULL " +
+                     "GROUP BY i.imageTag " +
+                     "ORDER BY COUNT(i.imageTag) DESC ")
+       List<ImageTag> findTopTagsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+       // 이미지가 보드에 포함되어 있는 지 - DEV
+       boolean existsByImageId(Long imageId);
+
+       // 이미지 상세 정보 조회 - DEV
+       @Query("""
+                         select bi from BoardImage bi
+                         join fetch bi.image i
+                         join fetch bi.board b
+                         join fetch b.user u
+                         where bi.image.id = :imageId
+                     """)
+       Optional<BoardImage> findByImageId(@Param("imageId") Long imageId);
 }
