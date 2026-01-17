@@ -49,7 +49,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     // keyword가 null이거나 공백이면 전체 조회, 있으면 검색
     List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
             ? archiveBoardRepository.findByUserId(userId)
-            : archiveBoardRepository.findByUserIdAndNameContaining(userId, keyword.trim());
+            : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
         
         if (boards.isEmpty()) {
             return List.of();

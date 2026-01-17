@@ -29,5 +29,5 @@ public interface ArchiveBoardRepository extends JpaRepository<ArchiveBoard, Long
     void deleteByIdInAndUserId(@Param("boardIds") List<Long> boardIds, @Param("userId") Long userId);
 
     // 보드명 검색 (부분 일치)
-    List<ArchiveBoard> findByUserIdAndNameContaining(Long userId, String keyword);
+    List<ArchiveBoard> findByUserIdAndNameContainingIgnoreCase(Long userId, String keyword);
 }
