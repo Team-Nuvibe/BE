@@ -54,6 +54,9 @@ public class User extends BaseEntity {
         this.refreshToken = refreshToken;
     }
 
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
 
     public static User createLocalUser(String name, String nickName, String email,String password) {
         return User.builder()
