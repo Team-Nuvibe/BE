@@ -1,6 +1,7 @@
 package com.umc.nuvibe.domain.user.service;
 
-import com.umc.nuvibe.domain.user.dto.request.AuthRequest;
+import com.umc.nuvibe.domain.user.dto.request.LoginReq;
+import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -30,19 +31,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void signUp(AuthRequest.SignUpReq request) {
+    public void signUp(SignUpReq request) {
         validateSignUpRequest(request);
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
 
-        String encodedPassword=passwordEncoder.encode(request.getPassword());
+        String encodedPassword=passwordEncoder.encode(request.password());
 
         User user=User.createLocalUser(
-                request.getName(),
-                request.getNickname(),
-                request.getEmail(),
+                request.name(),
+                request.nickname(),
+                request.email(),
                 encodedPassword
         );
 
@@ -51,11 +52,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public TokenRes login(AuthRequest.LoginReq request) {
-        User user=userRepository.findByEmail(request.getEmail())
+    public TokenRes login(LoginReq request) {
+        User user=userRepository.findByEmail(request.email())
                 .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new BusinessException(AuthErrorCode.PASSWORD_UNMATCH_ERROR);
             // passwordEncoder가 password를 해싱하여 비교해줌
         }
@@ -89,17 +90,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    private void validateSignUpRequest(AuthRequest.SignUpReq request) {
+    private void validateSignUpRequest(SignUpReq request) {
 
-        if (!PASSWORD_PATTERN.matcher(request.getPassword()).matches()) {
+        if (!PASSWORD_PATTERN.matcher(request.password()).matches()) {
             throw new BusinessException(AuthErrorCode.INVALID_PASSWORD_FORMAT);
         }
 
-        if(!request.getPassword().equals(request.getConfirmPassword())) {
+        if(!request.password().equals(request.confirmPassword())) {
             throw new BusinessException(AuthErrorCode.CONFIRM_PASSWORD_MISMATCH);
         }
 
-        if (!EMAIL_PATTERN.matcher(request.getEmail()).matches()) {
+        if (!EMAIL_PATTERN.matcher(request.email()).matches()) {
             throw new BusinessException(AuthErrorCode.INVAILD_EMAIL_FORMAT);
         }
     }

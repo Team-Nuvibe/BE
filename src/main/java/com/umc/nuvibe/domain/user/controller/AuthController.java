@@ -1,6 +1,7 @@
 package com.umc.nuvibe.domain.user.controller;
 
-import com.umc.nuvibe.domain.user.dto.request.AuthRequest;
+import com.umc.nuvibe.domain.user.dto.request.LoginReq;
+import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.service.AuthService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
@@ -22,14 +23,14 @@ public class AuthController {
 
     @PostMapping("/sign-up")
     @Operation(summary = "회원가입", description = "새로운 회원 등록")
-    public Response<String> signUp(@RequestBody @Valid AuthRequest.SignUpReq request) {
+    public Response<String> signUp(@RequestBody @Valid SignUpReq request) {
         authService.signUp(request);
         return Response.ok(UserResultCode.USER_SIGNUP_OK, "회원가입이 완료되었습니다. ");
     }
 
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "로그인시 엑세스 토큰과 리프레쉬 토큰을 발급합니다.")
-    public Response<TokenRes> login(@RequestBody @Valid AuthRequest.LoginReq request) {
+    public Response<TokenRes> login(@RequestBody @Valid LoginReq request) {
         TokenRes response= authService.login(request);
         return Response.ok(UserResultCode.USER_LOGIN_OK, response);
     }
