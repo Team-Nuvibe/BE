@@ -23,13 +23,7 @@ public record ScrapedImageSliceReq(
         @Min(0) @Max(90)
         Integer size
 ) {
-    public enum SortType { LATEST, TAG }
-
     public ScrapedImageSliceReq {
         if (size == null) size = 30;
-
-        if ((lastCreatedAt == null) != (lastId == null)) {
-            throw new IllegalArgumentException("cursorCreatedAt과 cursorId는 함께 제공되거나 모두 null이어야 합니다.");
-        }
     }
 }
