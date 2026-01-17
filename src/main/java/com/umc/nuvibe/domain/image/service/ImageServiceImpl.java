@@ -11,7 +11,7 @@ import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
-import com.umc.nuvibe.global.s3.S3Service;
+import com.umc.nuvibe.global.service.S3Service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
