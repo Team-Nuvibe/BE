@@ -21,6 +21,7 @@ public class UserTribeController {
 
     private final UserTribeService userTribeService;
 
+    //트라이브 챗 목록 조회
     @GetMapping
     @Operation(summary = "활성화된 챗 목록 조회", description = "최신순으로 조회, 조회 기준들 추가 예정")
     public Response<TribeListRes> getTribeList(
@@ -30,6 +31,7 @@ public class UserTribeController {
         return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
     }
 
+    //트라이브 챗 활성화
     @PatchMapping("/{userTribeId}/activate")
     @Operation(summary = "유저 트라이브 챗 활성화", description = "인원 수가 5명 이상인 트라이브 챗에 대해 유저 별로 활성화")
     public Response<UserTribeActivateRes> activateUserTribe(
@@ -40,6 +42,7 @@ public class UserTribeController {
         return Response.of(UserTribeResultCode.USERTRIBE_ACTIVATE_SUCCESS, res);
     }
 
+    //트라이브 챗 즐겨찾기
     @PatchMapping("/{userTribeId}/favorite")
     @Operation(summary = "트라이브 챗 즐겨찾기", description = "원하는 트라이브 챗을 즐겨찾기로 등록")
     public Response<UserTribeFavoriteRes> favoriteUserTribe(
@@ -50,6 +53,7 @@ public class UserTribeController {
         return Response.of(UserTribeResultCode.USERTRIBE_FAVORITE_SUCCESS, res);
     }
 
+    //트라이브 챗 퇴장
     @DeleteMapping("/{userTribeId}")
     @Operation(summary = "챗 퇴장", description = "활성화된 트라이브 챗 퇴장")
     public Response<LeaveRes> leaveTribe(

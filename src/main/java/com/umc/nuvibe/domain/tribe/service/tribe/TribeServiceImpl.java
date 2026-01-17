@@ -30,7 +30,7 @@ public class TribeServiceImpl implements TribeService {
     public TribeJoinRes joinOrCreateTribe(Long userId, TribeJoinReq request) {
         ImageTag selectedTag = request.imageTag();
 
-        if (userTribeRepository.existsByUserIdAndTribe_ImageTag(userId, selectedTag)) {
+        if (userTribeRepository.existsByUser_IdAndTribe_ImageTag(userId, selectedTag)) {
             throw new BusinessException(TribeErrorCode.ALREADY_JOINED);
         }
 

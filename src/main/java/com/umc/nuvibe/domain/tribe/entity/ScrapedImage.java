@@ -10,7 +10,7 @@ import com.umc.nuvibe.domain.image.entity.Image;
 @Getter
 @Table(
         name = "scraped_images",
-        uniqueConstraints = @UniqueConstraint(name = "uk_scraped_images_user_image", columnNames = {"user_id", "image_id"})
+        uniqueConstraints = @UniqueConstraint(name = "uk_scraped_images_user_image", columnNames = {"user_id", "image_id", "tribe_id"})
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ScrapedImage extends BaseEntity {
@@ -32,4 +32,14 @@ public class ScrapedImage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
     private Image image;
+
+    private ScrapedImage(User user, Tribe tribe, Image image) {
+        this.user = user;
+        this.tribe = tribe;
+        this.image = image;
+    }
+
+    public static ScrapedImage of(User user, Tribe tribe, Image image) {
+        return new ScrapedImage(user, tribe, image);
+    }
 }
