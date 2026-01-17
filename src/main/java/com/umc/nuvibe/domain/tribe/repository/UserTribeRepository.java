@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.repository;
 
+import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
 
-    boolean existsByUserIdAndTribe_TagName(Long userId, String tribeTagName);
+    boolean existsByUserIdAndTribe_ImageTag(Long userId, ImageTag imageTag);
 
     @EntityGraph(attributePaths = {"tribe"})
     List<UserTribe> findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(Long userId, TribeStatus status);

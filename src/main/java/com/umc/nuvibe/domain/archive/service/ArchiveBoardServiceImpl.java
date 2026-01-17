@@ -2,26 +2,35 @@ package com.umc.nuvibe.domain.archive.service;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import com.umc.nuvibe.domain.archive.dto.request.BoardCreateRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardImageDeleteRequest;
 import com.umc.nuvibe.domain.archive.dto.request.BoardNameUpdateRequest;
+import com.umc.nuvibe.domain.archive.dto.request.*;
 import com.umc.nuvibe.domain.archive.dto.response.BoardCreateResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardDetailResponse;
 import com.umc.nuvibe.domain.archive.dto.response.BoardListResponse;
+import com.umc.nuvibe.domain.archive.dto.response.BoardSummaryResponse;
 import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.archive.repository.ArchiveBoardRepository;
 import com.umc.nuvibe.domain.archive.repository.BoardImageRepository;
+import com.umc.nuvibe.domain.image.entity.Image;
+import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.ArchiveErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.umc.nuvibe.domain.archive.dto.response.BoardImageResponse;
+
 
 import java.util.List;
 
@@ -33,13 +42,15 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     private final ArchiveBoardRepository archiveBoardRepository;
     private final BoardImageRepository boardImageRepository;
     private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
 
-    
-    
     // 보드 목록 조회
     @Override
-    public List<BoardListResponse> getBoards(Long userId) {
-        List<ArchiveBoard> boards = archiveBoardRepository.findByUserId(userId);
+    public List<BoardListResponse> getBoards(Long userId, String keyword) {
+    // keyword가 null이거나 공백이면 전체 조회, 있으면 검색
+    List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
+            ? archiveBoardRepository.findByUserId(userId)
+            : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
         
         if (boards.isEmpty()) {
             return List.of();
@@ -160,10 +171,63 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
         }
     }
 
-    
     // 보드 조회 + 권한 체크
     private ArchiveBoard findBoardByIdAndUserId(Long boardId, Long userId) {
         return archiveBoardRepository.findByIdAndUserId(boardId, userId)
                 .orElseThrow(() -> new BusinessException(ArchiveErrorCode.BOARD_NOT_FOUND));
+    }
+
+    // 사용자가 올린 모든 이미지 조회 (페이징, 최신순)
+    @Override
+    public Page<BoardImageResponse> getBoardImages(Long userId, Pageable pageable) {
+        // 사용자 존재 여부 확인
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
+
+        Page<BoardImage> boardImages = boardImageRepository
+            .findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+
+        return boardImages.map(BoardImageResponse::from);
+    }
+
+    // vibe 톤 입구
+    @Override
+    @Transactional(readOnly = true) // 조회 성능 최적화 (선택 사항)
+    public BoardSummaryResponse getSummary(Long userId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ArchiveErrorCode.USER_NOT_FOUND));
+
+        // 2. Top 4 태그 조회 (Pageable 사용)
+        // PageRequest.of(페이지번호, 사이즈) -> 0페이지, 4개 = LIMIT 4 효과
+        Pageable limit4 = PageRequest.of(0, 4);
+
+        List<ImageTag> topTags = boardImageRepository.findTopTagsByUserId(userId, limit4);
+
+        return BoardSummaryResponse.of(user.getNickname(), topTags);
+    }
+
+    //보드 이미지 추가
+    @Override
+    @Transactional
+    public void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request) {
+        //유저가 소유한 보드인지 확인
+        ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
+
+        //이미지 id가 존재하는 지 확인
+        Image image = imageRepository.findById(request.imageId())
+                        .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+
+        //이미지가 이미 보드에 저장되어 있는 지 확인
+        if (boardImageRepository.existsByImageId(request.imageId())){
+            throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_ALREADY_EXISTS);
+        }
+
+        //이미지를 보드에 저장
+        boardImageRepository.save(BoardImage.builder().
+                board(board).
+                image(image).
+                build());
+
     }
 }
