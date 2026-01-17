@@ -34,20 +34,20 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void markAsRead(Long userId, Long notificationId) {
-        int updated = notificationRepository.markAsRead(notificationId, userId);
+        // 단건 조회 후 Dirty Checking을 통한 업데이트
+        Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
-        if (updated == 0) {
-            throw new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
-        }
+        notification.read(); // 상태 변경 (트랜잭션 커밋 시 반영)
     }
 
     @Override
     @Transactional
     public void deleteNotification(Long userId, Long notificationId) {
-        int deleted = notificationRepository.deleteByIdAndUserId(notificationId, userId);
+        // 단건 조회 후 JPA 표준 삭제
+        Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
-        if (deleted == 0) {
-            throw new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND);
-        }
+        notificationRepository.delete(notification);
     }
 }
