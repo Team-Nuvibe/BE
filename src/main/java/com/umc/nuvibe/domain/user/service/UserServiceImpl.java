@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.user.service;
 
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.user.dto.request.ReissuePasswordReq;
+import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
@@ -80,8 +81,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateSetting(Long userId) {
+    public void updateSetting(Long userId, UserSettingReq request) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(()->new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
+        user.updateSetting(request);
     }
 
     private void validateReissuePassword(ReissuePasswordReq request) {

@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.entity;
 
+import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
 import com.umc.nuvibe.domain.user.vo.AuthProvider;
 import com.umc.nuvibe.domain.user.vo.UserSetting;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
@@ -75,6 +76,10 @@ public class User extends BaseEntity {
         this.password = password;
     }
 
+    public void updateSetting(UserSettingReq request) {
+        this.setting=this.setting.update(request);
+    }
+
     public static User createLocalUser(String name, String nickName, String email,String password) {
         return User.builder()
                 .name(name)
@@ -82,6 +87,7 @@ public class User extends BaseEntity {
                 .email(email)
                 .password(password)
                 .provider(AuthProvider.LOCAL)
+                .setting(UserSetting.createDefault()) // 기본값 주읩
                 .build();
     }
 
@@ -91,6 +97,7 @@ public class User extends BaseEntity {
                 .provider(provider)
                 .email(email)
                 .providerId(providerId)
+                .setting(UserSetting.createDefault())
                 .build();
     }
 
