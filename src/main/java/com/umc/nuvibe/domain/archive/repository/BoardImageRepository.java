@@ -31,24 +31,12 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
             @Param("boardId") Long boardId,
             @Param("tag") ImageTag tag);
     
-    // 보드의 가장 최근 이미지 조회 (썸네일용)
-    @Query("SELECT bi FROM BoardImage bi " +
-           "JOIN FETCH bi.image " +
-           "WHERE bi.board.id = :boardId " +
-           "ORDER BY bi.createdAt DESC " +
-           "LIMIT 1")
-    Optional<BoardImage> findTopByBoardIdOrderByCreatedAtDesc(@Param("boardId") Long boardId);
-    
     // 여러 보드의 최신 썸네일 한 번에 조회 (N+1 방지)
     @Query("SELECT bi FROM BoardImage bi " +
               "JOIN FETCH bi.image " +
               "WHERE bi.board.id IN :boardIds " +
               "AND bi.createdAt = (SELECT MAX(bi2.createdAt) FROM BoardImage bi2 WHERE bi2.board.id = bi.board.id)")
     List<BoardImage> findLatestByBoardIds(@Param("boardIds") List<Long> boardIds);
-
-    // 보드 삭제 시 연결된 이미지 전체 삭제
-    @Modifying
-    void deleteByBoardId(Long boardId);
     
     // 여러 보드의 이미지 삭제 (다중 보드 삭제용)
     @Modifying(clearAutomatically = true) // 캐시 삭제

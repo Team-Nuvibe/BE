@@ -47,7 +47,7 @@ public class ArchiveBoardController {
         @AuthUser Long userId,
         @Parameter(description = "보드명 검색어") @RequestParam(required = false) String keyword
     ) {
-        return Response.of(
+        return Response.ok(
             ArchiveResultCode.BOARD_LIST_SUCCESS, 
             archiveBoardService.getBoards(userId, keyword)
         );
@@ -62,7 +62,7 @@ public class ArchiveBoardController {
             @Parameter(description = "보드 ID") @PathVariable Long boardId,
             @Parameter(description = "태그 필터") @RequestParam(required = false) ImageTag tag
     ) {
-        return Response.of(ArchiveResultCode.BOARD_DETAIL_SUCCESS, archiveBoardService.getBoardDetail(userId, boardId, tag));
+        return Response.ok(ArchiveResultCode.BOARD_DETAIL_SUCCESS, archiveBoardService.getBoardDetail(userId, boardId, tag));
     }
 
     
@@ -99,7 +99,7 @@ public class ArchiveBoardController {
             @Valid @RequestBody BoardNameUpdateRequest request
     ) {
         archiveBoardService.updateBoardName(userId, boardId, request);
-        return Response.of(ArchiveResultCode.BOARD_NAME_UPDATE_SUCCESS);
+        return Response.ok(ArchiveResultCode.BOARD_NAME_UPDATE_SUCCESS,null);
     }
 
     
@@ -127,7 +127,7 @@ public class ArchiveBoardController {
         @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return Response.of(
+        return Response.ok(
             ArchiveResultCode.BOARD_IMAGES_SUCCESS,
             archiveBoardService.getBoardImages(userId, pageable)
         );
@@ -139,12 +139,11 @@ public class ArchiveBoardController {
     public Response<BoardSummaryResponse> getSummary(
         @AuthUser Long userId
     ) {
-        return Response.of(
+        return Response.ok(
             ArchiveResultCode.BOARD_VIBE_SUCCESS,
             archiveBoardService.getSummary(userId)
         );
     }
-
 
     //보드에 이미지 추가
     @PostMapping("/{boardId}/images")
