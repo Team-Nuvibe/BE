@@ -9,14 +9,19 @@ import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.service.EmailVerificationService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -24,6 +29,12 @@ public class UserServiceImpl implements UserService {
     private final ImageService imageService;
     private final UserRepository userRepository;
     private final EmailVerificationService verificationService;
+
+    @Value("${frontend.redirect.email-verify-success}")
+    private String emailVerifySuccessUrl;
+
+    @Value("${frontend.redirect.email-verify-failed}")
+    private String emailVerifyFailedUrl;
 
     @Override
     @Transactional
@@ -53,20 +64,33 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void requestEmailUpdate(Long userId, String email) {
-        if (!userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(email)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
-        verificationService.sendVerificationEmail(email);
+        log.info("이메일 변경 요청 - 사용자ID: {}, 새 이메일: {}", userId, email);
+        verificationService.sendVerificationEmail(email, false);
     }
 
     @Override
     @Transactional
-    public void completeEmailUpdate(Long userId, String token) {
-        String verifiedEmail=verificationService.verifyToken(token);
+    public void verifyAndUpdateEmailWithRedirect(Long userId, String token, HttpServletResponse response) throws IOException {
+        try {
+            String verifiedEmail = verificationService.verifyToken(token);
 
-        User user=userRepository.findById(userId)
-                .orElseThrow(()->new BusinessException(UserErrorCode.USER_NOT_FOUND));
-        user.updateEmail(verifiedEmail);
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+            String oldEmail = user.getEmail();
+            user.updateEmail(verifiedEmail);
+
+            log.info("이메일 변경 완료 - 사용자ID: {}, 이전 이메일: {}, 새 이메일: {}",
+                     userId, oldEmail, verifiedEmail);
+
+            response.sendRedirect(emailVerifySuccessUrl);
+        } catch (BusinessException e) {
+            log.error("이메일 변경 실패 - 사용자ID: {}, 토큰: {}, 에러: {}", userId, token, e.getMessage());
+            response.sendRedirect(emailVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
+        }
     }
 
     @Override

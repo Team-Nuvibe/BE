@@ -11,21 +11,40 @@ import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.security.jwt.JwtTokenProvider;
 import com.umc.nuvibe.global.service.EmailVerificationService;
-import lombok.AllArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
-@AllArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailVerificationService verificationService;
+
+    @Value("${frontend.redirect.auth-verify-success}")
+    private String authVerifySuccessUrl;
+
+    @Value("${frontend.redirect.auth-verify-failed}")
+    private String authVerifyFailedUrl;
+
+    public AuthServiceImpl(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtTokenProvider jwtTokenProvider,
+                          EmailVerificationService verificationService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.verificationService = verificationService;
+    }
 
     @Override
     @Transactional
@@ -96,7 +115,21 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
-        verificationService.sendVerificationEmail(email);
+        log.info("회원가입 인증 이메일 발송 요청 - 이메일: {}", email);
+        verificationService.sendVerificationEmail(email, true);
+    }
+
+    @Override
+    @Transactional
+    public void verifyJoinEmailAndRedirect(String token, HttpServletResponse response) throws IOException {
+        try {
+            String verifiedEmail = verificationService.verifyToken(token);
+            log.info("회원가입 이메일 인증 완료 - 이메일: {}", verifiedEmail);
+            response.sendRedirect(authVerifySuccessUrl);
+        } catch (BusinessException e) {
+            log.error("회원가입 이메일 인증 실패 - 토큰: {}, 에러: {}", token, e.getMessage());
+            response.sendRedirect(authVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
+        }
     }
 
 

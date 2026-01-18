@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.controller;
 
+import com.umc.nuvibe.domain.user.dto.request.EmailVerificationReq;
 import com.umc.nuvibe.domain.user.dto.request.LoginReq;
 import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
@@ -9,9 +10,12 @@ import com.umc.nuvibe.global.apiPayLoad.result.UserResultCode;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,4 +52,20 @@ public class AuthController {
         authService.withdraw(userId);
         return Response.ok(UserResultCode.USER_WITHDRAW_OK, "회원탈퇴가 완료되었습니다. ");
     }
+
+    @PostMapping("/verify-email")
+    @Operation(summary = "이메일 인증 발송", description = "회원가입을 위한 인증 이메일을 발송합니다.")
+    public Response<String> sendJoinVerificationEmail(@RequestBody @Valid EmailVerificationReq request) {
+        authService.sendJoinVerificationEmail(request.email());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "이메일 인증이 발송되었습니다.");
+    }
+
+    @GetMapping("/verify")
+    @Operation(summary = "회원가입 이메일 인증", description = "회원가입용 이메일 인증 링크를 처리하고 회원가입 페이지로 리다이렉트합니다.")
+    public void verifyJoinEmail(
+            @RequestParam String token,
+            HttpServletResponse response) throws IOException {
+        authService.verifyJoinEmailAndRedirect(token, response);
+    }
 }
+
