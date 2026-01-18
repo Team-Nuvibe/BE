@@ -134,15 +134,15 @@ public class HomeServiceImpl implements HomeService {
         @Override
         public TagDetailResponse getTagDetail(ImageTag tag) {
                 // 1. 해당 태그의 트라이브 채팅 이미지 조회
-                List<Chat> chats = chatRepository.findLatestChatsWithImageByTagName(
-                                tag.name(), TRIBE_IMAGE_COUNT);
+                List<Chat> chats = chatRepository.findLatestChatsWithImageByImageTag(
+                                tag, TRIBE_IMAGE_COUNT);
 
                 List<String> tribeImageUrls = chats.stream()
                                 .map(chat -> chat.getImage().getImageUrl())
                                 .toList();
 
                 // 2. 트라이브 ID 조회
-                Long tribeId = tribeRepository.findLatestTribeIdByTagName(tag.name());
+                Long tribeId = tribeRepository.findLatestTribeIdByImageTag(tag);
 
                 return new TagDetailResponse(
                                 tag,

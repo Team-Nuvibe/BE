@@ -28,6 +28,6 @@ public interface TribeRepository extends JpaRepository<Tribe, Long> {
     int decrementCounts(@Param("tribeId") Long tribeId);
 
     // 특정 태그의 최신 트라이브 ID 조회
-    @Query("SELECT t.id FROM Tribe t WHERE t.tagName = :tagName ORDER BY t.version DESC LIMIT 1")
-    Long findLatestTribeIdByTagName(@Param("tagName") String tagName);
+    @Query("SELECT t.id FROM Tribe t WHERE t.imageTag = :imageTag ORDER BY t.version DESC LIMIT 1")
+    Long findLatestTribeIdByImageTag(@Param("imageTag") ImageTag imageTag);
 }
