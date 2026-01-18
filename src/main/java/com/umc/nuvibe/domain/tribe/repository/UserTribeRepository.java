@@ -10,7 +10,9 @@ import java.util.List;
 
 public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
 
-    boolean existsByUserIdAndTribe_ImageTag(Long userId, ImageTag imageTag);
+    boolean existsByUser_IdAndTribe_ImageTag(Long userId, ImageTag imageTag);
+
+    boolean existsByUser_IdAndTribe_Id(Long userId, Long tribeId);
 
     @EntityGraph(attributePaths = {"tribe"})
     List<UserTribe> findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(Long userId, TribeStatus status);
