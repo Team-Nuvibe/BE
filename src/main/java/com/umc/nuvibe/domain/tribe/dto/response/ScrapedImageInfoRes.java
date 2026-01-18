@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.dto.response;
 
+import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,11 +26,12 @@ public record ScrapedImageInfoRes(
         LocalDateTime createdAt
 ) {
         public static ScrapedImageInfoRes from(ScrapedImage scrap) {
+                Image image = scrap.getImage();
                 return new ScrapedImageInfoRes(
                         scrap.getId(),
-                        scrap.getImage().getId(),
-                        scrap.getImage().getImageUrl(),
-                        scrap.getImage().getImageTag(),
+                        image.getId(),
+                        image.getImageUrl(),
+                        image.getImageTag(),
                         scrap.getCreatedAt()
                 );
         }

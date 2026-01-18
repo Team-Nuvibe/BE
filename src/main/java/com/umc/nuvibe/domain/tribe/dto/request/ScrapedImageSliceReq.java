@@ -20,7 +20,7 @@ public record ScrapedImageSliceReq(
         Long lastId,
 
         @Schema(description = "조회 개수 (3열 그리드 권장: 30)", example = "30")
-        @Min(0) @Max(90)
+        @Min(1) @Max(60)
         Integer size
 ) {
     public ScrapedImageSliceReq {

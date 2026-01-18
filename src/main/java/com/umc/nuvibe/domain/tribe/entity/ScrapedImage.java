@@ -10,7 +10,7 @@ import com.umc.nuvibe.domain.image.entity.Image;
 @Getter
 @Table(
         name = "scraped_images",
-        uniqueConstraints = @UniqueConstraint(name = "uk_scraped_images_user_image", columnNames = {"user_id", "image_id", "tribe_id"})
+        uniqueConstraints = @UniqueConstraint(name = "uk_scraped_images_user_image_tribe", columnNames = {"user_id", "image_id", "tribe_id"})
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ScrapedImage extends BaseEntity {

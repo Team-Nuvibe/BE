@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatRepository extends JpaRepository<Chat, Long> {
 
@@ -22,4 +23,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
                 LIMIT :limit
             """)
     List<Chat> findLatestChatsWithImageByTagName(@Param("tagName") String tagName, @Param("limit") int limit);
+
+    @Query("SELECT c FROM Chat c JOIN FETCH c.tribe JOIN FETCH c.image WHERE c.id = :chatId")
+    Optional<Chat> findByIdWithImageAndTribe(@Param("chatId") Long chatId);
 }
