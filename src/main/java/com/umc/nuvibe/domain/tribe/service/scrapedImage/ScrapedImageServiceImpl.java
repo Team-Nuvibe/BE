@@ -75,6 +75,11 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
 
     private ScrapedImageListRes getScrapedImageInternal(Long userId, Long tribeId, ScrapedImageSliceReq req){
 
+        // 커서 유효성 체크
+        if (req.hasCursor() && !req.isCursorComplete()) {
+            throw new BusinessException(ScrapedImageErrorCode.SCRAPEDIMAGE_CURSOR_ERROR);
+        }
+
         // 1. hasNext 판단을 위해 요청 size보다 1개 더 조회
         int limit = req.size();
         Pageable pageable = PageRequest.of(0, limit + 1);

@@ -17,6 +17,6 @@ public record ChatTimelineReq(
     private static final int DEFAULT_SIZE = 20;
 
     public ChatTimelineReq {
-        size = (size == null) ? 20 : size;
+        size = (size == null) ? DEFAULT_SIZE : size;
     }
 }

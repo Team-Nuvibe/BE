@@ -28,4 +28,12 @@ public record ScrapedImageSliceReq(
     public ScrapedImageSliceReq {
         size = (size == null) ? DEFAULT_SIZE : size;
     }
+
+    public boolean hasCursor() {
+        return cursorCreatedAt != null || cursorId != null;
+    }
+
+    public boolean isCursorComplete() {
+        return cursorCreatedAt != null && cursorId != null;
+    }
 }

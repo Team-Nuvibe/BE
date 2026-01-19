@@ -108,6 +108,11 @@ public class ChatServiceImpl implements ChatService {
             throw new BusinessException(ChatErrorCode.CHAT_CURSOR_INVALID);
         }
 
+        // 1-2. 커서 소속 트라이브 검증
+        if (req.hasCursor()) {
+            validateCursorChatInTribe(req.cursorChatId(), tribeId);
+        }
+
         // 2. size는 dto에서 기본값 처리 (null → 30)
         int limit = req.size();
         Pageable pageable = PageRequest.of(0, limit + 1);
