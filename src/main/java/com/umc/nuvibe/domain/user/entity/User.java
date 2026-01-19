@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.entity;
 
+import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
 import com.umc.nuvibe.domain.user.vo.AuthProvider;
 import com.umc.nuvibe.domain.user.vo.UserSetting;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
@@ -11,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -50,10 +53,32 @@ public class User extends BaseEntity {
 
     private String refreshToken;
 
+    private LocalDateTime lastNicknameUpdatedDate;
+
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+        this.lastNicknameUpdatedDate = LocalDateTime.now();
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateSetting(UserSettingReq request) {
+        this.setting=this.setting.update(request);
+    }
 
     public static User createLocalUser(String name, String nickName, String email,String password) {
         return User.builder()
@@ -62,6 +87,7 @@ public class User extends BaseEntity {
                 .email(email)
                 .password(password)
                 .provider(AuthProvider.LOCAL)
+                .setting(UserSetting.createDefault()) // 기본값 주읩
                 .build();
     }
 
@@ -71,6 +97,7 @@ public class User extends BaseEntity {
                 .provider(provider)
                 .email(email)
                 .providerId(providerId)
+                .setting(UserSetting.createDefault())
                 .build();
     }
 

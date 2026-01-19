@@ -11,7 +11,7 @@ import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
-import com.umc.nuvibe.global.s3.S3Service;
+import com.umc.nuvibe.global.service.S3Service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,22 +26,17 @@ public class ImageServiceImpl implements ImageService {
     private final ImageRepository imageRepository;
     private final BoardImageRepository boardImageRepository;
 
+    @Override
     @Transactional
     public ImageRes uploadAndSave(MultipartFile file, ImageTag tag) {
 
-        if (file == null || file.isEmpty()) {
-            throw new BusinessException(ImageErrorCode.IMAGE_IS_EMPTY);
-        }
+        validateFile(file);
 
         if (tag == null) {
             throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
         }
 
-        String imageURL = s3Service.upload(file);
-
-        if (imageURL == null) {
-            throw new BusinessException(ImageErrorCode.IMAGE_UPLOAD_FAIL);
-        }
+        String imageURL=uploadToS3(file);
 
         Image newImage = Image.builder()
                 .imageUrl(imageURL)
@@ -51,7 +46,13 @@ public class ImageServiceImpl implements ImageService {
         imageRepository.save(newImage);
 
         return new ImageRes(imageURL, tag);
+    }
 
+    @Override
+    @Transactional
+    public String uploadImage(MultipartFile file) {
+        validateFile(file);
+        return uploadToS3(file);
     }
 
     @Override
@@ -69,5 +70,22 @@ public class ImageServiceImpl implements ImageService {
         }
 
         return ImageDetailRes.from(image, user, board);
+    }
+
+
+    // 파일 검증 분리
+    private void validateFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ImageErrorCode.IMAGE_IS_EMPTY);
+        }
+    }
+
+    // 파일 업로드 분리
+    private String uploadToS3(MultipartFile file) {
+        String imageURL = s3Service.upload(file);
+        if (imageURL == null) {
+            throw new BusinessException(ImageErrorCode.IMAGE_UPLOAD_FAIL);
+        }
+        return imageURL;
     }
 }

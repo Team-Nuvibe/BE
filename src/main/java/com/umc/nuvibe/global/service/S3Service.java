@@ -1,4 +1,4 @@
-package com.umc.nuvibe.global.s3;
+package com.umc.nuvibe.global.service;
 
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
