@@ -1,6 +1,8 @@
 package com.umc.nuvibe.domain.user.controller;
 
 import com.umc.nuvibe.domain.user.dto.request.*;
+import com.umc.nuvibe.domain.user.dto.response.UserProfileImageRes;
+import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
 import com.umc.nuvibe.domain.user.service.UserService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.UserResultCode;
@@ -23,6 +25,13 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/profile-image")
+    @Operation(summary = "프로필 이미지 조회", description = "유저의 프로필 이미지를 조회합니다.")
+    public Response<UserProfileImageRes> getUserProfileImage(@AuthUser Long userId) {
+        UserProfileImageRes response = userService.getUserProfileImage(userId);
+        return Response.ok(UserResultCode.USER_PROFILE_IMAGE_GET_OK, response);
+    }
 
     @PatchMapping(value = "/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "프로필 이미지 수정", description = "유저의 프로필 이미지를 수정합니다.")
@@ -53,29 +62,31 @@ public class UserController {
 
     @GetMapping("/email/verify")
     @Operation(summary = "이메일 변경 인증", description = "이메일 변경용 인증 링크를 처리하고 설정 페이지로 리다이렉트합니다.")
-    public void verifyAndUpdateEmail(
+    public Response<String> verifyAndUpdateEmail(
             @AuthUser Long userId,
             @RequestParam String token,
             HttpServletResponse response) throws IOException {
         userService.verifyAndUpdateEmailWithRedirect(userId, token, response);
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK,"이메일 변경 인증 완료 후 리다이렉트 합니다.");
     }
 
     @PatchMapping("/password")
-    @Operation(summary = "비밀번호 재설정", description = "유저의 비밀번호를 재설정합니다.")
+    @Operation(summary = "비밀번호 재설정", description = "유저의 비밀번호를 재설정합니다. 사용자의 현재 비번 확인 후 이 api 호출하시면 됩니다.")
     public Response<String> reissuePassword(
             @AuthUser Long userId,
             @RequestBody @Valid ReissuePasswordReq request) {
+
         userService.reissuePassword(userId, request);
         return Response.ok(UserResultCode.USER_PASSWORD_REISSUE_OK, "비밀번호가 재설정되었습니다.");
     }
 
     @PatchMapping("/settings")
     @Operation(summary = "유저 설정 변경", description = "유저의 알림 설정을 변경합니다.")
-    public Response<String> updateSetting(
+    public Response<UserSettingUpdateRes> updateSetting(
             @AuthUser Long userId,
             @RequestBody @Valid UserSettingReq request) {
-        userService.updateSetting(userId, request);
-        return Response.ok(UserResultCode.USER_SETTING_UPDATE_OK, "유저 설정이 변경되었습니다.");
+        UserSettingUpdateRes response= userService.updateSetting(userId, request);
+        return Response.ok(UserResultCode.USER_SETTING_UPDATE_OK, response);
     }
 }
 

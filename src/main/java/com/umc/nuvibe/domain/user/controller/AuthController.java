@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.controller;
 
+import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.EmailVerificationReq;
 import com.umc.nuvibe.domain.user.dto.request.LoginReq;
 import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
@@ -62,10 +63,18 @@ public class AuthController {
 
     @GetMapping("/verify")
     @Operation(summary = "회원가입 이메일 인증", description = "회원가입용 이메일 인증 링크를 처리하고 회원가입 페이지로 리다이렉트합니다.")
-    public void verifyJoinEmail(
+    public Response<String> verifyJoinEmail(
             @RequestParam String token,
             HttpServletResponse response) throws IOException {
         authService.verifyJoinEmailAndRedirect(token, response);
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK,"이메일 인증 처리 완료 후 리다이렉트 했습니다.");
+    }
+
+    @GetMapping("check-password")
+    @Operation(summary = "사용자의 현재 비밀번호를 확인합니다.", description = "비번 변경 전 현재 비밀번호 확인할 때 이 api 사용하면 됩니다.")
+    public Response<String> checkCurrentPassword(@AuthUser Long userId, @RequestBody @Valid CheckPasswordReq request) {
+        authService.checkCurrentPassword(userId, request);
+        return Response.ok(UserResultCode.USER_CURRENT_PASSWORD_CHECK_OK,"현재 비밀번호와 일치합니다.");
     }
 }
 

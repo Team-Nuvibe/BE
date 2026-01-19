@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -58,5 +60,26 @@ public class UserSetting implements Serializable {
                 .isTribeChatAlert(req.isTribeChatAlert() != null ? req.isTribeChatAlert() : this.isTribeChatAlert)
                 .isReactionAlert(req.isReactionAlert() != null ? req.isReactionAlert() : this.isReactionAlert)
                 .build();
+    }
+
+    public List<String> getDiff(UserSetting prev) {
+        List<String> changes = new ArrayList<>();
+
+        compareAndAdd(changes, "서비스 알림", prev.getIsServiceAlert(), this.isServiceAlert);
+        compareAndAdd(changes, "계정 보안 알림", prev.getIsSecurityAlert(), this.isSecurityAlert);
+        compareAndAdd(changes, "추천 알림", prev.getIsRecommendAlert(), this.isRecommendAlert);
+        compareAndAdd(changes, "Recap 알림", prev.getIsRecapAlert(), this.isRecapAlert);
+        compareAndAdd(changes, "트라이브 생성 알림", prev.getIsTribeCreateAlert(), this.isTribeCreateAlert);
+        compareAndAdd(changes, "트라이브 채팅 알림", prev.getIsTribeChatAlert(), this.isTribeChatAlert);
+        compareAndAdd(changes, "반응 알림", prev.getIsReactionAlert(), this.isReactionAlert);
+
+        return changes;
+    }
+
+    // 값이 다를 때만 리스트에 추가
+    private void compareAndAdd(List<String> changes, String fieldName, Boolean oldVal, Boolean newVal) {
+        if (oldVal != null && !oldVal.equals(newVal)) {
+            changes.add(String.format("%s: %s -> %s", fieldName, oldVal, newVal));
+        }
     }
 }

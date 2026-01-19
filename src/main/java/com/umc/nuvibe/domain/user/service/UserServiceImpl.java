@@ -3,8 +3,11 @@ package com.umc.nuvibe.domain.user.service;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.user.dto.request.ReissuePasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
+import com.umc.nuvibe.domain.user.dto.response.UserProfileImageRes;
+import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
+import com.umc.nuvibe.domain.user.vo.UserSetting;
 import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
@@ -19,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -35,6 +39,15 @@ public class UserServiceImpl implements UserService {
 
     @Value("${frontend.redirect.email-verify-failed}")
     private String emailVerifyFailedUrl;
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileImageRes getUserProfileImage(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        return new UserProfileImageRes(user.getProfileImage());
+    }
 
     @Override
     @Transactional
@@ -105,11 +118,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateSetting(Long userId, UserSettingReq request) {
-        User user=userRepository.findById(userId)
-                .orElseThrow(()->new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    public UserSettingUpdateRes updateSetting(Long userId, UserSettingReq request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        // 변경 전 설정 기억해두기
+        UserSetting oldSetting = user.getSetting();
 
         user.updateSetting(request);
+
+        // 변경 후 설정 가져온 다음 비교
+        UserSetting newSetting = user.getSetting();
+        List<String> changeLogs = newSetting.getDiff(oldSetting);
+
+        return new UserSettingUpdateRes(newSetting, changeLogs);
     }
 
     private void validateReissuePassword(ReissuePasswordReq request) {

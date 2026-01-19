@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.service;
 
+import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.LoginReq;
 import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
@@ -129,6 +130,16 @@ public class AuthServiceImpl implements AuthService {
         } catch (BusinessException e) {
             log.error("회원가입 이메일 인증 실패 - 토큰: {}, 에러: {}", token, e.getMessage());
             response.sendRedirect(authVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
+        }
+    }
+
+    @Override
+    public void checkCurrentPassword(Long userId, CheckPasswordReq request) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new BusinessException(AuthErrorCode.PASSWORD_UNMATCH_ERROR);
         }
     }
 

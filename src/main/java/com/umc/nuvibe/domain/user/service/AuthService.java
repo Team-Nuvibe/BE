@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.service;
 
+import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.LoginReq;
 import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
@@ -14,4 +15,5 @@ public interface AuthService {
     void withdraw(Long userId);
     void sendJoinVerificationEmail(String email);
     void verifyJoinEmailAndRedirect(String token, HttpServletResponse response) throws IOException;
+    void checkCurrentPassword(Long userId, CheckPasswordReq request);
 }
