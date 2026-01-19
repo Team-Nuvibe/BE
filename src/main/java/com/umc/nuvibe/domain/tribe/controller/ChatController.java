@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.tribe.controller;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
+import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatTimelineListRes;
 import com.umc.nuvibe.domain.tribe.service.chat.ChatService;
@@ -51,5 +52,15 @@ public class ChatController {
     ){
         ChatGridListRes res = chatService.getChatGridList(userId, tribeId, req);
         return Response.of(ChatResultCode.CHAT_GRID_SUCCESS, res);
+    }
+
+    @GetMapping("/{chatId}/detail")
+    @Operation(summary = "채팅 이미지 상세 조회", description = "그리드 목록에서 이미지를 상세 조회")
+    public Response<ChatDetailRes> getChatDetail(
+            @AuthUser Long userId,
+            @PathVariable Long chatId
+    ){
+        ChatDetailRes res = chatService.getChatDetail(userId, chatId);
+        return Response.of(ChatResultCode.CHAT_DETAIL_SUCCESS, res);
     }
 }

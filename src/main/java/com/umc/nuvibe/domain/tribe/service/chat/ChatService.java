@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.tribe.service.chat;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
+import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatTimelineListRes;
 
@@ -15,4 +16,7 @@ public interface ChatService {
 
     // 트라이브 챗 내 채팅 이미지 그리드 목록 조회
     ChatGridListRes getChatGridList(Long userId, Long tribeId, ChatGridReq req);
+
+    //채팅 이미지 상세 조회
+    ChatDetailRes getChatDetail(Long userId, Long chatId);
 }

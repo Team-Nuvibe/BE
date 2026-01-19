@@ -99,6 +99,15 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             Pageable pageable
     );
 
+    //chatId 통해 이미지 상세 정보 조회
+    @Query("""
+        select c
+        from Chat c
+        join fetch c.image i
+        join fetch c.tribe t
+        where c.id = :chatId
+    """)
+    Optional<Chat> findDetailByChatId(Long chatId);
 
     boolean existsByIdAndTribe_Id(Long id, Long tribeId);
 }

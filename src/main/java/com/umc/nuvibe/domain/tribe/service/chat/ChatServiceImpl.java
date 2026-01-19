@@ -8,6 +8,7 @@ import com.umc.nuvibe.domain.tribe.dto.response.chat.*;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
 import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
 import com.umc.nuvibe.domain.tribe.repository.EmojiRepository;
+import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
 import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.tribe.vo.EmojiType;
 import com.umc.nuvibe.global.apiPayLoad.error.ChatErrorCode;
@@ -31,6 +32,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final EmojiRepository emojiRepository;
     private final UserTribeRepository userTribeRepository;
+    private final ScrapedImageRepository scrapedImageRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -140,6 +142,23 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return new ChatGridListRes(items, nextCursorCreatedAt, nextCursorChatId, hasNext);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ChatDetailRes getChatDetail(Long userId, Long chatId){
+
+        Chat chat = chatRepository.findDetailByChatId(chatId)
+                .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_NOT_FOUND));
+
+        validateUserInTribe(userId, chat.getTribe().getId());
+
+        boolean isScraped = scrapedImageRepository.existsByUser_IdAndImage_Id(
+                userId,
+                chat.getImage().getId()
+        );
+
+        return ChatDetailRes.from(chat, isScraped);
     }
 
 
