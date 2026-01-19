@@ -59,7 +59,7 @@ public class ScrapedImageController {
     public Response<ScrapedImageListRes> getTribeScrapedImage(
             @AuthUser Long userId,
             @PathVariable Long tribeId,
-            @ParameterObject @ModelAttribute @Valid ScrapedImageSliceReq req
+            @ParameterObject @Valid ScrapedImageSliceReq req
     ){
         ScrapedImageListRes res = scrapedImageService.getTribeScrapedImage(userId, tribeId, req);
         return Response.of(ScrapedImageResultCode.SCRAPEDIMAGE_TRIBE_LIST_SUCCESS, res);

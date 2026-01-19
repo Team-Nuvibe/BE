@@ -24,6 +24,6 @@ public record ScrapedImageSliceReq(
         Integer size
 ) {
     public ScrapedImageSliceReq {
-        if (size == null) size = 30;
+        size = (size == null) ? 30 : size;
     }
 }
