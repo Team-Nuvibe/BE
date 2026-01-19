@@ -1,9 +1,9 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
-import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.UserTribeActivateRes;
-import com.umc.nuvibe.domain.tribe.dto.response.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
+import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
 import com.umc.nuvibe.global.apiPayLoad.result.UserTribeResultCode;
 import com.umc.nuvibe.domain.tribe.service.userTribe.UserTribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;

@@ -1,7 +1,9 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
+import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
-import com.umc.nuvibe.domain.tribe.dto.response.ChatTimelineListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatTimelineListRes;
 import com.umc.nuvibe.domain.tribe.service.chat.ChatService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.ChatResultCode;
