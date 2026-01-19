@@ -3,6 +3,7 @@ package com.umc.nuvibe.domain.user.service;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.user.dto.request.ReissuePasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
+import com.umc.nuvibe.domain.user.dto.response.UserNicknameUpdateRes;
 import com.umc.nuvibe.domain.user.dto.response.UserProfileImageRes;
 import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
 import com.umc.nuvibe.domain.user.entity.User;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final ImageService imageService;
     private final UserRepository userRepository;
     private final EmailVerificationService verificationService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${frontend.redirect.email-verify-success}")
     private String emailVerifySuccessUrl;
@@ -60,7 +63,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserNickname(Long userId, String nickname) {
+    public UserNicknameUpdateRes updateUserNickname(Long userId, String nickname) {
         User user=userRepository.findById(userId)
                 .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
@@ -72,6 +75,7 @@ public class UserServiceImpl implements UserService {
 
         user.updateNickname(nickname);
 
+        return new UserNicknameUpdateRes(nickname);
     }
 
     @Override
@@ -113,7 +117,9 @@ public class UserServiceImpl implements UserService {
         User user=userRepository.findById(userId)
                 .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        user.updatePassword(request.password());
+        String encodedPassword = passwordEncoder.encode(request.password());
+        user.updatePassword(encodedPassword);
+
     }
 
     @Override

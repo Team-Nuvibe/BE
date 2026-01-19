@@ -1,6 +1,7 @@
 package com.umc.nuvibe.domain.user.controller;
 
 import com.umc.nuvibe.domain.user.dto.request.*;
+import com.umc.nuvibe.domain.user.dto.response.UserNicknameUpdateRes;
 import com.umc.nuvibe.domain.user.dto.response.UserProfileImageRes;
 import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
 import com.umc.nuvibe.domain.user.service.UserService;
@@ -44,11 +45,11 @@ public class UserController {
 
     @PatchMapping("/nickname")
     @Operation(summary = "닉네임 수정", description = "유저의 닉네임을 수정합니다.")
-    public Response<String> updateUserNickname(
+    public Response<UserNicknameUpdateRes> updateUserNickname(
             @AuthUser Long userId,
             @RequestBody @Valid NicknameUpdateReq request) {
-        userService.updateUserNickname(userId, request.nickname());
-        return Response.ok(UserResultCode.USER_NICKNAME_UPDATE_OK, "닉네임이 수정되었습니다.");
+        UserNicknameUpdateRes response = userService.updateUserNickname(userId, request.nickname());
+        return Response.ok(UserResultCode.USER_NICKNAME_UPDATE_OK, response);
     }
 
     @PostMapping("/email/request")
