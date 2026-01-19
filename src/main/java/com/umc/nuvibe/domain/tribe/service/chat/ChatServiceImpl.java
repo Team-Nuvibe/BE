@@ -113,7 +113,7 @@ public class ChatServiceImpl implements ChatService {
             validateCursorChatInTribe(req.cursorChatId(), tribeId);
         }
 
-        // 2. size는 dto에서 기본값 처리 (null → 30)
+        // 2. size는 dto에서 기본값 처리 (null -> 30)
         int limit = req.size();
         Pageable pageable = PageRequest.of(0, limit + 1);
 
