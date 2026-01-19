@@ -1,8 +1,8 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageToggleRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageListRes;
 import com.umc.nuvibe.domain.tribe.service.scrapedImage.ScrapedImageService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.ScrapedImageResultCode;

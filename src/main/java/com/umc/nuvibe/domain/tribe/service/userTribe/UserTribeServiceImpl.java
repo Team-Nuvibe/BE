@@ -1,10 +1,6 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeInfo;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.dto.response.*;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;

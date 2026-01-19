@@ -1,9 +1,9 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.dto.response.LeaveRes;
+import com.umc.nuvibe.domain.tribe.dto.response.TribeListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.UserTribeActivateRes;
+import com.umc.nuvibe.domain.tribe.dto.response.UserTribeFavoriteRes;
 
 public interface UserTribeService {
 

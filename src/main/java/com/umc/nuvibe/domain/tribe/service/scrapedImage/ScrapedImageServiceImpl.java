@@ -1,17 +1,15 @@
 package com.umc.nuvibe.domain.tribe.service.scrapedImage;
 
 import com.umc.nuvibe.domain.image.entity.Image;
-import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageInfoRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageToggleRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageListRes;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
 import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.TribeRepository;
 import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -100,7 +98,7 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
 
         // 5. 다음 페이지 존재 시 마지막 데이터 정보로 커서 설정
         if (hasNext && !items.isEmpty()) {
-            ScrapedImageInfoRes lastItem = items.get(items.size() - 1);
+            ScrapedImageItemRes lastItem = items.get(items.size() - 1);
             nextCursorCreatedAt = lastItem.createdAt();
             nextCursorId = lastItem.scrapImageId();
         }

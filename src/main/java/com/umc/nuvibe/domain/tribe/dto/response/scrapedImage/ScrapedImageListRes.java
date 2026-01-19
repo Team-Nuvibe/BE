@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.dto.response;
+package com.umc.nuvibe.domain.tribe.dto.response.scrapedImage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -9,7 +9,7 @@ import java.util.List;
 public record ScrapedImageListRes(
 
         @Schema(description = "정렬된 스크랩 이미지 목록 (flat List)")
-        List<ScrapedImageInfoRes> items,
+        List<ScrapedImageItemRes> items,
 
         @Schema(description = "다음 페이지 커서(createdAt). hasNext=false면 null")
         LocalDateTime nextCursorCreatedAt,

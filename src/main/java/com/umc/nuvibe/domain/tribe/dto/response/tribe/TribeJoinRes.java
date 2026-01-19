@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.dto.response;
+package com.umc.nuvibe.domain.tribe.dto.response.tribe;
 
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;

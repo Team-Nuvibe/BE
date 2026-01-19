@@ -2,7 +2,7 @@ package com.umc.nuvibe.domain.tribe.service.tribe;
 
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.dto.request.TribeJoinReq;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeJoinRes;
+import com.umc.nuvibe.domain.tribe.dto.response.TribeJoinRes;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;

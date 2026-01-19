@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.dto.response;
+package com.umc.nuvibe.domain.tribe.dto.response.scrapedImage;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
