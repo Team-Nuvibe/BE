@@ -10,9 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 
 public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
 
@@ -36,9 +37,12 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
        @Query("SELECT bi FROM BoardImage bi " +
                      "JOIN FETCH bi.image " +
                      "WHERE bi.board.id = :boardId " +
-                     "ORDER BY bi.createdAt DESC " +
-                     "LIMIT 1")
-       Optional<BoardImage> findTopByBoardIdOrderByCreatedAtDesc(@Param("boardId") Long boardId);
+                     "ORDER BY bi.createdAt DESC "
+                     )
+       List<BoardImage> findTopByBoardIdOrderByCreatedAtDesc(
+               @Param("boardId") Long boardId,
+               Pageable pageable
+       );
 
        // 여러 보드의 최신 썸네일 한 번에 조회 (N+1 방지)
        @Query("SELECT bi FROM BoardImage bi " +
@@ -100,4 +104,127 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
                          where bi.image.id = :imageId
                      """)
        Optional<BoardImage> findByImageId(@Param("imageId") Long imageId);
+
+
+       //기간 내 총 이미지 드랍 수
+        @Query("select count(bi) from BoardImage bi " +
+                "where bi.board.user.id = :userId " +
+                "and bi.image.createdAt >= :start " +
+                "and bi.image.createdAt <= :end "
+        )
+        Long countTotalImageByPeriod(
+                @Param("userId") Long userId,
+                @Param("start")LocalDateTime start,
+                @Param("end") LocalDateTime end
+        );
+
+
+       //기간 내 많이 사용한 태그 조회
+        @Query("select bi.image.imageTag from BoardImage bi " +
+            "where bi.board.user.id = :userId " +
+            "and bi.image.createdAt >= :start " +
+            "and bi.image.createdAt < :end " +
+            "group by bi.image.imageTag " +
+            "order by count(bi) desc")
+        List<ImageTag> findTopTagsByPeriod(
+            @Param("userId") Long userId,
+            @Param("start")LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            Pageable pageable
+        );
+
+    interface TopBoardProjection {
+        Long getBoardId();
+        Long getCount();
+    }
+
+        //기간 내 가장 많이 업로드한 보드
+        @Query("select bi.board.id as boardId, count(bi) as count from BoardImage bi " +
+                "where bi.board.user.id = :userId " +
+                "and bi.image.createdAt >= :start " +
+                "and bi.image.createdAt < :end " +
+                "group by bi.board.id " +
+                "order by count desc " +
+                "limit 1"
+        )
+       TopBoardProjection findTopBoardByPeriod (
+                @Param("userId") Long userId,
+                @Param("start")LocalDateTime start,
+                @Param("end") LocalDateTime end
+        );
+
+
+        //기간 내 활동 보드 수(새로운 보드 생성 또는 이미지 추가)
+    @Query("select count(distinct board.id) from ArchiveBoard board " +
+            "left join BoardImage bi on bi.board = board " +
+            "where board.user.id = :userId " +
+            "and (board.createdAt between :start and :end " + //새로운 보드가 생성
+            "or bi.createdAt between :start and :end)") //보드에 이미지가 추가
+        long countActiveBoardsByPeriod (
+                @Param("userId") Long userId,
+                @Param("start")LocalDateTime start,
+                @Param("end") LocalDateTime end
+        );
+
+    //총 태그 사용 횟수 조회
+    @Query ("select count(bi.image.imageTag) from BoardImage bi " +
+            "where bi.board.user.id = :userId " +
+            "and bi.image.createdAt >= :start " +
+            "and bi.image.createdAt <= :end")
+    long countTotalTagByPeriod(
+            @Param("userId") Long userId,
+            @Param("start")LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    //하루 최대 업로드 수 조회
+    @Query("select count(bi) as count from BoardImage bi " +
+            "where bi.board.user.id = :userId " +
+            "and bi.createdAt >= :start " +
+            "and bi.createdAt <= :end " +
+            "group by DATE(bi.createdAt) " +
+            "order by count desc " +
+            "limit 1 " )
+    Long findMaxDailyDropCount(
+            @Param("userId") Long userId,
+            @Param("start")LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    //가장 많이 업로드한 요일 조회
+    @Query(value =
+            "select DAYNAME(bi.created_at) " +
+                    "from board_images bi " +
+                    "join archive_board ab on bi.board_id = ab.board_id " +
+                    "join images i on bi.image_id = i.image_id " +
+                    "where ab.user_id = :userId " +
+                    "and bi.created_at >= :start and bi.created_at <= :end " +
+                    "group by DAYNAME(bi.created_at) " +
+                    "order by count(*) desc, " + //가장 많이 업로드 순 조회
+                    "max(bi.created_at) desc " + //드랍 수 동일 시 가장 최근 업로드 순
+                    "limit 1",
+            nativeQuery = true)
+    String findTopDayOfWeekByPeriod(
+            @Param("userId") Long userId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    //가장 많이 올린 시간대 조회
+    @Query(value =
+            "select hour(bi.created_at) " +
+                    "from board_images bi " +
+                    "join archive_board ab on bi.board_id = ab.board_id " +
+                    "where ab.user_id = :userId " +
+                    "and bi.created_at >= :start and bi.created_at < :end " +
+                    "group by hour(bi.created_at) " +
+                    "order by count(*) desc, " + //가장 많이 업로드 순 조회
+                    "max(bi.created_at) desc " + //드랍 수 동일 시 가장 최근 업로드 순
+                    "limit 1",
+            nativeQuery = true)
+    Integer findTopHourByPeriod(
+            @Param("userId") Long userId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }
