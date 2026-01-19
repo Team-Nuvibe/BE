@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.rmi.server.ExportException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -144,6 +145,9 @@ public class RecapServiceImpl implements RecapService {
 
         //가장 많은 드랍 한 요일
         String topDayName = boardImageRepository.findTopDayOfWeekByPeriod(userId, start, end);
+        if (topDayName == null){
+            throw new BusinessException(RecapErrorCode.NOT_ENOUGH_DATA);
+        }
         String dayMessage = RecapMessage.Day.from(topDayName).getMessage(period);
 
         //취향 성향(태그 수와 보드 수 비교)
@@ -152,6 +156,9 @@ public class RecapServiceImpl implements RecapService {
 
         //가장 많이 드랍한 시간대
         Integer topHour = boardImageRepository.findTopHourByPeriod(userId, start, end);
+        if (topHour == null){
+            throw new BusinessException(RecapErrorCode.NOT_ENOUGH_DATA);
+        }
         String timeSlotMessage = RecapMessage.TimeSlot.from(topHour).getMessage(period);
 
         return new RecapActiveResponse(

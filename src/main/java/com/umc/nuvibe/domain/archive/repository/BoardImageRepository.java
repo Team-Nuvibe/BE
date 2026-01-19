@@ -110,7 +110,7 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
         @Query("select count(bi) from BoardImage bi " +
                 "where bi.board.user.id = :userId " +
                 "and bi.image.createdAt >= :start " +
-                "and bi.image.createdAt < :end "
+                "and bi.image.createdAt <= :end "
         )
         Long countTotalImageByPeriod(
                 @Param("userId") Long userId,
@@ -180,8 +180,8 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     //하루 최대 업로드 수 조회
     @Query("select count(bi) as count from BoardImage bi " +
             "where bi.board.user.id = :userId " +
-            "and bi.image.createdAt >= :start " +
-            "and bi.image.createdAt <= :end " +
+            "and bi.createdAt >= :start " +
+            "and bi.createdAt <= :end " +
             "group by DATE(bi.createdAt) " +
             "order by count desc " +
             "limit 1 " )
@@ -215,7 +215,6 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
             "select hour(bi.created_at) " +
                     "from board_images bi " +
                     "join archive_board ab on bi.board_id = ab.board_id " +
-                    "join images i on bi.image_id = i.image_id "+
                     "where ab.user_id = :userId " +
                     "and bi.created_at >= :start and bi.created_at < :end " +
                     "group by hour(bi.created_at) " +
