@@ -5,10 +5,7 @@ import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
 import com.umc.nuvibe.domain.user.dto.response.UserNicknameUpdateRes;
 import com.umc.nuvibe.domain.user.dto.response.UserProfileImageRes;
 import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 public interface UserService {
     UserProfileImageRes getUserProfileImage(Long userId);

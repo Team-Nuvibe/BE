@@ -116,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
-        log.info("회원가입 인증 이메일 발송 요청 - 이메일: {}", email);
+
         verificationService.sendVerificationEmail(email);
     }
 
@@ -125,10 +125,10 @@ public class AuthServiceImpl implements AuthService {
     public void verifyJoinEmailAndRedirect(String token, HttpServletResponse response) throws IOException {
         try {
             String verifiedEmail = verificationService.verifyToken(token);
-            log.info("회원가입 이메일 인증 완료 - 이메일: {}", verifiedEmail);
+
             response.sendRedirect(authVerifySuccessUrl);
         } catch (BusinessException e) {
-            log.error("회원가입 이메일 인증 실패 - 토큰: {}, 에러: {}", token, e.getMessage());
+
             response.sendRedirect(authVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
         }
     }

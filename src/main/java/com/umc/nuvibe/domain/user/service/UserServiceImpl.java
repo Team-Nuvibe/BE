@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
-        log.info("이메일 인증 요청 - 이메일: {}", email);
+
         verificationService.sendVerificationEmail(email);
     }
 
@@ -92,11 +92,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        String oldEmail = user.getEmail();
         user.updateEmail(newEmail);
 
-        log.info("이메일 변경 완료 - 사용자ID: {}, 이전 이메일: {}, 새 이메일: {}",
-                 userId, oldEmail, newEmail);
+
     }
 
     @Override

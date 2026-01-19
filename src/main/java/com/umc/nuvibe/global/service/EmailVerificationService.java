@@ -35,22 +35,23 @@ public class EmailVerificationService {
         // 같은 이메일로 발급받았던 기존 토큰 삭제
         tokenRepository.deleteByEmail(email);
 
-        // 토큰 생성 후 db에 저장
-        String token = UUID.randomUUID().toString();
-        EmailVerificationToken verificationToken = new EmailVerificationToken(token, email);
+        // 평문 토큰 생성
+        String rawToken = UUID.randomUUID().toString();
+
+        // 토큰을 해시하여 DB에 저장
+        EmailVerificationToken verificationToken = new EmailVerificationToken(rawToken, email);
         tokenRepository.save(verificationToken);
 
-        log.info("이메일 인증 토큰 생성 - 이메일: {}, 토큰: {}", email, token);
 
-        // 메일 발송
-        String link = baseURL + token;
+
+        // 해시된 토큰 전송
+        String hashedToken = EmailVerificationToken.hashToken(rawToken);
+        String link = baseURL + hashedToken;
 
         try {
             MimeMessage message = createVerificationEmailMessage(email, link);
             javaMailSender.send(message);
-            log.info("이메일 발송 완료 - 수신자: {}", email);
         } catch (MessagingException e) {
-            log.error("이메일 발송 실패 - 수신자: {}, 에러: {}", email, e.getMessage());
             throw new BusinessException(MailErrorCode.EMAIL_SEND_FAILED);
         }
     }
@@ -87,17 +88,16 @@ public class EmailVerificationService {
 
     // 토큰 검증, 성공시 이메일 반환
     @Transactional
-    public String verifyToken(String token) {
-        log.info("토큰 검증 시작 - 토큰: {}", token);
+    public String verifyToken(String hashedToken) {
 
-        EmailVerificationToken verificationToken = tokenRepository.findByToken(token)
+
+        EmailVerificationToken verificationToken = tokenRepository.findByToken(hashedToken)
                 .orElseThrow(() -> {
-                    log.warn("유효하지 않은 토큰 - 토큰: {}", token);
+
                     return new BusinessException(MailErrorCode.INVALID_TOKEN);
                 });
 
         if (verificationToken.getExpiryTime().isBefore(LocalDateTime.now())) {
-            log.warn("토큰 만료 - 토큰: {}, 이메일: {}", token, verificationToken.getEmail());
             tokenRepository.delete(verificationToken);
             throw new BusinessException(MailErrorCode.TOKEN_EXPIRED);
         }
@@ -106,7 +106,6 @@ public class EmailVerificationService {
         verificationToken.verified();
 
         String email = verificationToken.getEmail();
-        log.info("토큰 검증 성공 - 이메일: {}", email);
 
         return email;
     }

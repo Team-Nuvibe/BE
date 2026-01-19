@@ -37,16 +37,16 @@ public class UserSetting implements Serializable {
     //이미지 반응 알림
     private Boolean isReactionAlert;
 
-    // 회원가입 시 기본값 설정 (모두 켜기)
+    // 회원가입 시 기본값 설정
     public static UserSetting createDefault() {
         return UserSetting.builder()
-                .isServiceAlert(false)
-                .isSecurityAlert(false)
-                .isRecommendAlert(false)
-                .isRecapAlert(false)
-                .isTribeCreateAlert(false)
-                .isTribeChatAlert(false)
-                .isReactionAlert(false)
+                .isServiceAlert(true)
+                .isSecurityAlert(true)
+                .isRecommendAlert(true)
+                .isRecapAlert(true)
+                .isTribeCreateAlert(true)
+                .isTribeChatAlert(true)
+                .isReactionAlert(true)
                 .build();
     }
 
