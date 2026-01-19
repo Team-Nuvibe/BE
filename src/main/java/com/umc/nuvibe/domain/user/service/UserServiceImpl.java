@@ -13,16 +13,13 @@ import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.service.EmailVerificationService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -36,12 +33,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final EmailVerificationService verificationService;
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${frontend.redirect.email-verify-success}")
-    private String emailVerifySuccessUrl;
-
-    @Value("${frontend.redirect.email-verify-failed}")
-    private String emailVerifyFailedUrl;
 
     @Override
     @Transactional(readOnly = true)
@@ -80,34 +71,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void requestEmailUpdate(Long userId, String email) {
+    public void sendEmailVerification(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
-        log.info("이메일 변경 요청 - 사용자ID: {}, 새 이메일: {}", userId, email);
-        verificationService.sendVerificationEmail(email, false);
+        log.info("이메일 인증 요청 - 이메일: {}", email);
+        verificationService.sendVerificationEmail(email);
     }
 
     @Override
     @Transactional
-    public void verifyAndUpdateEmailWithRedirect(Long userId, String token, HttpServletResponse response) throws IOException {
-        try {
-            String verifiedEmail = verificationService.verifyToken(token);
+    public void updateEmail(Long userId, String newEmail) {
+        // 이메일이 인증되었는지 확인
+        verificationService.checkEmailIsVerified(newEmail);
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-
-            String oldEmail = user.getEmail();
-            user.updateEmail(verifiedEmail);
-
-            log.info("이메일 변경 완료 - 사용자ID: {}, 이전 이메일: {}, 새 이메일: {}",
-                     userId, oldEmail, verifiedEmail);
-
-            response.sendRedirect(emailVerifySuccessUrl);
-        } catch (BusinessException e) {
-            log.error("이메일 변경 실패 - 사용자ID: {}, 토큰: {}, 에러: {}", userId, token, e.getMessage());
-            response.sendRedirect(emailVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        String oldEmail = user.getEmail();
+        user.updateEmail(newEmail);
+
+        log.info("이메일 변경 완료 - 사용자ID: {}, 이전 이메일: {}, 새 이메일: {}",
+                 userId, oldEmail, newEmail);
     }
 
     @Override

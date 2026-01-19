@@ -30,9 +30,7 @@ spring:
     port: 587
     username: ${GMAIL_ADDRESS}
     password: ${GMAIL_PASSWORD}
-    base-url:
-      join: ${SERVER_URL:http://localhost:8080}/api/auth/verify?token=
-      email-change: ${SERVER_URL:http://localhost:8080}/api/users/email/verify?token=
+    base-url: ${SERVER_URL:http://localhost:8080}/api/auth/verify?token=
     properties:
       mail:
         smtp:
@@ -46,10 +44,7 @@ jwt:
   refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
 
 frontend:
-  url: ${FRONTEND_URL:http://localhost:3000}
+  url: ${SERVER_URL:http://localhost:3000}
   redirect:
-    auth-verify-success: ${SERVER_URL:http://localhost:8080}/signup?verified=true
-    auth-verify-failed: ${SERVER_URL:http://localhost:8080}/signup?error=true
-    email-verify-success: ${SERVER_URL:http://localhost:8080}/settings/email?verified=true
-    email-verify-failed: ${SERVER_URL:http://localhost:8080}/settings/email?error=true
-
+    auth-verify-success: ${SERVER_URL:http://localhost:3000}/signup?verified=true
+    auth-verify-failed: ${SERVER_URL:http://localhost:3000}/signup?error=true

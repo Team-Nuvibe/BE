@@ -117,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
         log.info("회원가입 인증 이메일 발송 요청 - 이메일: {}", email);
-        verificationService.sendVerificationEmail(email, true);
+        verificationService.sendVerificationEmail(email);
     }
 
     @Override

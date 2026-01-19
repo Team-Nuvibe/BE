@@ -22,6 +22,7 @@ public enum UserResultCode implements ResultCode {
     USER_PASSWORD_REISSUE_OK(HttpStatus.OK,"USER011", "비밀번호 재설정 성공"),
     USER_SETTING_UPDATE_OK(HttpStatus.OK,"USER012", "유저 설정 변경 성공"),
     USER_EMAIL_VERIFICATION_OK(HttpStatus.OK,"USER013", "이메일 인증 완료 성공"),
+    USER_EMAIL_UPDATE_OK(HttpStatus.OK,"USER014", "이메일 변경 성공"),
     ;
 
     private final HttpStatus httpStatus;

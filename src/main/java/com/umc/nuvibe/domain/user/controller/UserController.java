@@ -10,14 +10,12 @@ import com.umc.nuvibe.global.apiPayLoad.result.UserResultCode;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -52,23 +50,21 @@ public class UserController {
         return Response.ok(UserResultCode.USER_NICKNAME_UPDATE_OK, response);
     }
 
-    @PostMapping("/email/request")
-    @Operation(summary = "이메일 변경 요청", description = "이메일 변경을 위한 인증 이메일을 발송합니다.")
-    public Response<String> requestEmailUpdate(
-            @AuthUser Long userId,
+    @PostMapping("/email/verification")
+    @Operation(summary = "이메일 인증 요청", description = "이메일 변경을 위한 인증 메일을 발송합니다.")
+    public Response<String> sendEmailVerification(
             @RequestBody @Valid EmailVerificationReq request) {
-        userService.requestEmailUpdate(userId, request.email());
-        return Response.ok(UserResultCode.USER_EMAIL_UPDATE_REQUEST_OK, "이메일 변경 요청이 발송되었습니다.");
+        userService.sendEmailVerification(request.email());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "이메일 인증 메일이 발송되었습니다.");
     }
 
-    @GetMapping("/email/verify")
-    @Operation(summary = "이메일 변경 인증", description = "이메일 변경용 인증 링크를 처리하고 설정 페이지로 리다이렉트합니다.")
-    public Response<String> verifyAndUpdateEmail(
+    @PatchMapping("/email")
+    @Operation(summary = "이메일 변경", description = "인증된 이메일로 사용자의 이메일을 변경합니다.")
+    public Response<String> updateEmail(
             @AuthUser Long userId,
-            @RequestParam String token,
-            HttpServletResponse response) throws IOException {
-        userService.verifyAndUpdateEmailWithRedirect(userId, token, response);
-        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK,"이메일 변경 인증 완료 후 리다이렉트 합니다.");
+            @RequestBody @Valid EmailVerificationReq request) {
+        userService.updateEmail(userId, request.email());
+        return Response.ok(UserResultCode.USER_EMAIL_UPDATE_OK, "이메일이 변경되었습니다.");
     }
 
     @PatchMapping("/password")
@@ -90,4 +86,3 @@ public class UserController {
         return Response.ok(UserResultCode.USER_SETTING_UPDATE_OK, response);
     }
 }
-

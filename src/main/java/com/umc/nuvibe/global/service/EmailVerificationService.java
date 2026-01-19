@@ -25,15 +25,12 @@ public class EmailVerificationService {
     private final EmailVerificationTokenRepository tokenRepository;
     private final JavaMailSender javaMailSender;
 
-    @Value("${spring.mail.base-url.join}")
-    private String joinBaseURL;
-
-    @Value("${spring.mail.base-url.email-change}")
-    private String emailChangeBaseURL;
+    @Value("${spring.mail.base-url}")
+    private String baseURL;
 
     // 인증 메일 발송
     @Transactional
-    public void sendVerificationEmail(String email, boolean isJoin) {
+    public void sendVerificationEmail(String email) {
 
         // 같은 이메일로 발급받았던 기존 토큰 삭제
         tokenRepository.deleteByEmail(email);
@@ -43,11 +40,9 @@ public class EmailVerificationService {
         EmailVerificationToken verificationToken = new EmailVerificationToken(token, email);
         tokenRepository.save(verificationToken);
 
-        log.info("이메일 인증 토큰 생성 - 이메일: {}, 토큰: {}, 타입: {}",
-                 email, token, isJoin ? "회원가입" : "이메일변경");
+        log.info("이메일 인증 토큰 생성 - 이메일: {}, 토큰: {}", email, token);
 
         // 메일 발송
-        String baseURL = isJoin ? joinBaseURL : emailChangeBaseURL;
         String link = baseURL + token;
 
         try {

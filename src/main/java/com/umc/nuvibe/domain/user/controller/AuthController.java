@@ -62,12 +62,12 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    @Operation(summary = "회원가입 이메일 인증", description = "회원가입용 이메일 인증 링크를 처리하고 회원가입 페이지로 리다이렉트합니다.")
-    public Response<String> verifyJoinEmail(
+    @Operation(summary = "이메일 인증", description = "이메일 인증 링크를 처리합니다. 인증 완료 후 해당 페이지로 리다이렉트합니다.")
+    public Response<String> verifyEmail(
             @RequestParam String token,
             HttpServletResponse response) throws IOException {
         authService.verifyJoinEmailAndRedirect(token, response);
-        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK,"이메일 인증 처리 완료 후 리다이렉트 했습니다.");
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK,"이메일 인증 처리 완료, 이전 페이지로 리다이렉트합니다.");
     }
 
     @GetMapping("check-password")

@@ -14,10 +14,8 @@ public interface UserService {
     UserProfileImageRes getUserProfileImage(Long userId);
     void updateProfileImage(Long userId, MultipartFile file);
     UserNicknameUpdateRes updateUserNickname(Long userId, String nickname);
-    void requestEmailUpdate(Long userId, String email);
-    void verifyAndUpdateEmailWithRedirect(Long userId, String token, HttpServletResponse response) throws IOException;
+    void sendEmailVerification(String email);
+    void updateEmail(Long userId, String newEmail);
     void reissuePassword(Long userId, ReissuePasswordReq request);
     UserSettingUpdateRes updateSetting(Long userId, UserSettingReq request);
-
-
 }
