@@ -14,6 +14,8 @@ public record ChatTimelineReq(
         @Min(1) @Max(50)
         Integer size
 ) {
+    private static final int DEFAULT_SIZE = 20;
+
     public ChatTimelineReq {
         size = (size == null) ? 20 : size;
     }

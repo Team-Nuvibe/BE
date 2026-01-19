@@ -2,10 +2,9 @@ package com.umc.nuvibe.domain.tribe.service.chat;
 
 import com.umc.nuvibe.domain.tribe.dto.internal.EmojiAggRow;
 import com.umc.nuvibe.domain.tribe.dto.internal.MyEmojiRow;
+import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
-import com.umc.nuvibe.domain.tribe.dto.response.ChatTimelineItemRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ChatTimelineListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.EmojiSummaryRes;
+import com.umc.nuvibe.domain.tribe.dto.response.chat.*;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
 import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
 import com.umc.nuvibe.domain.tribe.repository.EmojiRepository;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -94,6 +94,54 @@ public class ChatServiceImpl implements ChatService {
 
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ChatGridListRes getChatGridList(Long userId, Long tribeId, ChatGridReq req) {
+
+        // 1. 유저-트라이브 유효성 검증
+        validateUserInTribe(userId, tribeId);
+
+        // 1-1. 커서 유효성 체크
+        if (req.hasCursor() && !req.isCursorComplete()) {
+            throw new BusinessException(ChatErrorCode.CHAT_CURSOR_INVALID);
+        }
+
+        // 2. size는 dto에서 기본값 처리 (null → 30)
+        int limit = req.size();
+        Pageable pageable = PageRequest.of(0, limit + 1);
+
+        // 3. 커서 여부에 따라 첫 페이지 / 다음 페이지 분기
+        List<Chat> chats = (!req.hasCursor())
+                ? chatRepository.findChatGridFirstPage(tribeId, pageable)
+                : chatRepository.findChatGridNextPage(tribeId, req.cursorCreatedAt(), req.cursorChatId(), pageable);
+
+        // 4. hasNext 판단
+        boolean hasNext = chats.size() > limit;
+        List<Chat> pageItems = hasNext ? chats.subList(0, limit) : chats;
+
+        // 5. 채팅이 아직 없을 시 반환
+        if (pageItems.isEmpty()) {
+            return new ChatGridListRes(List.of(), null, null, false);
+        }
+
+        // 6. dto로 매핑
+        List<ChatGridItemRes> items = pageItems.stream()
+                .map(ChatGridItemRes::from)
+                .toList();
+
+        // 7. 다음 커서 계산 (hasNext=true일 때만)
+        LocalDateTime nextCursorCreatedAt = null;
+        Long nextCursorChatId = null;
+
+        if (hasNext && !items.isEmpty()) {
+            ChatGridItemRes last = items.get(items.size() - 1);
+            nextCursorCreatedAt = last.createdAt();
+            nextCursorChatId = last.chatId();
+        }
+
+        return new ChatGridListRes(items, nextCursorCreatedAt, nextCursorChatId, hasNext);
+    }
+
 
     /**
      * 각 chatId에 대해 이모지 타입별 개수를 집계 및 요약한 결과
@@ -135,6 +183,7 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
+    // 유저가 해당 트라이브 내에 입장해있는지 확인
     private void validateUserInTribe(Long userId, Long tribeId) {
         if (!userTribeRepository.existsByUser_IdAndTribe_Id(userId, tribeId)) {
             throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND);
