@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {
     ImageRes uploadAndSave(MultipartFile file, ImageTag tag);
+
+    String uploadImage(MultipartFile file);
     ImageDetailRes getImageDetail(Long userId, Long imageId);
 
 

@@ -1,6 +1,8 @@
 package com.umc.nuvibe.domain.user.service;
 
-import com.umc.nuvibe.domain.user.dto.request.AuthRequest;
+import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
+import com.umc.nuvibe.domain.user.dto.request.LoginReq;
+import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -9,40 +11,60 @@ import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.security.jwt.JwtTokenProvider;
+import com.umc.nuvibe.global.service.EmailVerificationService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailVerificationService verificationService;
 
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
+    @Value("${frontend.redirect.auth-verify-success}")
+    private String authVerifySuccessUrl;
+
+    @Value("${frontend.redirect.auth-verify-failed}")
+    private String authVerifyFailedUrl;
+
+    public AuthServiceImpl(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtTokenProvider jwtTokenProvider,
+                          EmailVerificationService verificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.verificationService = verificationService;
     }
 
     @Override
     @Transactional
-    public void signUp(AuthRequest.SignUpReq request) {
+    public void signUp(SignUpReq request) {
         validateSignUpRequest(request);
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
 
-        String encodedPassword=passwordEncoder.encode(request.getPassword());
+        // 이메일이 인증되었는지 확인
+        verificationService.checkEmailIsVerified(request.email());
+
+        String encodedPassword=passwordEncoder.encode(request.password());
 
         User user=User.createLocalUser(
-                request.getName(),
-                request.getNickname(),
-                request.getEmail(),
+                request.name(),
+                request.nickname(),
+                request.email(),
                 encodedPassword
         );
 
@@ -51,11 +73,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public TokenRes login(AuthRequest.LoginReq request) {
-        User user=userRepository.findByEmail(request.getEmail())
+    public TokenRes login(LoginReq request) {
+        User user=userRepository.findByEmail(request.email())
                 .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new BusinessException(AuthErrorCode.PASSWORD_UNMATCH_ERROR);
             // passwordEncoder가 password를 해싱하여 비교해줌
         }
@@ -88,18 +110,51 @@ public class AuthServiceImpl implements AuthService {
         userRepository.delete(user);
     }
 
+    @Override
+    // 사용하는 이메일인지 인증하기 위한 메서드
+    public void sendJoinVerificationEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
+        }
 
-    private void validateSignUpRequest(AuthRequest.SignUpReq request) {
+        verificationService.sendVerificationEmail(email);
+    }
 
-        if (!PASSWORD_PATTERN.matcher(request.getPassword()).matches()) {
+    @Override
+    @Transactional
+    public void verifyJoinEmailAndRedirect(String token, HttpServletResponse response) throws IOException {
+        try {
+            String verifiedEmail = verificationService.verifyToken(token);
+
+            response.sendRedirect(authVerifySuccessUrl);
+        } catch (BusinessException e) {
+
+            response.sendRedirect(authVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
+        }
+    }
+
+    @Override
+    public void checkCurrentPassword(Long userId, CheckPasswordReq request) {
+        User user=userRepository.findById(userId)
+                .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new BusinessException(AuthErrorCode.PASSWORD_UNMATCH_ERROR);
+        }
+    }
+
+
+    private void validateSignUpRequest(SignUpReq request) {
+
+        if (!PASSWORD_PATTERN.matcher(request.password()).matches()) {
             throw new BusinessException(AuthErrorCode.INVALID_PASSWORD_FORMAT);
         }
 
-        if(!request.getPassword().equals(request.getConfirmPassword())) {
+        if(!request.password().equals(request.confirmPassword())) {
             throw new BusinessException(AuthErrorCode.CONFIRM_PASSWORD_MISMATCH);
         }
 
-        if (!EMAIL_PATTERN.matcher(request.getEmail()).matches()) {
+        if (!EMAIL_PATTERN.matcher(request.email()).matches()) {
             throw new BusinessException(AuthErrorCode.INVAILD_EMAIL_FORMAT);
         }
     }
