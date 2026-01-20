@@ -55,7 +55,7 @@ public class ChatController {
     }
 
     @GetMapping("/{chatId}/detail")
-    @Operation(summary = "채팅 이미지 상세 조회", description = "그리드 목록에서 이미지를 상세 조회")
+    @Operation(summary = "채팅 이미지 상세 조회", description = "그리드 목록에서 이미지 상세 조회")
     public Response<ChatDetailRes> getChatDetail(
             @AuthUser Long userId,
             @PathVariable Long chatId
