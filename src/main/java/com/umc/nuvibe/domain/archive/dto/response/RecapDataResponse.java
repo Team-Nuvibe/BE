@@ -8,17 +8,18 @@ import java.util.List;
 public record RecapDataResponse (
         List<ImageDetail> lastMonthImages,
         List<ImageDetail> todayImages
-){ public record ImageDetail (
+) {
+    public record ImageDetail (
         long imageId,
         ImageTag tag,
         String imageUrl
-){
-    public static ImageDetail from(Image image){
-        return new ImageDetail(
-                image.getId(),
-                image.getImageTag(),
-                image.getImageUrl()
-        );
+    ) {
+        public static ImageDetail from(Image image){
+            return new ImageDetail(
+                    image.getId(),
+                    image.getImageTag(),
+                    image.getImageUrl()
+            );
+        }
     }
-}
 }

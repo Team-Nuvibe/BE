@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -76,7 +77,8 @@ public class RecapController {
     @Operation(summary = "날짜 별 업로드한 이미지 조회", description = "날짜 선택시 지난 달 업로드한 이미지들과 해당 날짜에 업로드한 이미지를 조회합니다.")
     public Response<RecapDataResponse> getRecapImages(
             @AuthUser Long userId,
-            @Parameter(description = "조회할 날짜 (형식:yyyy-mm-dd)") @RequestParam LocalDate date
+            @Parameter(description = "조회할 날짜 (형식:yyyy-MM-dd)")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  @RequestParam LocalDate date
     ){
         RecapDataResponse response = recapService.getImagesByDate(userId, date);
         return Response.ok(RecapResultCode.RECAP_IMAGES_SUCCESS, response);

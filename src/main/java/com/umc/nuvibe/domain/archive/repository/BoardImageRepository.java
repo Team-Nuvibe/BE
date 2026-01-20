@@ -248,13 +248,11 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
     );
 
     //해당 날에 업로드한 이미지 조회
-    @Query(value =
-            "select i.* from board_images bi " +
-                    "join archive_board ab on ab.board_id = bi.board_id " +
-                    "join images i on i.image_id = bi.image_id " +
-                    "where ab.user_id = :userId " +
-                    "and date(i.created_at) = :date",
-            nativeQuery = true
+    @Query("select i from BoardImage bi " +
+            "join bi.image i " +
+            "join bi.board b " +
+            "where b.user.id = :userId " +
+            "and function('DATE', i.createdAt) = :date "
     )
     List<Image> findImagesByDate(
             @Param("userId") Long userId,
