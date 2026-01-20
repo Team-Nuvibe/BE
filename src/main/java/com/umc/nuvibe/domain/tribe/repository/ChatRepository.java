@@ -4,6 +4,7 @@ import com.umc.nuvibe.domain.tribe.entity.Chat;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -110,4 +111,13 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     Optional<Chat> findDetailByChatId(Long chatId);
 
     boolean existsByIdAndTribe_Id(Long id, Long tribeId);
+
+    //tribeId 통해 chatId 리스트 조회
+    @Query("SELECT c.id FROM Chat c WHERE c.tribe.id = :tribeId")
+    List<Long> findIdsByTribeId(@Param("tribeId") Long tribeId);
+
+    // 채팅 하드 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Chat c WHERE c.tribe.id = :tribeId")
+    void deleteByTribeId(@Param("tribeId") Long tribeId);
 }
