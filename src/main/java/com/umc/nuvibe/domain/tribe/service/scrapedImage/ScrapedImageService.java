@@ -1,8 +1,8 @@
 package com.umc.nuvibe.domain.tribe.service.scrapedImage;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageToggleRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageListRes;
 
 public interface ScrapedImageService {
 

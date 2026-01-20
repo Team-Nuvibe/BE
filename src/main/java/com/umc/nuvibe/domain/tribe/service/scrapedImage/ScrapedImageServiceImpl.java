@@ -1,17 +1,15 @@
 package com.umc.nuvibe.domain.tribe.service.scrapedImage;
 
 import com.umc.nuvibe.domain.image.entity.Image;
-import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.tribe.dto.request.ScrapedImageSliceReq;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageInfoRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageToggleRes;
-import com.umc.nuvibe.domain.tribe.dto.response.ScrapedImageListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageToggleRes;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageListRes;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
 import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.TribeRepository;
 import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -77,22 +75,27 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
 
     private ScrapedImageListRes getScrapedImageInternal(Long userId, Long tribeId, ScrapedImageSliceReq req){
 
+        // 커서 유효성 체크
+        if (req.hasCursor() && !req.isCursorComplete()) {
+            throw new BusinessException(ScrapedImageErrorCode.SCRAPEDIMAGE_CURSOR_ERROR);
+        }
+
         // 1. hasNext 판단을 위해 요청 size보다 1개 더 조회
         int limit = req.size();
         Pageable pageable = PageRequest.of(0, limit + 1);
 
         // 2. 첫 페이지인지 여부에 따라 메서드 호출
-        List<ScrapedImage> scraps = (req.lastCreatedAt() == null)
+        List<ScrapedImage> scraps = (req.cursorCreatedAt() == null)
                 ? scrapedImageRepository.findMyScrapsFirstPage(userId, tribeId, req.imageTag(), pageable)
-                : scrapedImageRepository.findMyScrapsNextPage(userId, tribeId, req.imageTag(), req.lastCreatedAt(), req.lastId(), pageable);
+                : scrapedImageRepository.findMyScrapsNextPage(userId, tribeId, req.imageTag(), req.cursorCreatedAt(), req.cursorId(), pageable);
 
         // 3. 다음 페이지 여부 판단 및 다음 페이지 존재 시 1개 더 조회한 데이터 삭제 후 반환
         boolean hasNext = scraps.size() > limit;
         List<ScrapedImage> resultItems = hasNext ? scraps.subList(0, limit) : scraps;
 
         // 4. dto로 변환
-        List<ScrapedImageInfoRes> items = resultItems.stream()
-                .map(ScrapedImageInfoRes::from)
+        List<ScrapedImageItemRes> items = resultItems.stream()
+                .map(ScrapedImageItemRes::from)
                 .toList();
 
         LocalDateTime nextCursorCreatedAt = null;
@@ -100,7 +103,7 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
 
         // 5. 다음 페이지 존재 시 마지막 데이터 정보로 커서 설정
         if (hasNext && !items.isEmpty()) {
-            ScrapedImageInfoRes lastItem = items.get(items.size() - 1);
+            ScrapedImageItemRes lastItem = items.get(items.size() - 1);
             nextCursorCreatedAt = lastItem.createdAt();
             nextCursorId = lastItem.scrapImageId();
         }
