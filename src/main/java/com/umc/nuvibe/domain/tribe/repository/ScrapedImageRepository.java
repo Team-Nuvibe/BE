@@ -56,6 +56,11 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
             Pageable pageable
     );
 
+    // 스크랩 이미지 하드 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from ScrapedImage si where si.tribe.id = :tribeId")
+    void deleteByTribeId(@Param("tribeId") Long tribeId);
+
 
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM ScrapedImage si WHERE si.user.id = :userId AND si.tribe.id = :tribeId")

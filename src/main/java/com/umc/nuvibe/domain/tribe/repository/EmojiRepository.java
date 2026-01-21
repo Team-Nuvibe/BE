@@ -4,6 +4,7 @@ import com.umc.nuvibe.domain.tribe.dto.internal.EmojiAggRow;
 import com.umc.nuvibe.domain.tribe.dto.internal.MyEmojiRow;
 import com.umc.nuvibe.domain.tribe.entity.Emoji;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -46,4 +47,9 @@ public interface EmojiRepository extends JpaRepository<Emoji, Long> {
             @Param("userId") Long userId,
             @Param("chatId") List<Long> chatId
     );
+
+    // 이모지 하드 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Emoji e where e.chat.id in :chatIds")
+    void deleteByChatIds(@Param("chatIds") List<Long> chatIds);
 }
