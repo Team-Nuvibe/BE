@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.archive.service;
 
 import com.umc.nuvibe.domain.archive.dto.response.RecapActiveResponse;
 import com.umc.nuvibe.domain.archive.dto.response.RecapBoardResponse;
+import com.umc.nuvibe.domain.archive.dto.response.RecapDataResponse;
 import com.umc.nuvibe.domain.archive.dto.response.RecapTagResponse;
 import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 import com.umc.nuvibe.domain.archive.repository.ArchiveBoardRepository;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.rmi.server.ExportException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -172,5 +172,41 @@ public class RecapServiceImpl implements RecapService {
                 tagCount,
                 maxDropCount
         );
+    }
+
+    //해당 달에 업로드한 날자
+    @Override
+    public List<LocalDate> getImageDropDates(Long userId, int year, int month){
+        if (month > 12 || month < 1){
+            throw new BusinessException(RecapErrorCode.INVALID_MONTH);
+        }
+
+        LocalDate start = LocalDate.of(year, month, 1);
+        LocalDate end = start.plusMonths(1);
+
+        return boardImageRepository.findImageDropDatesByMonth(userId, start, end)
+                .stream()
+                .map(java.sql.Date::toLocalDate)
+                .toList();
+    }
+
+    //해당 날자의 업로드 이미지와 지난달의 오늘
+    @Override
+    public RecapDataResponse getImagesByDate(Long userId, LocalDate date){
+        List<RecapDataResponse.ImageDetail> todayImages =
+                boardImageRepository.findImagesByDate(userId, date)
+                        .stream()
+                        .map(RecapDataResponse.ImageDetail::from)
+                        .toList();
+
+
+        LocalDate lastMonth = date.minusMonths(1);
+        List<RecapDataResponse.ImageDetail> lastMonthImageList =
+                boardImageRepository.findImagesByDate(userId, lastMonth)
+                        .stream()
+                        .map(RecapDataResponse.ImageDetail::from)
+                        .toList();
+
+        return new RecapDataResponse(lastMonthImageList, todayImages);
     }
 }
