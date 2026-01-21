@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.archive.repository;
 
 import com.umc.nuvibe.domain.archive.dto.BoardOldestImageDto;
 import com.umc.nuvibe.domain.archive.entity.BoardImage;
+import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -226,5 +229,33 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
             @Param("userId") Long userId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
+    );
+
+    //해당 달에 업로드한 날자
+    @Query(value =
+            "select distinct date(i.created_at) from board_images bi " +
+                    "join archive_board ab on ab.board_id = bi.board_id " +
+                    "join images i on i.image_id = bi.image_id " +
+                    "where ab.user_id = :userId " +
+                    "and i.created_at >= :start " +
+                    "and i.created_at < :end " +
+                    "order by date(i.created_at)",
+            nativeQuery = true)
+    List<java.sql.Date> findImageDropDatesByMonth(
+            @Param("userId") Long userId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
+
+    //해당 날에 업로드한 이미지 조회
+    @Query("select i from BoardImage bi " +
+            "join bi.image i " +
+            "join bi.board b " +
+            "where b.user.id = :userId " +
+            "and function('DATE', i.createdAt) = :date "
+    )
+    List<Image> findImagesByDate(
+            @Param("userId") Long userId,
+            @Param("date") LocalDate date
     );
 }
