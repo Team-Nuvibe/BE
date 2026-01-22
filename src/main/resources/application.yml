@@ -44,7 +44,7 @@ jwt:
   refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
 
 frontend:
-  url: ${SERVER_URL:http://localhost:3000}
+  url: ${FRONT_URL:http://localhost:3000}
   redirect:
-    auth-verify-success: ${SERVER_URL:http://localhost:3000}/signup?verified=true
-    auth-verify-failed: ${SERVER_URL:http://localhost:3000}/signup?error=true
+    auth-verify-success: ${FRONT_URL:http://localhost:3000}/signup?verified=true
+    auth-verify-failed: ${FRONT_URL:http://localhost:3000}/signup?error=true
