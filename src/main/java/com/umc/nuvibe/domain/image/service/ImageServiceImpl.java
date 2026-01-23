@@ -72,6 +72,24 @@ public class ImageServiceImpl implements ImageService {
         return ImageDetailRes.from(image, user, board);
     }
 
+    @Override
+    @Transactional
+    public Image uploadAndSaveEntity(MultipartFile file, ImageTag tag) {
+        validateFile(file);
+
+        if (tag == null) {
+            throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
+        }
+
+        String imageURL=uploadToS3(file);
+
+        Image newImage = Image.builder()
+                .imageUrl(imageURL)
+                .imageTag(tag)
+                .build();
+
+        return imageRepository.save(newImage);
+    }
 
     // 파일 검증 분리
     private void validateFile(MultipartFile file) {

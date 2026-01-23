@@ -1,24 +1,37 @@
 package com.umc.nuvibe.domain.tribe.service.chat;
 
+import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
+import com.umc.nuvibe.domain.image.entity.Image;
+import com.umc.nuvibe.domain.image.service.ImageService;
+import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.tribe.dto.internal.ChatSend;
 import com.umc.nuvibe.domain.tribe.dto.internal.EmojiAggRow;
 import com.umc.nuvibe.domain.tribe.dto.internal.MyEmojiRow;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.*;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
-import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
-import com.umc.nuvibe.domain.tribe.repository.EmojiRepository;
-import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
+import com.umc.nuvibe.domain.tribe.entity.Tribe;
+import com.umc.nuvibe.domain.tribe.repository.*;
 import com.umc.nuvibe.domain.tribe.vo.EmojiType;
+import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.ChatErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,8 +44,17 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
     private final EmojiRepository emojiRepository;
+    private final TribeRepository tribeRepository;
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
+
+    private final ImageService imageService;
+    private final ArchiveBoardService archiveBoardService;
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     @Transactional(readOnly = true)
@@ -164,6 +186,67 @@ public class ChatServiceImpl implements ChatService {
         );
 
         return ChatDetailRes.from(chat, isScraped);
+    }
+
+    @Override
+    @Transactional
+    public void chatSend(Long userId, Long tribeId, MultipartFile file, Long boardId){
+
+        // 1. 트라이브 존재 검증
+        Tribe tribe = tribeRepository.findById(tribeId)
+                .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
+
+        // 2. 발신 권한 검증
+        boolean canSend = userTribeRepository.existsByUser_IdAndTribe_IdAndUserTribeStatus(
+                userId, tribeId, UserTribeStatus.ACTIVE
+        );
+        if (!canSend) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);
+        }
+
+        // 3. 태그 검증 (해당 트라이브 태그 사용)
+        ImageTag tag = tribe.getImageTag();
+        if (tag == null) {
+            throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
+        }
+
+        // 4. 이미지 업로드 + 이미지 엔티티 저장
+        Image image = imageService.uploadAndSaveEntity(file, tag);
+
+        // 5. 채팅 저장 (유저는 참조)
+        User userRef = em.getReference(User.class, userId);
+        Chat chat = Chat.of(userRef, tribe, image);
+        chatRepository.save(chat);
+
+        // 6. 보드에 이미지 저장
+        archiveBoardService.addBoardImage(userId, boardId, image.getId());
+
+        // 7. 발신할 record 생성
+        ChatSend chatSend = new ChatSend(
+                chat.getId(),
+                userId,
+                image.getId(),
+                image.getImageUrl(),
+                chat.getCreatedAt()
+        );
+
+        registerPublish(tribeId, chatSend);
+
+    }
+
+    // 커밋 이후 각 트라이브로 발송
+    private void registerPublish(Long tribeId, ChatSend chatSend) {
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        messagingTemplate.convertAndSend(
+                                "/topic/tribe." + tribeId,
+                                chatSend
+                        );
+                    }
+                }
+        );
     }
 
 
