@@ -63,6 +63,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",  // 로컬 테스트용
+                "http://localhost:5173",
                 frontendUrl
         ));
 
