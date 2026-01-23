@@ -17,6 +17,8 @@ services:
     networks:
       - nuvibe-network
     restart: unless-stopped
+    volumes:
+      - ./logs:/logs
     logging:
       driver: "json-file"
       options:
