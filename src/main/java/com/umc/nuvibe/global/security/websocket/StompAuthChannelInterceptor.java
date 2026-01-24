@@ -7,7 +7,6 @@ import com.umc.nuvibe.global.apiPayLoad.error.WebsocketErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor{
@@ -44,22 +42,13 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor{
         if (accessor.getCommand() == null) {
                 return message;
         }
-        try {
-            return switch (accessor.getCommand()) {
-                case CONNECT -> handleConnect(message, accessor);
-                case SUBSCRIBE -> handleSubscribe(message, accessor);
-                default -> message;
-            };
-        } catch (Exception e) {
-            log.error("[WS preSend ERROR] cmd={}, dest={}, user={}",
-                    accessor.getCommand(),
-                    accessor.getDestination(),
-                    accessor.getUser(),
-                    e
-            );
-            throw e;
-        }
+
         //STOMP 명령어별로 분기 처리
+        return switch (accessor.getCommand()) {
+            case CONNECT -> handleConnect(message, accessor);
+            case SUBSCRIBE -> handleSubscribe(message, accessor);
+            default -> message;
+        };
     }
 
     // CONNECT 프레임 처리
@@ -80,7 +69,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor{
         // Principal을 userId로 고정
         accessor.setUser(new UsernamePasswordAuthenticationToken(userId, null, List.of()));
 
-        accessor.getSessionAttributes().put("userId", userId); // ✅ 추가
+        accessor.getSessionAttributes().put("userId", userId);
         return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
     }
 

@@ -19,10 +19,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // STOMP 웹소켓 연결 엔드포인트 등록
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // 임시로 모든 연결 허용 - 추후 변경 예정
+        // 임시로 모든 연결 허용 (테스트 용)
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
     }
 
     // 메시지 브로커 동작 방식 설정
