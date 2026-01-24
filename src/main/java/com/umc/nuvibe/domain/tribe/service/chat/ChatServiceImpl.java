@@ -4,13 +4,12 @@ import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
-import com.umc.nuvibe.domain.tribe.dto.internal.ChatSend;
-import com.umc.nuvibe.domain.tribe.dto.internal.EmojiAggRow;
-import com.umc.nuvibe.domain.tribe.dto.internal.MyEmojiRow;
+import com.umc.nuvibe.domain.tribe.dto.internal.*;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.*;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
+import com.umc.nuvibe.domain.tribe.entity.Emoji;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.repository.*;
 import com.umc.nuvibe.domain.tribe.vo.EmojiType;
@@ -33,10 +32,14 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.time.LocalDateTime.now;
 
 @Service
 @RequiredArgsConstructor
@@ -230,28 +233,27 @@ public class ChatServiceImpl implements ChatService {
                 chat.getCreatedAt()
         );
 
-        registerPublish(tribeId, chatSend);
+        registerChatPublish(tribeId, chatSend);
 
     }
 
-    // 커밋 이후 각 트라이브로 발송
-    private void registerPublish(Long tribeId, ChatSend chatSend) {
-        TransactionSynchronizationManager.registerSynchronization(
-                new TransactionSynchronization() {
-                    @Override
-                    public void afterCommit() {
-                        messagingTemplate.convertAndSend(
-                                "/topic/tribe." + tribeId,
-                                chatSend
-                        );
-                    }
-                }
+    // 커밋 이후 채팅을 소속 트라이브로 발송
+    private void registerChatPublish(Long tribeId, ChatSend chatSend) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagingTemplate.convertAndSend(
+                        "/topic/tribe." + tribeId,
+                        chatSend
+                );
+            }
+        }
         );
     }
 
 
     /**
-     * 각 chatId에 대해 이모지 타입별 개수를 집계 및 요약한 결과
+     * 각 채팅에 대해 이모지 타입별 개수를 집계 및 요약한 결과
      * EmojiSummaryRes 목록 형태로 변환
      */
     private Map<Long, List<EmojiSummaryRes>> buildEmojiSummaryMap(List<Long> chatIds) {

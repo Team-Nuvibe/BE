@@ -6,6 +6,7 @@ import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatTimelineListRes;
+import com.umc.nuvibe.domain.tribe.vo.EmojiType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ChatService {
