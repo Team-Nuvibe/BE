@@ -5,6 +5,7 @@ import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatTimelineListRes;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ChatService {
 
@@ -19,4 +20,7 @@ public interface ChatService {
 
     //채팅 이미지 상세 조회
     ChatDetailRes getChatDetail(Long userId, Long chatId);
+
+    // 채팅 발신
+    void chatSend(Long userId, Long tribeId, MultipartFile file, Long boardId);
 }

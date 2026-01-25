@@ -41,6 +41,9 @@ public class Emoji extends BaseEntity {
         return new Emoji(type, chat, user);
     }
 
+    public void changeType(EmojiType newType){
+        this.type = newType;
+    }
 
 
 }

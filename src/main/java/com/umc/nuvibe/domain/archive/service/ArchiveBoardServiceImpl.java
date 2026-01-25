@@ -228,6 +228,31 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 board(board).
                 image(image).
                 build());
-
     }
+
+    // 채팅 전송용 보드 이미지 추가
+    @Override
+    @Transactional
+    public void addBoardImage(Long userId, Long boardId, Long imageId) {
+
+        ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
+
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+
+        if (boardImageRepository.existsByImageId(imageId)){
+            throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_ALREADY_EXISTS);
+        }
+
+        boardImageRepository.save(BoardImage.builder().
+                board(board).
+                image(image).
+                build());
+    }
+
+
+
+
+
+
 }

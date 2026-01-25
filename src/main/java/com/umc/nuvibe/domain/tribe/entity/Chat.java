@@ -29,4 +29,14 @@ public class Chat extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
     private Image image;
+
+    private Chat(User user, Tribe tribe, Image image) {
+        this.user = user;
+        this.tribe = tribe;
+        this.image = image;
+    }
+
+    public static Chat of(User user, Tribe tribe, Image image) {
+        return new Chat(user, tribe, image);
+    }
 }
