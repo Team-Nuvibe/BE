@@ -1,8 +1,6 @@
 package com.umc.nuvibe.domain.user.service;
 
-import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
-import com.umc.nuvibe.domain.user.dto.request.LoginReq;
-import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
+import com.umc.nuvibe.domain.user.dto.request.*;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 
 public interface AuthService {
@@ -19,8 +17,8 @@ public interface AuthService {
 
     // 비번초기화
     void sendPasswordResetCode(String email);
-    void verifyPasswordResetCode(String email, String code);
-    void resetPasswordWithCode(String email, String code, String newPassword, String confirmPassword);
+    void verifyPasswordResetCode(VerifyCodeReq request);
+    void resetPasswordWithCode(PasswordResetReq request);
 
     // 별도
     void checkCurrentPassword(Long userId, CheckPasswordReq request);

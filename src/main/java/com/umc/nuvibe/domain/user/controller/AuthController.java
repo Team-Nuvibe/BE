@@ -74,25 +74,20 @@ public class AuthController {
     @PostMapping("/password-reset/verify-code")
     @Operation(summary = "비밀번호 초기화용 인증 코드 검증", description = "비밀번호 재설정 인증 코드를 검증합니다.")
     public Response<String> verifyPasswordResetCode(@RequestBody @Valid VerifyCodeReq request) {
-        authService.verifyPasswordResetCode(request.email(), request.code());
+        authService.verifyPasswordResetCode(request);
         return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK, "인증 코드가 확인되었습니다. 새로운 비밀번호를 입력해주세요.");
     }
 
     @PostMapping("/password-reset")
     @Operation(summary = "비밀번호 초기화", description = "인증된 이메일의 비밀번호를 새로운 비밀번호로 변경합니다. 기존 세션은 모두 무효화됩니다.")
     public Response<String> resetPassword(@RequestBody @Valid PasswordResetReq request) {
-        authService.resetPasswordWithCode(
-                request.email(),
-                request.code(),
-                request.newPassword(),
-                request.confirmPassword()
-        );
+        authService.resetPasswordWithCode(request);
         return Response.ok(UserResultCode.USER_PASSWORD_REISSUE_OK, "비밀번호가 재설정되었습니다. 새로운 비밀번호로 로그인해주세요.");
     }
 
 
     @PostMapping("/reissue")
-    @Operation(summary = "토큰 재발급", description = "RefreshToken으로 새로운 AccessToken과 RefreshToken을 발급받습니다. 헤더에 refreshToekn을 담아주세요..")
+    @Operation(summary = "토큰 재발급", description = "RefreshToken으로 새로운 AccessToken과 RefreshToken을 발급받습니다. 헤더에 bearer + refreshToekn을 담아주세요.")
     public Response<TokenRes> reissueToken(@RequestHeader("Authorization") String authorizationHeader) {
         TokenRes response = authService.reissueToken(authorizationHeader);
         return Response.ok(UserResultCode.USER_TOKEN_REISSUE_OK, response);

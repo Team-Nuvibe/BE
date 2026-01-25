@@ -1,8 +1,6 @@
 package com.umc.nuvibe.domain.user.service;
 
-import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
-import com.umc.nuvibe.domain.user.dto.request.LoginReq;
-import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
+import com.umc.nuvibe.domain.user.dto.request.*;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -135,34 +133,37 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void verifyPasswordResetCode(String email, String code) {
-        if (!userRepository.existsByEmail(email)) {
+    public void verifyPasswordResetCode(VerifyCodeReq request) {
+        if (!userRepository.existsByEmail(request.email())) {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        verificationService.verifyCode(email, code, VerificationType.PASSWORD_RESET);
+        verificationService.verifyCode(request.email(), request.code(), VerificationType.PASSWORD_RESET);
     }
 
     @Override
     @Transactional
-    public void resetPasswordWithCode(String email, String code, String newPassword, String confirmPassword) {
+    public void resetPasswordWithCode(PasswordResetReq request) {
         // 비밀번호 유효성 검사
-        validatePassword(newPassword, confirmPassword);
+        validatePassword(request.newPassword(), request.confirmPassword());
 
         // 코드가 인증되었는지 확인
-        verificationService.checkCodeIsVerified(email, VerificationType.PASSWORD_RESET);
+        verificationService.checkCodeIsVerified(request.email(), VerificationType.PASSWORD_RESET);
 
         // 사용자 조회
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         // 비밀번호 변경
-        String encodedPassword = passwordEncoder.encode(newPassword);
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
         user.updatePassword(encodedPassword);
 
         // RefreshToken 무효화
         user.updateRefreshToken(null);
         userRepository.save(user);
+
+        // 사용된 인증 코드 삭제
+        verificationService.deleteVerificationToken(request.email(), VerificationType.PASSWORD_RESET);
     }
 
 

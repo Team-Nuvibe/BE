@@ -77,6 +77,12 @@ public class EmailVerificationService {
                 .findByEmailAndVerificationType(email, verificationType)
                 .orElseThrow(() -> new BusinessException(MailErrorCode.CODE_NOT_VERIFIED));
 
+        // 만료 시간 확인
+        if (token.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw new BusinessException(MailErrorCode.VERIFICATION_CODE_EXPIRED);
+        }
+
+        // 인증 완료 여부 확인
         if (!token.isVerified()) {
             throw new BusinessException(MailErrorCode.CODE_NOT_VERIFIED);
         }
@@ -86,6 +92,12 @@ public class EmailVerificationService {
     @Transactional(readOnly = true)
     public void checkEmailVerified(String email) {
         checkCodeIsVerified(email, VerificationType.JOIN);
+    }
+
+    // 인증 완료된 토큰 삭제
+    @Transactional
+    public void deleteVerificationToken(String email, VerificationType verificationType) {
+        tokenRepository.deleteByEmailAndVerificationType(email, verificationType);
     }
 
     // 인증 타입에 따른 이메일 제목
