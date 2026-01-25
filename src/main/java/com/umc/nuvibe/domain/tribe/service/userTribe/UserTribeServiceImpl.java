@@ -1,5 +1,7 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeInfo;
 import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
@@ -30,6 +32,7 @@ public class UserTribeServiceImpl implements UserTribeService {
     private final UserRepository userRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final TribeRepository tribeRepository;
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -90,6 +93,15 @@ public class UserTribeServiceImpl implements UserTribeService {
         }
 
         userTribe.activate();
+
+        // NOTI-02: 기다리던 트라이브 챗 입장 알림
+        fcmService.sendNotification(
+                userTribe.getUser(),
+                NotificationType.NOTI_02,
+                userTribe.getTribe().getImageTag().name(),  // tag
+                null,                                        // nickname
+                userTribe.getTribe().getId()                 // relatedId
+        );
 
         return UserTribeActivateRes.from(userTribe);
     }
