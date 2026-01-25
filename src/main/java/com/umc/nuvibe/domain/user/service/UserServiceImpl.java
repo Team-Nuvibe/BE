@@ -9,6 +9,7 @@ import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.domain.user.vo.UserSetting;
+import com.umc.nuvibe.domain.user.vo.VerificationType;
 import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
@@ -76,14 +77,24 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
 
-        verificationService.sendVerificationEmail(email);
+        verificationService.sendVerificationCode(email, VerificationType.EMAIL_CHANGE);
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmailCode(String email, String code) {
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
+        }
+
+        verificationService.verifyCode(email, code, VerificationType.EMAIL_CHANGE);
     }
 
     @Override
     @Transactional
     public void updateEmail(Long userId, String newEmail) {
         // 이메일이 인증되었는지 확인
-        verificationService.checkEmailIsVerified(newEmail);
+        verificationService.checkCodeIsVerified(newEmail, VerificationType.EMAIL_CHANGE);
 
         if (userRepository.existsByEmail(newEmail)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
