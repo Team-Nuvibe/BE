@@ -4,7 +4,6 @@ import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.LoginReq;
 import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
-import com.umc.nuvibe.domain.user.vo.AuthProvider;
 
 public interface AuthService {
 
@@ -25,6 +24,6 @@ public interface AuthService {
 
     // 별도
     void checkCurrentPassword(Long userId, CheckPasswordReq request);
-    TokenRes reissueToken(String refreshToken, AuthProvider authProvider);
+    TokenRes reissueToken(String authorizationHeader);
 
 }

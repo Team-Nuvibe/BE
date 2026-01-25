@@ -82,6 +82,12 @@ public class EmailVerificationService {
         }
     }
 
+    // 이메일 인증 완료 여부 확인
+    @Transactional(readOnly = true)
+    public void checkEmailVerified(String email) {
+        checkCodeIsVerified(email, VerificationType.JOIN);
+    }
+
     // 인증 타입에 따른 이메일 제목
     private String getEmailSubject(VerificationType type) {
         return switch (type) {

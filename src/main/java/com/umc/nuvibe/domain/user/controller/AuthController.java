@@ -91,6 +91,14 @@ public class AuthController {
     }
 
 
+    @PostMapping("/reissue")
+    @Operation(summary = "토큰 재발급", description = "RefreshToken으로 새로운 AccessToken과 RefreshToken을 발급받습니다. 헤더에 refreshToekn을 담아주세요..")
+    public Response<TokenRes> reissueToken(@RequestHeader("Authorization") String authorizationHeader) {
+        TokenRes response = authService.reissueToken(authorizationHeader);
+        return Response.ok(UserResultCode.USER_TOKEN_REISSUE_OK, response);
+    }
+
+
     @PostMapping("/check-password")
     @Operation(summary = "사용자의 현재 비밀번호를 확인합니다.", description = "비번 변경 전 현재 비밀번호 확인할 때 이 api 사용하면 됩니다.")
     public Response<String> checkCurrentPassword(@AuthUser Long userId, @RequestBody @Valid CheckPasswordReq request) {

@@ -13,8 +13,8 @@ import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.security.jwt.JwtTokenProvider;
 import com.umc.nuvibe.global.service.EmailVerificationService;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +30,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailVerificationService verificationService;
 
-    @Value("${frontend.redirect.auth-verify-success}")
-    private String authVerifySuccessUrl;
-
-    @Value("${frontend.redirect.auth-verify-failed}")
-    private String authVerifyFailedUrl;
 
     public AuthServiceImpl(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
@@ -56,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 이메일이 인증되었는지 확인
-        verificationService.checkEmailIsVerified(request.email());
+        verificationService.checkEmailVerified(request.email());
 
         String encodedPassword=passwordEncoder.encode(request.password());
 
@@ -182,8 +177,30 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenRes reissueToken(String refreshToken, AuthProvider authProvider) {
+    @Transactional
+    public TokenRes reissueToken(String authorizationHeader) {
+        String refreshToken = jwtTokenProvider.extractBearerToken(authorizationHeader);
 
+        jwtTokenProvider.validateToken(refreshToken);
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken)) {
+            throw new BusinessException(AuthErrorCode.JWT_INVALID_TOKEN);
+        }
+
+        Claims claims = jwtTokenProvider.parseClaims(refreshToken);
+        AuthProvider authProvider = AuthProvider.valueOf(claims.get("AuthProvider", String.class));
+
+        String newAccessToken = jwtTokenProvider.createAccessToken(user, authProvider);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(user, authProvider);
+
+        user.updateRefreshToken(newRefreshToken);
+
+        return new TokenRes(newAccessToken, newRefreshToken);
     }
 
 
