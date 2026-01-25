@@ -10,8 +10,8 @@ public record ChatTimelineReq(
         @Schema(description = "이전 페이지의 마지막 chatId (null이면 첫 페이지)")
         Long lastChatId,
 
-        @Schema(description = "조회할 메시지 수 (기본 20, 최대 50)")
-        @Min(1) @Max(50)
+        @Schema(description = "조회할 메시지 수 (기본 20, 최대 40)")
+        @Min(1) @Max(40)
         Integer size
 ) {
     private static final int DEFAULT_SIZE = 20;
