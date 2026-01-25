@@ -1,9 +1,6 @@
 package com.umc.nuvibe.domain.user.controller;
 
-import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
-import com.umc.nuvibe.domain.user.dto.request.EmailVerificationReq;
-import com.umc.nuvibe.domain.user.dto.request.LoginReq;
-import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
+import com.umc.nuvibe.domain.user.dto.request.*;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.service.AuthService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
@@ -11,12 +8,9 @@ import com.umc.nuvibe.global.apiPayLoad.result.UserResultCode;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -54,21 +48,48 @@ public class AuthController {
         return Response.ok(UserResultCode.USER_WITHDRAW_OK, "회원탈퇴가 완료되었습니다. ");
     }
 
-    @PostMapping("/verify-email")
-    @Operation(summary = "이메일 인증 발송", description = "회원가입을 위한 인증 이메일을 발송합니다.")
-    public Response<String> sendJoinVerificationEmail(@RequestBody @Valid EmailVerificationReq request) {
-        authService.sendJoinVerificationEmail(request.email());
-        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "이메일 인증이 발송되었습니다.");
+
+    @PostMapping("/verify-code/send")
+    @Operation(summary = "회원가입 인증 코드 발송", description = "회원가입을 위한 6자리 인증 코드를 이메일로 발송합니다.")
+    public Response<String> sendJoinVerificationCode(@RequestBody @Valid EmailVerificationReq request) {
+        authService.sendJoinVerificationCode(request.email());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "인증 코드가 이메일로 발송되었습니다.");
     }
 
-    @GetMapping("/verify")
-    @Operation(summary = "이메일 인증", description = "이메일 인증 링크를 처리합니다. 인증 완료 후 해당 페이지로 리다이렉트합니다.")
-    public Response<String> verifyEmail(
-            @RequestParam String token,
-            HttpServletResponse response) throws IOException {
-        authService.verifyJoinEmailAndRedirect(token, response);
-        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK,"이메일 인증 처리 완료, 이전 페이지로 리다이렉트합니다.");
+    @PostMapping("/verify-code/confirm")
+    @Operation(summary = "회원가입 인증 코드 검증", description = "이메일로 받은 6자리 인증 코드를 검증합니다.")
+    public Response<String> verifyJoinCode(@RequestBody @Valid VerifyCodeReq request) {
+        authService.verifyJoinCode(request.email(), request.code());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK, "이메일 인증이 완료되었습니다.");
     }
+
+
+    @PostMapping("/password-reset/send-code")
+    @Operation(summary = "비밀번호 초기화용 인증 코드 발송", description = "비밀번호 재설정을 위한 6자리 인증 코드를 이메일로 발송합니다. ")
+    public Response<String> sendPasswordResetCode(@RequestBody @Valid PasswordResetEmailReq request) {
+        authService.sendPasswordResetCode(request.email());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "비밀번호 재설정 인증 코드가 이메일로 발송되었습니다.");
+    }
+
+    @PostMapping("/password-reset/verify-code")
+    @Operation(summary = "비밀번호 초기화용 인증 코드 검증", description = "비밀번호 재설정 인증 코드를 검증합니다.")
+    public Response<String> verifyPasswordResetCode(@RequestBody @Valid VerifyCodeReq request) {
+        authService.verifyPasswordResetCode(request.email(), request.code());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK, "인증 코드가 확인되었습니다. 새로운 비밀번호를 입력해주세요.");
+    }
+
+    @PostMapping("/password-reset")
+    @Operation(summary = "비밀번호 초기화", description = "인증된 이메일의 비밀번호를 새로운 비밀번호로 변경합니다. 기존 세션은 모두 무효화됩니다.")
+    public Response<String> resetPassword(@RequestBody @Valid PasswordResetReq request) {
+        authService.resetPasswordWithCode(
+                request.email(),
+                request.code(),
+                request.newPassword(),
+                request.confirmPassword()
+        );
+        return Response.ok(UserResultCode.USER_PASSWORD_REISSUE_OK, "비밀번호가 재설정되었습니다. 새로운 비밀번호로 로그인해주세요.");
+    }
+
 
     @PostMapping("/check-password")
     @Operation(summary = "사용자의 현재 비밀번호를 확인합니다.", description = "비번 변경 전 현재 비밀번호 확인할 때 이 api 사용하면 됩니다.")

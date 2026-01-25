@@ -51,11 +51,19 @@ public class UserController {
     }
 
     @PostMapping("/email/verification")
-    @Operation(summary = "이메일 인증 요청", description = "이메일 변경을 위한 인증 메일을 발송합니다.")
+    @Operation(summary = "이메일 변경 인증 코드 발송", description = "이메일 변경을 위한 6자리 인증 코드를 이메일로 발송합니다.")
     public Response<String> sendEmailVerification(
             @RequestBody @Valid EmailVerificationReq request) {
         userService.sendEmailVerification(request.email());
-        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "이메일 인증 메일이 발송되었습니다.");
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_SENT, "이메일 인증 코드가 발송되었습니다.");
+    }
+
+    @PostMapping("/email/verify-code")
+    @Operation(summary = "이메일 변경 인증 코드 검증", description = "이메일로 받은 6자리 인증 코드를 검증합니다.")
+    public Response<String> verifyEmailCode(
+            @RequestBody @Valid VerifyCodeReq request) {
+        userService.verifyEmailCode(request.email(), request.code());
+        return Response.ok(UserResultCode.USER_EMAIL_VERIFICATION_OK, "이메일 인증이 완료되었습니다.");
     }
 
     @PatchMapping("/email")
