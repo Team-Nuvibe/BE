@@ -9,19 +9,17 @@ import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.*;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
-import com.umc.nuvibe.domain.tribe.entity.Emoji;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.repository.*;
 import com.umc.nuvibe.domain.tribe.vo.EmojiType;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.domain.user.entity.User;
+import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.ChatErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,14 +30,10 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.time.LocalDateTime.now;
 
 @Service
 @RequiredArgsConstructor
@@ -50,14 +44,12 @@ public class ChatServiceImpl implements ChatService {
     private final TribeRepository tribeRepository;
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
+    private final UserRepository userRepository;
 
     private final ImageService imageService;
     private final ArchiveBoardService archiveBoardService;
 
     private final SimpMessagingTemplate messagingTemplate;
-
-    @PersistenceContext
-    private EntityManager em;
 
     @Override
     @Transactional(readOnly = true)
@@ -217,7 +209,7 @@ public class ChatServiceImpl implements ChatService {
         Image image = imageService.uploadAndSaveEntity(file, tag);
 
         // 5. 채팅 저장 (유저는 참조)
-        User userRef = em.getReference(User.class, userId);
+        User userRef = userRepository.getReferenceById(userId);
         Chat chat = Chat.of(userRef, tribe, image);
         chatRepository.save(chat);
 

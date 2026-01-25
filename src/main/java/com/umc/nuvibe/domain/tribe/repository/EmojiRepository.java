@@ -50,7 +50,7 @@ public interface EmojiRepository extends JpaRepository<Emoji, Long> {
             @Param("chatId") List<Long> chatId
     );
 
-    Optional<Emoji> findByChatIdAndUserId(Long chatId, Long userId);
+    Optional<Emoji> findByChat_IdAndUser_Id(Long chatId, Long userId);
 
     // 단건 집계 (채팅 1개에 대한 이모지 타입별 개수)
     @Query("""

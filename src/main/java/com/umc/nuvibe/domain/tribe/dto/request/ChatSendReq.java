@@ -2,8 +2,6 @@ package com.umc.nuvibe.domain.tribe.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
-
 @Schema(description = "트라이브 채팅 발신 요청")
 public record ChatSendReq (
 

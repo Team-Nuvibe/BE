@@ -27,7 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // 메시지 브로커 동작 방식 설정
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // /topic으로 시작하는 destionation 처리
+        // /topic으로 시작하는 destination 처리
         registry.enableSimpleBroker("/topic");
         // STOMP 표준 구조 위해 유지
         registry.setApplicationDestinationPrefixes("/app");

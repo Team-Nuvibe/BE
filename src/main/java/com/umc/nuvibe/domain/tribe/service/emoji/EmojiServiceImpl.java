@@ -10,11 +10,10 @@ import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.tribe.vo.EmojiType;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.domain.user.entity.User;
+import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.ChatErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -36,12 +35,10 @@ public class EmojiServiceImpl implements EmojiService {
     private final EmojiRepository emojiRepository;
     private final ChatRepository chatRepository;
     private final UserTribeRepository userTribeRepository;
+    private final UserRepository userRepository;
 
     private final SimpMessagingTemplate messagingTemplate;
     private final Clock clock;
-
-    @PersistenceContext
-    private EntityManager em;
 
     @Override
     @Transactional
@@ -59,8 +56,8 @@ public class EmojiServiceImpl implements EmojiService {
             throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);
         }
 
-        // 3. 기존 emoji 조회
-        Optional<Emoji> existingEmoji = emojiRepository.findByChatIdAndUserId(chatId, userId);
+        // 3. 기존 이모지 조회
+        Optional<Emoji> existingEmoji = emojiRepository.findByChat_IdAndUser_Id(chatId, userId);
 
         // 이모지 등록 상태
         String action;
@@ -69,9 +66,9 @@ public class EmojiServiceImpl implements EmojiService {
 
         if (existingEmoji.isEmpty()) {
 
-            // 4. 기존 등록된 이미지가 없을 시에는 새로 저장
-            Chat chatRef = em.getReference(Chat.class, chatId);
-            User userRef = em.getReference(User.class, userId);
+            // 4. 기존 등록된 이모지가 없을 시에는 새로 저장
+            Chat chatRef = chatRepository.getReferenceById(chatId);
+            User userRef = userRepository.getReferenceById(userId);
 
             emojiRepository.save(Emoji.of(type, chatRef, userRef));
 
@@ -79,7 +76,7 @@ public class EmojiServiceImpl implements EmojiService {
             actorEmojiType = type.name();
 
         } else {
-            // 4-1. 등록된 이미지가 있을 시 동일하면 삭제, 다르면 변경
+            // 4-1. 등록된 이모지가 있을 시 동일하면 삭제, 다르면 변경
             Emoji existing = existingEmoji.get();
 
             if (existing.getType() == type) {

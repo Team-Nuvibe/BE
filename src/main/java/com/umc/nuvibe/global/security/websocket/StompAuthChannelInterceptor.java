@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,9 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor{
         if (accessor.getCommand() == null) {
                 return message;
         }
+
+        // 변경사항이 메시지에 저장되도록
+        accessor.setLeaveMutable(true);
 
         //STOMP 명령어별로 분기 처리
         return switch (accessor.getCommand()) {
@@ -69,7 +73,9 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor{
         // Principal을 userId로 고정
         accessor.setUser(new UsernamePasswordAuthenticationToken(userId, null, List.of()));
 
-        accessor.getSessionAttributes().put("userId", userId);
+        Map<String, Object> sessionAttrs = accessor.getSessionAttributes();
+        if (sessionAttrs != null) sessionAttrs.put("userId", userId);
+
         return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
     }
 
