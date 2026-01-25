@@ -4,6 +4,8 @@ import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.tribe.dto.internal.*;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
@@ -50,6 +52,8 @@ public class ChatServiceImpl implements ChatService {
     private final ArchiveBoardService archiveBoardService;
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -212,6 +216,15 @@ public class ChatServiceImpl implements ChatService {
         User userRef = userRepository.getReferenceById(userId);
         Chat chat = Chat.of(userRef, tribe, image);
         chatRepository.save(chat);
+
+        // NOTI-03: 트라이브 참여자들에게 새 바이브 알림 (본인 제외)
+        List<User> participants = userTribeRepository.findUsersByTribeIdExcept(tribeId, userId);
+        fcmService.sendNotificationToUsers(
+                participants,
+                NotificationType.NOTI_03,
+                tribe.getImageTag().name(),
+                tribeId
+        );
 
         // 6. 보드에 이미지 저장
         archiveBoardService.addBoardImage(userId, boardId, image.getId());

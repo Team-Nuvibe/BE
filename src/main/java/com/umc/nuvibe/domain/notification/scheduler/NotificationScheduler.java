@@ -133,11 +133,10 @@ public class NotificationScheduler {
         }
     }
 
-    /**
-     * NOTI-09: 주간 리캡 알림
-     * 매주 일요일 오전 10시에 실행
-     * 지난 주 드랍 기록이 있는 사용자 대상
-     */
+
+    // NOTI-09: 주간 리캡 알림
+    // 매주 일요일 오전 10시에 실행
+    // 지난 주 드랍 기록이 있는 사용자 대상
     @Scheduled(cron = "0 0 10 * * SUN", zone = "Asia/Seoul")
     public void sendWeeklyRecap() {
         LocalDateTime now = LocalDateTime.now(clock);
