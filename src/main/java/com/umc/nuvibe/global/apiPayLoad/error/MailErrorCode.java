@@ -8,11 +8,12 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum MailErrorCode implements ErrorCode {
 
-    INVALID_TOKEN(HttpStatus.BAD_REQUEST,"MAIL001","유효한 토큰이 아닙니다."),
-    TOKEN_EXPIRED(HttpStatus.BAD_REQUEST,"MAIL002","만료된 토큰입니다."),
     EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST,"MAIL003","인증되지 않은 이메일입니다."),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"MAIL004","이메일 발송에 실패했습니다."),
-    NO_SHA_256(HttpStatus.BAD_REQUEST, "MAIL005","sha-256 알고리즘이 없습니다"),
+    INVALID_VERIFICATION_CODE(HttpStatus.BAD_REQUEST,"MAIL006","유효하지 않은 인증 코드입니다."),
+    VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST,"MAIL007","만료된 인증 코드입니다."),
+    CODE_NOT_VERIFIED(HttpStatus.BAD_REQUEST,"MAIL008","인증되지 않은 코드입니다."),
+    INVALID_VERIFICATION_TYPE(HttpStatus.BAD_REQUEST,"MAIL009","유효하지 않은 인증 타입입니다."),
 
     ;
 
