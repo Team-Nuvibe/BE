@@ -61,6 +61,30 @@ public interface TribeRepository extends JpaRepository<Tribe, Long> {
             Pageable pageable
     );
 
+    // 종료 예고 대상 트라이브 조회 (6일 경과 ~ 7일 미만)
+    @Query("""
+    SELECT
+        t.id        AS tribeId,
+        t.createdAt AS createdAt,
+        COUNT(ut.id) AS activeCount
+    FROM Tribe t
+    LEFT JOIN UserTribe ut
+           ON ut.tribe = t
+          AND ut.userTribeStatus = :activeStatus
+    WHERE t.createdAt <= :cutoff
+      AND t.createdAt > :excludeCutoff
+    GROUP BY t.id, t.createdAt
+    HAVING COUNT(ut.id) < :minActiveCount
+    ORDER BY t.createdAt ASC, t.id ASC
+    """)
+    Slice<CloseTargetView> findCloseWarningTargets(
+            @Param("cutoff") LocalDateTime cutoff,
+            @Param("excludeCutoff") LocalDateTime excludeCutoff,
+            @Param("activeStatus") UserTribeStatus activeStatus,
+            @Param("minActiveCount") long minActiveCount,
+            Pageable pageable
+    );
+
     //트라이브 하드 삭제
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Tribe t WHERE t.id = :tribeId")
