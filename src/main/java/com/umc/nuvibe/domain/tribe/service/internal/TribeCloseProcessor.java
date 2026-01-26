@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -28,17 +30,10 @@ public class TribeCloseProcessor {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processTribeClose(Long tribeId) {
 
-        // NOTI-06: 종료 전에 참여자들에게 알림 발송
+        // 삭제 전에 알림에 필요한 데이터 미리 조회
         Tribe tribe = tribeRepository.findById(tribeId).orElse(null);
-        if (tribe != null) {
-            List<User> participants = userTribeRepository.findUsersByTribeId(tribeId);
-            fcmService.sendNotificationToUsers(
-                    participants,
-                    NotificationType.NOTI_06,
-                    tribe.getImageTag().name(),
-                    tribeId
-            );
-        }
+        String tagName = tribe != null ? tribe.getImageTag().name() : null;
+        List<User> participants = tribe != null ? userTribeRepository.findUsersByTribeId(tribeId) : List.of();
 
         // 삭제 순서
         // 1. Emoji
@@ -58,5 +53,22 @@ public class TribeCloseProcessor {
 
         // 5. Tribe
         tribeRepository.deleteById(tribeId);
+
+        // 트랜잭션 커밋 후 알림 발송(NOTI-06)
+        if (tribe != null && !participants.isEmpty()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            fcmService.sendNotificationToUsers(
+                                    participants,
+                                    NotificationType.NOTI_06,
+                                    tagName,
+                                    tribeId
+                            );
+                        }
+                    }
+            );
+        }
     }
 }

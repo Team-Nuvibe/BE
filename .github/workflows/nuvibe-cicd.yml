@@ -35,6 +35,10 @@ jobs:
         run: |
           mkdir -p src/main/resources/firebase
           echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
 
       - name: Run tests
         run: ./gradlew test
@@ -63,7 +67,11 @@ jobs:
       - name: Create Firebase credential file
         run: |
           mkdir -p src/main/resources/firebase
-          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json  
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
 
       - name: Build with Gradle
         run: ./gradlew build -x test

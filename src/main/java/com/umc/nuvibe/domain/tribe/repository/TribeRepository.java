@@ -66,14 +66,14 @@ public interface TribeRepository extends JpaRepository<Tribe, Long> {
     SELECT
         t.id        AS tribeId,
         t.createdAt AS createdAt,
-        COUNT(ut.id) AS activeCount
+        t.imageTag  AS imageTag
     FROM Tribe t
     LEFT JOIN UserTribe ut
            ON ut.tribe = t
           AND ut.userTribeStatus = :activeStatus
     WHERE t.createdAt <= :cutoff
       AND t.createdAt > :excludeCutoff
-    GROUP BY t.id, t.createdAt
+    GROUP BY t.id, t.createdAt, t.imageTag
     HAVING COUNT(ut.id) < :minActiveCount
     ORDER BY t.createdAt ASC, t.id ASC
     """)

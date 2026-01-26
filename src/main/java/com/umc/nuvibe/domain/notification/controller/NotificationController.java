@@ -4,7 +4,6 @@ import com.umc.nuvibe.domain.notification.dto.FcmTokenRequest;  // [추가] FcmT
 import com.umc.nuvibe.domain.notification.dto.NotificationResponse;
 import com.umc.nuvibe.domain.notification.service.FcmService;  // [추가] FcmService import
 import com.umc.nuvibe.domain.notification.service.NotificationService;
-import com.umc.nuvibe.domain.user.entity.User;  // [추가] User import
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
 import com.umc.nuvibe.global.apiPayLoad.result.NotificationResultCode;
 import com.umc.nuvibe.global.security.annotation.AuthUser;
@@ -33,8 +32,8 @@ public class NotificationController {
             @AuthUser Long userId,
             @Valid @RequestBody FcmTokenRequest request
     ) {
-        fcmService.registerToken(userId, request.getToken());
-        return Response.of(NotificationResultCode.FCM_TOKEN_REGISTERED, null);
+        fcmService.registerToken(userId, request.token());
+        return Response.ok(NotificationResultCode.FCM_TOKEN_REGISTERED, null);
     }
 
     @GetMapping

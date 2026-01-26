@@ -29,9 +29,9 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
     @Query("DELETE FROM UserTribe ut WHERE ut.tribe.id = :tribeId")
     int deleteByTribeId(@Param("tribeId") Long tribeId);
 
-    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId")
-    List<User> findUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
-
-    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId")
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.userTribeStatus = 'ACTIVE'")
     List<User> findUsersByTribeId(@Param("tribeId") Long tribeId);
+
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'ACTIVE'")
+    List<User> findUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
 }

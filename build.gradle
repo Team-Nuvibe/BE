@@ -60,7 +60,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// firebase
-	implementation 'com.google.firebase:firebase-admin:9.2.0'
+	implementation 'com.google.firebase:firebase-admin:9.7.0'
 
 	//grafana
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
