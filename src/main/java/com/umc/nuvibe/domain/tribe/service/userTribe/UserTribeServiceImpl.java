@@ -1,7 +1,9 @@
 package com.umc.nuvibe.domain.tribe.service.userTribe;
 
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeInfo;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
+import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeCursor;
+import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow;
+import com.umc.nuvibe.domain.tribe.dto.request.ActiveTribeListReq;
+import com.umc.nuvibe.domain.tribe.dto.response.tribe.*;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
@@ -13,10 +15,10 @@ import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
 import com.umc.nuvibe.domain.tribe.repository.TribeRepository;
 import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
-import com.umc.nuvibe.domain.user.repository.UserRepository;
-import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,26 +29,8 @@ import java.util.List;
 public class UserTribeServiceImpl implements UserTribeService {
 
     private final UserTribeRepository userTribeRepository;
-    private final UserRepository userRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final TribeRepository tribeRepository;
-
-    @Override
-    @Transactional(readOnly = true)
-    public TribeListRes getTribeList(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
-        }
-
-        List<UserTribe> userTribes = userTribeRepository
-                .findAllByUserIdAndTribe_StatusOrderByCreatedAtDesc(userId, TribeStatus.WAITING);
-
-        List<TribeInfo> tribeInfoList = userTribes.stream()
-                .map(TribeInfo::from)
-                .toList();
-
-        return TribeListRes.of(tribeInfoList);
-    }
 
     @Override
     @Transactional
@@ -109,4 +93,100 @@ public class UserTribeServiceImpl implements UserTribeService {
 
         return UserTribeFavoriteRes.from(userTribe);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ActiveTribeListRes getActiveTribeList(Long userId, ActiveTribeListReq req){
+
+        int size = req.size();
+
+        // 1. 커서 값 검증
+        boolean hasCursor = req.hasCursor();
+        ActiveTribeCursor cursor = req.cursor();
+
+        // 2. 커서 기반 페이징 (size보다 1개 더 조회)
+        Pageable pageable = PageRequest.of(0, size + 1);
+
+        // 3. active 트라이브 챗 목록 조회
+        // hasCursor=false 이면 첫 페이지, hasCursor=true 이면 커서 이후 데이터만 조회
+        List<ActiveTribeRow> rows = userTribeRepository.findActiveTribes(
+                userId, UserTribeStatus.ACTIVE, hasCursor,
+                hasCursor ? cursor.favInt()     : 0,
+                hasCursor ? cursor.unreadInt()  : 0,
+                hasCursor ? cursor.lastChatAt() : null,
+                hasCursor ? cursor.tribeId()    : 0L,
+                pageable
+        );
+
+        // 4. 다음 페이지 존재 여부 판단 및 size까지만 반환
+        boolean hasNext = rows.size() > size;
+        List<ActiveTribeRow> content = hasNext ? rows.subList(0, size) : rows;
+
+        // 5. 내부 조회용 row에서 응답 Dto로 변환
+        List<ActiveTribeItemRes> items = content.stream()
+                .map(r -> new ActiveTribeItemRes(
+                        r.tribeId(),
+                        r.imageTag(),
+                        r.counts(),
+                        r.isFavorite(),
+                        r.lastChatAt(),
+                        r.unreadCount()
+                ))
+                .toList();
+
+        // 6. 다음 커서 생성
+        // 다음 페이지 존재 시에만 마지막 요소 기준으로 커서 생성
+        ActiveTribeCursor nextCursor = null;
+
+        if (hasNext && !content.isEmpty()) {
+            ActiveTribeRow last = content.get(content.size() - 1);
+
+            nextCursor = new ActiveTribeCursor(
+                    last.isFavorite(),         // 즐겨찾기 여부
+                    last.unreadCount() > 0,    // unreadCount → boolean 커서
+                    last.lastChatAt(),         // 마지막 채팅 시각
+                    last.tribeId()
+            );
+        }
+
+        // 7. 커서 정보와 함께 챗 리스트 반환
+        return new ActiveTribeListRes(items, hasNext, nextCursor);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WaitingTribeListRes getWaitingTribeList(Long userId, Long cursorTribeId, Integer size){
+
+        // 1. 페이지 사이즈 및 커서 여부 판단
+        // size 미지정 시 기본 20
+        int pageSize = (size == null) ? 20 : size;
+
+        // tribeId 커서가 있으면 다음 페이지 요청
+        boolean hasCursor = cursorTribeId != null;
+
+        // 커서 기반 페이징 (size보다 1개 더 조회)
+        Pageable pageable = PageRequest.of(0, pageSize + 1);
+
+        // 2. Waiting 트라이브 목록 조회
+        // hasCursor=false이면 첫 페이지, hasCursor=true이면 cursorTribeId 보다 작은 tribeId만 조회
+        List<WaitingTribeItemRes> rows = userTribeRepository.findWaitingTribes(
+                userId, UserTribeStatus.WAITING, hasCursor,
+                hasCursor ? cursorTribeId : 0L,
+                pageable
+        );
+
+        // 3. 다음 페이지 존재 여부 판단 및 size까지만 반환
+        boolean hasNext = rows.size() > pageSize;
+        List<WaitingTribeItemRes> content = hasNext ? rows.subList(0, pageSize) : rows;
+
+        // 4. 다음 커서 생성
+        // 다음 페이지가 있을 때만 마지막 tribeId 기준으로 커서 생성
+        Long nextCursor = null;
+        if (hasNext && !content.isEmpty()) {
+            nextCursor = content.get(content.size() - 1).tribeId();
+        }
+
+        return new WaitingTribeListRes(content, hasNext, nextCursor);
+    }
+
 }

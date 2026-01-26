@@ -36,14 +36,23 @@ public class UserTribe extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserTribeStatus userTribeStatus;
 
+    // 마지막으로 읽은 chatId
+    private Long lastReadChatId;
+
+    // 안 읽은 메시지 수
+    private int unreadCount;
+
+
 
 
     @Builder
-    private UserTribe(User user, Tribe tribe, UserTribeStatus userTribeStatus, boolean isFavorite) {
+    private UserTribe(User user, Tribe tribe, UserTribeStatus userTribeStatus, boolean isFavorite, Long lastReadChatId, int unreadCount) {
         this.user = user;
         this.tribe = tribe;
         this.userTribeStatus = userTribeStatus;
         this.isFavorite = isFavorite;
+        this.lastReadChatId = lastReadChatId;
+        this.unreadCount = unreadCount;
     }
 
     public static UserTribe of(User user, Tribe tribe) {
@@ -52,6 +61,8 @@ public class UserTribe extends BaseEntity {
                 .tribe(tribe)
                 .userTribeStatus(UserTribeStatus.WAITING)
                 .isFavorite(false)
+                .lastReadChatId(null)
+                .unreadCount(0)
                 .build();
     }
 
