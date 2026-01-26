@@ -20,6 +20,10 @@ spring:
         static: ap-northeast-2 # 서울
       s3:
         bucket: ${AWS_S3_BUCKET}
+      sqs:
+        queue:
+          name: ${AWS_QUEUE_NAME}
+
   servlet:
     multipart:
       max-file-size: 10MB
@@ -58,6 +62,3 @@ logging:
 
 frontend:
   url: ${FRONT_URL:http://localhost:3000}
-  redirect:
-    auth-verify-success: ${FRONT_URL:http://localhost:3000}/signup?verified=true
-    auth-verify-failed: ${FRONT_URL:http://localhost:3000}/signup?error=true
