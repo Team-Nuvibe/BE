@@ -1,4 +1,4 @@
-package com.umc.nuvibe.domain.tribe.dto.response.tribe;
+package com.umc.nuvibe.domain.tribe.dto.response.userTribe;
 
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import io.swagger.v3.oas.annotations.media.Schema;

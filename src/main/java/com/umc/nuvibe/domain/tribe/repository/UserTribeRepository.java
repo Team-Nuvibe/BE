@@ -2,7 +2,7 @@ package com.umc.nuvibe.domain.tribe.repository;
 
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.WaitingTribeItemRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.WaitingTribeItemRes;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import org.springframework.data.domain.Pageable;
@@ -85,7 +85,7 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
 
     // Waiting 트라이브 챗 목록 조회
     @Query("""
-        select new com.umc.nuvibe.domain.tribe.dto.response.tribe.WaitingTribeItemRes(
+        select new com.umc.nuvibe.domain.tribe.dto.response.userTribe.WaitingTribeItemRes(
             t.id,
             t.imageTag,
             t.counts
@@ -103,6 +103,27 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
             @Param("hasCursor") boolean hasCursor,
             @Param("cTribeId") Long cTribeId,
             Pageable pageable
+    );
+
+    // 트라이브 챗 읽음 처리
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update UserTribe ut
+           set ut.lastReadChatId = :lastChatId,
+               ut.unreadCount = 0
+         where ut.user.id = :userId
+           and ut.tribe.id = :tribeId
+           and ut.userTribeStatus = :status
+           and (
+                ut.lastReadChatId is null
+                or ut.lastReadChatId < :lastChatId
+           )
+    """)
+    int readChat(
+            @Param("userId") Long userId,
+            @Param("tribeId") Long tribeId,
+            @Param("lastChatId") Long lastChatId,
+            @Param("status") UserTribeStatus status
     );
 
     // 유저트라이브 하드 삭제

@@ -1,11 +1,7 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ActiveTribeListReq;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.ActiveTribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.WaitingTribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
 import com.umc.nuvibe.global.apiPayLoad.result.UserTribeResultCode;
 import com.umc.nuvibe.domain.tribe.service.userTribe.UserTribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
@@ -23,16 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserTribeController {
 
     private final UserTribeService userTribeService;
-
-    //트라이브 챗 목록 조회
-    @GetMapping
-    @Operation(summary = "활성화된 챗 목록 조회", description = "최신순으로 조회, 조회 기준들 추가 예정")
-    public Response<TribeListRes> getTribeList(
-            @AuthUser Long userId){
-        TribeListRes res = userTribeService.getTribeList(userId);
-
-        return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
-    }
 
     //트라이브 챗 활성화
     @PatchMapping("/{userTribeId}/activate")
@@ -77,6 +63,17 @@ public class UserTribeController {
     ){
         WaitingTribeListRes res = userTribeService.getWaitingTribeList(userId, cursorTribeId, size);
         return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
+    }
+
+    // 트라이브 챗 읽음 처리
+    @PatchMapping("/tribe/{tribeId}/read")
+    @Operation(summary = "트라이브 챗 읽음 처리", description = "안 읽은 메시지 수를 0개로 초기화")
+    public Response<TribeReadRes> readChat(
+            @AuthUser Long userId,
+            @PathVariable Long tribeId
+    ){
+        TribeReadRes res = userTribeService.readChat(userId, tribeId);
+        return Response.of(UserTribeResultCode.USERTRIBE_READ_SUCCESS, res);
     }
 
 

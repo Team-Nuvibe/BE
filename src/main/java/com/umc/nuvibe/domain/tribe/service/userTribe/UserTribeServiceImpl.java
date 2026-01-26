@@ -3,10 +3,7 @@ package com.umc.nuvibe.domain.tribe.service.userTribe;
 import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeCursor;
 import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow;
 import com.umc.nuvibe.domain.tribe.dto.request.ActiveTribeListReq;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.*;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
@@ -187,6 +184,36 @@ public class UserTribeServiceImpl implements UserTribeService {
         }
 
         return new WaitingTribeListRes(content, hasNext, nextCursor);
+    }
+
+    @Override
+    @Transactional
+    public TribeReadRes readChat(Long userId, Long tribeId) {
+
+        // 1. 읽음 권한 검증
+        boolean isActiveMember = userTribeRepository.existsByUser_IdAndTribe_IdAndUserTribeStatus(
+                userId, tribeId, UserTribeStatus.ACTIVE
+        );
+        if (!isActiveMember) {throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);}
+
+        // 2. 최신 chatId 조회 (읽음 처리 기준)
+        Long lastChatId = tribeRepository.findLastChatId(tribeId);
+
+        // 3. 메시지 0개 트라이브 챗은 업데이트 없이 성공 반환
+        if (lastChatId == null) {
+            return new TribeReadRes(tribeId, null);
+        }
+
+        // 4. 안 읽은 메시지 수 0건으로 초기화
+        userTribeRepository.readChat(
+                userId,
+                tribeId,
+                lastChatId,
+                UserTribeStatus.ACTIVE
+        );
+
+        return new TribeReadRes(tribeId, lastChatId);
+
     }
 
 }

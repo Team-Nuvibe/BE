@@ -42,9 +42,6 @@ public class UserTribe extends BaseEntity {
     // 안 읽은 메시지 수
     private int unreadCount;
 
-
-
-
     @Builder
     private UserTribe(User user, Tribe tribe, UserTribeStatus userTribeStatus, boolean isFavorite, Long lastReadChatId, int unreadCount) {
         this.user = user;
