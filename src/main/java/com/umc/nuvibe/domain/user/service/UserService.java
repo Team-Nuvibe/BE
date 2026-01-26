@@ -12,6 +12,7 @@ public interface UserService {
     void updateProfileImage(Long userId, MultipartFile file);
     UserNicknameUpdateRes updateUserNickname(Long userId, String nickname);
     void sendEmailVerification(String email);
+    void verifyEmailCode(String email, String code);
     void updateEmail(Long userId, String newEmail);
     void reissuePassword(Long userId, ReissuePasswordReq request);
     UserSettingUpdateRes updateSetting(Long userId, UserSettingReq request);
