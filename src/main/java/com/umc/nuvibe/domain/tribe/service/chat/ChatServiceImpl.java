@@ -4,6 +4,8 @@ import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.tribe.dto.internal.*;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
@@ -50,6 +52,8 @@ public class ChatServiceImpl implements ChatService {
     private final ArchiveBoardService archiveBoardService;
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -199,7 +203,7 @@ public class ChatServiceImpl implements ChatService {
             throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);
         }
 
-        // 3. 태그 검증 (해당 트라이브 태그 사용)
+        // 3. 태그 검증
         ImageTag tag = tribe.getImageTag();
         if (tag == null) {
             throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
@@ -208,12 +212,12 @@ public class ChatServiceImpl implements ChatService {
         // 4. 이미지 업로드 + 이미지 엔티티 저장
         Image image = imageService.uploadAndSaveEntity(file, tag);
 
-        // 5. 채팅 저장 (유저는 참조)
+        // 5. 채팅 저장
         User userRef = userRepository.getReferenceById(userId);
         Chat chat = Chat.of(userRef, tribe, image);
         chatRepository.save(chat);
 
-        // 6. 보드에 이미지 저장
+        // 6. 보드에 이미지 저장 (알림보다 먼저!)
         archiveBoardService.addBoardImage(userId, boardId, image.getId());
 
         // 7. 발신할 record 생성
@@ -227,6 +231,21 @@ public class ChatServiceImpl implements ChatService {
 
         registerChatPublish(tribeId, chatSend);
 
+        // 8. 트랜잭션 커밋 후 알림 발송(NOTI-03)
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        List<User> participants = userTribeRepository.findUsersByTribeIdExcept(tribeId, userId);
+                        fcmService.sendNotificationToUsers(
+                                participants,
+                                NotificationType.NOTI_03,
+                                tribe.getImageTag().name(),
+                                tribeId
+                        );
+                    }
+                }
+        );
     }
 
     // 커밋 이후 채팅을 소속 트라이브로 발송
