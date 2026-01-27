@@ -6,8 +6,6 @@ import com.umc.nuvibe.domain.tribe.dto.request.ActiveTribeListReq;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
 import com.umc.nuvibe.domain.notification.service.FcmService;
 import com.umc.nuvibe.domain.notification.vo.NotificationType;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeInfo;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;

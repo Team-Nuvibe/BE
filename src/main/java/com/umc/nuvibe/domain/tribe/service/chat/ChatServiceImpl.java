@@ -233,7 +233,7 @@ public class ChatServiceImpl implements ChatService {
         // 8. 보드에 이미지 저장 (알림보다 먼저!)
         archiveBoardService.addBoardImage(userId, boardId, image.getId());
 
-        // 7. 발신할 record 생성
+        // 9. 발신할 record 생성
         ChatSend chatSend = new ChatSend(
                 chat.getId(),
                 userId,
@@ -244,7 +244,7 @@ public class ChatServiceImpl implements ChatService {
 
         registerChatPublish(tribeId, chatSend);
 
-        // 8. 트랜잭션 커밋 후 알림 발송(NOTI-03)
+        // 10. 트랜잭션 커밋 후 알림 발송(NOTI-03)
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override
