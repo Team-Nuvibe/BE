@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     WHERE u.id NOT IN (
         SELECT DISTINCT bi.board.user.id
         FROM BoardImage bi
-        WHERE bi.createdAt >= :todayStart
+        WHERE bi.image.createdAt >= :todayStart
     )
     """)
     Slice<User> findUsersWithoutDropToday(@Param("todayStart") LocalDateTime todayStart, Pageable pageable);
@@ -32,7 +32,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     WHERE u.id NOT IN (
         SELECT DISTINCT bi.board.user.id
         FROM BoardImage bi
-        WHERE bi.createdAt >= :since
+        WHERE bi.image.createdAt >= :since
     )
     """)
     Slice<User> findUsersWithoutDropSince(@Param("since") LocalDateTime since, Pageable pageable);
@@ -43,7 +43,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     SELECT DISTINCT u FROM User u
     JOIN ArchiveBoard ab ON ab.user = u
     JOIN BoardImage bi ON bi.board = ab
-    WHERE bi.createdAt >= :start AND bi.createdAt < :end
+    WHERE bi.image.createdAt >= :start AND bi.image.createdAt < :end
+    ORDER BY u.id
     """)
     Slice<User> findUsersWithDropBetween(
             @Param("start") LocalDateTime start,

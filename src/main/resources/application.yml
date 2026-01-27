@@ -14,12 +14,12 @@ spring:
   cloud:
     aws:
       credentials:
-        access-key: aaa #${AWS_ACCESS_KEY}
-        secret-key: aaa #${AWS_SECRET_KEY}
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
       region:
         static: ap-northeast-2 # 서울
       s3:
-        bucket: aa #${AWS_S3_BUCKET}
+        bucket: ${AWS_S3_BUCKET}
   servlet:
     multipart:
       max-file-size: 10MB
@@ -44,7 +44,7 @@ jwt:
   refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
 
 firebase:
-  credentials-path: ${FIREBASE_CREDENTIALS_PATH:firebase/nuvibe-web-firebase.json}
+  credentials-path: ${FIREBASE_CREDENTIALS}
 
 management:
   endpoints:
