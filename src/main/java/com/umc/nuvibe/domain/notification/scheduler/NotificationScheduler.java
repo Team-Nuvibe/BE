@@ -78,9 +78,9 @@ public class NotificationScheduler {
 
 
     // NOTI-07: 드랍 미션 리마인드
-    // 매일 저녁 8시에 실행당일
+    // 매일 저녁 6시에 실행당일
     // 이미지 업로드 안 한 사용자 대상
-    @Scheduled(cron = "0 0 20 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
     public void sendDropReminder() {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime todayStart = now.toLocalDate().atStartOfDay();
@@ -114,9 +114,9 @@ public class NotificationScheduler {
 
 
     // NOTI-08: 태그 추천 알림
-    // 매주 화, 금 오후 2시에 실행
+    // 매주 수, 토 오후 15시에 실행
     // 최근 3일간 드랍 없는 사용자 대상
-    @Scheduled(cron = "0 0 14 * * TUE,FRI", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 15 * * WED,SAT", zone = "Asia/Seoul")
     public void sendTagRecommendation() {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime threeDaysAgo = now.minusDays(3);
@@ -147,9 +147,9 @@ public class NotificationScheduler {
 
 
     // NOTI-09: 주간 리캡 알림
-    // 매주 일요일 오전 10시에 실행
+    // 매주 일요일 15시에 실행
     // 지난 주 드랍 기록이 있는 사용자 대상
-    @Scheduled(cron = "0 0 10 * * SUN", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 15 * * SUN", zone = "Asia/Seoul")
     public void sendWeeklyRecap() {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime weekStart = now.minusWeeks(1).toLocalDate().atStartOfDay();
@@ -178,9 +178,9 @@ public class NotificationScheduler {
 
 
     // NOTI-10: 전체 리캡 알림
-    // 매월 1일 오전 10시에 실행
+    // 매월 1일 오전 18시에 실행
     // 지난 달 드랍 기록이 있는 사용자 대상
-    @Scheduled(cron = "0 0 10 1 * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 18 1 * *", zone = "Asia/Seoul")
     public void sendMonthlyRecap() {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime monthStart = now.minusMonths(1).withDayOfMonth(1).toLocalDate().atStartOfDay();

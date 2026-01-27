@@ -23,6 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         FROM BoardImage bi
         WHERE bi.image.createdAt >= :todayStart
     )
+    ORDER BY u.id
     """)
     Slice<User> findUsersWithoutDropToday(@Param("todayStart") LocalDateTime todayStart, Pageable pageable);
 
@@ -34,6 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         FROM BoardImage bi
         WHERE bi.image.createdAt >= :since
     )
+    ORDER BY u.id
     """)
     Slice<User> findUsersWithoutDropSince(@Param("since") LocalDateTime since, Pageable pageable);
 
