@@ -1,6 +1,8 @@
 package com.umc.nuvibe.domain.tribe.service.tribe;
 
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.tribe.dto.request.TribeJoinReq;
 import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeJoinRes;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
@@ -16,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TribeServiceImpl implements TribeService {
@@ -23,6 +27,7 @@ public class TribeServiceImpl implements TribeService {
     private final TribeRepository tribeRepository;
     private final UserTribeRepository userTribeRepository;
     private final UserRepository userRepository;
+    private final FcmService fcmService;
 
 
     @Override
@@ -51,6 +56,15 @@ public class TribeServiceImpl implements TribeService {
 
         if (tribe.getCounts() >= 5) {
             tribe.changeStatus();
+
+            // NOTI-01: 동일 태그로 매칭된 사용자들에게 알림 발송
+            List<User> matchedUsers = userTribeRepository.findUsersByTribeId(tribe.getId());
+            fcmService.sendNotificationToUsers(
+                    matchedUsers,
+                    NotificationType.NOTI_01,
+                    tribe.getImageTag().name(),  // tag
+                    tribe.getId()                 // relatedId
+            );
         }
 
         UserTribe userTribe = UserTribe.of(user, tribe);

@@ -4,6 +4,8 @@ import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.tribe.dto.internal.*;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
@@ -50,6 +52,8 @@ public class ChatServiceImpl implements ChatService {
     private final ArchiveBoardService archiveBoardService;
 
     private final SimpMessagingTemplate messagingTemplate;
+
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -226,10 +230,10 @@ public class ChatServiceImpl implements ChatService {
                 tribeId, UserTribeStatus.ACTIVE, userId
         );
 
-        // 8. 보드에 이미지 저장
+        // 8. 보드에 이미지 저장 (알림보다 먼저!)
         archiveBoardService.addBoardImage(userId, boardId, image.getId());
 
-        // 9. 발신할 record 생성
+        // 7. 발신할 record 생성
         ChatSend chatSend = new ChatSend(
                 chat.getId(),
                 userId,
@@ -240,6 +244,21 @@ public class ChatServiceImpl implements ChatService {
 
         registerChatPublish(tribeId, chatSend);
 
+        // 8. 트랜잭션 커밋 후 알림 발송(NOTI-03)
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        List<User> participants = userTribeRepository.findUsersByTribeIdExcept(tribeId, userId);
+                        fcmService.sendNotificationToUsers(
+                                participants,
+                                NotificationType.NOTI_03,
+                                tribe.getImageTag().name(),
+                                tribeId
+                        );
+                    }
+                }
+        );
     }
 
     // 커밋 이후 채팅을 소속 트라이브로 발송

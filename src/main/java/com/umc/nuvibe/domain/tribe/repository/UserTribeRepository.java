@@ -5,6 +5,8 @@ import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.WaitingTribeItemRes;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import com.umc.nuvibe.domain.user.entity.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -152,4 +154,10 @@ order by
             LocalDateTime activityAt
     );
 
+
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.userTribeStatus = 'ACTIVE'")
+    List<User> findUsersByTribeId(@Param("tribeId") Long tribeId);
+
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'ACTIVE'")
+    List<User> findUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
 }

@@ -23,28 +23,22 @@ public class NotificationServiceImpl implements NotificationService {
         List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
         return notifications.stream()
-                .map(n -> new NotificationResponse(
-                        n.getId(),
-                        n.getContent(),
-                        n.isRead(),
-                        n.getCreatedAt()))
+                .map(NotificationResponse::from)  // [수정] 기존 직접 생성 -> from 메서드 사용
                 .toList();
     }
 
     @Override
     @Transactional
     public void markAsRead(Long userId, Long notificationId) {
-        // 단건 조회 후 Dirty Checking을 통한 업데이트
         Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
-        notification.read(); // 상태 변경 (트랜잭션 커밋 시 반영)
+        notification.read();
     }
 
     @Override
     @Transactional
     public void deleteNotification(Long userId, Long notificationId) {
-        // 단건 조회 후 JPA 표준 삭제
         Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 

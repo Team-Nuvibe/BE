@@ -4,7 +4,15 @@ import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeCursor;
 import com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow;
 import com.umc.nuvibe.domain.tribe.dto.request.ActiveTribeListReq;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
+import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeInfo;
+import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
@@ -18,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +39,7 @@ public class UserTribeServiceImpl implements UserTribeService {
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final TribeRepository tribeRepository;
+    private final FcmService fcmService;
 
     @Override
     @Transactional
@@ -72,6 +83,26 @@ public class UserTribeServiceImpl implements UserTribeService {
         }
 
         userTribe.activate();
+
+        // 커밋 이후에 FCM 발송 (noti-02)
+        User user = userTribe.getUser();
+        String tag = userTribe.getTribe().getImageTag().name();
+        Long tribeId = userTribe.getTribe().getId();
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        fcmService.sendNotification(
+                                user,
+                                NotificationType.NOTI_02,
+                                tag,
+                                null,
+                                tribeId
+                        );
+                    }
+                }
+        );
 
         return UserTribeActivateRes.from(userTribe);
     }

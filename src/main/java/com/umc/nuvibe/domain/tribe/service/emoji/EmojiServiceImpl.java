@@ -1,5 +1,7 @@
 package com.umc.nuvibe.domain.tribe.service.emoji;
 
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.tribe.dto.internal.EmojiChanged;
 import com.umc.nuvibe.domain.tribe.dto.internal.EmojiCountRow;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
@@ -40,6 +42,8 @@ public class EmojiServiceImpl implements EmojiService {
     private final SimpMessagingTemplate messagingTemplate;
     private final Clock clock;
 
+    private final FcmService fcmService;
+
     @Override
     @Transactional
     public void emojiReact(Long userId, Long chatId, EmojiType type) {
@@ -63,6 +67,10 @@ public class EmojiServiceImpl implements EmojiService {
         String action;
         // 등록하는 이모지 (삭제일 시 null)
         String actorEmojiType;
+        // NOTI-04용: 이미지 작성자 조회
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_NOT_FOUND));
+        User imageOwner = chat.getUser();
 
         if (existingEmoji.isEmpty()) {
 
@@ -74,6 +82,19 @@ public class EmojiServiceImpl implements EmojiService {
 
             action = "CREATED";
             actorEmojiType = type.name();
+
+            // NOTI-04: 이미지 작성자에게 리액션 알림 (본인이 본인 이미지에 반응한 경우 제외)
+            if (!imageOwner.getId().equals(userId)) {
+                User reactor = userRepository.findById(userId).orElse(null);
+                String nickname = reactor != null ? reactor.getNickname() : "";
+                fcmService.sendNotification(
+                        imageOwner,
+                        NotificationType.NOTI_04,
+                        null,
+                        nickname,
+                        chatId
+                );
+            }
 
         } else {
             // 4-1. 등록된 이모지가 있을 시 동일하면 삭제, 다르면 변경
@@ -92,6 +113,19 @@ public class EmojiServiceImpl implements EmojiService {
 
                 action = "UPDATED";
                 actorEmojiType = type.name();
+
+                // NOTI-04: 이모지 변경 시에도 알림 (본인 제외)
+                if (!imageOwner.getId().equals(userId)) {
+                    User reactor = userRepository.findById(userId).orElse(null);
+                    String nickname = reactor != null ? reactor.getNickname() : "";
+                    fcmService.sendNotification(
+                            imageOwner,
+                            NotificationType.NOTI_04,
+                            null,
+                            nickname,
+                            chatId
+                    );
+                }
             }
         }
 

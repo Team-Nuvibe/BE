@@ -30,6 +30,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # firebase CI 설정
+      - name: Create Firebase credential file
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
+
       - name: Run tests
         run: ./gradlew test
 
@@ -52,6 +62,16 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      # firebase CD 설정
+      - name: Create Firebase credential file
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
 
       - name: Build with Gradle
         run: ./gradlew build -x test
