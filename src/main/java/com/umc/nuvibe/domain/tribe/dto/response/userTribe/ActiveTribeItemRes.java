@@ -20,8 +20,8 @@ public record ActiveTribeItemRes(
         @Schema(description = "트라이브 챗 고정 여부")
         boolean isFavorite,
 
-        @Schema(description = "해당 트라이브 챗 내 마지막 채팅 시각")
-        LocalDateTime lastChatAt,
+        @Schema(description = "마지막 활동 시각")
+        LocalDateTime lastActivityAt,
 
         @Schema(description = "안 읽은 채팅 개수")
         long unreadCount

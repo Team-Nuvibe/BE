@@ -213,8 +213,13 @@ public class ChatServiceImpl implements ChatService {
         Chat chat = Chat.of(userRef, tribe, image);
         chat = chatRepository.saveAndFlush(chat);
 
-        // 6. 트라이브 마지막 메시지 갱신
-        tribe.updateLastChat(chat.getId(), chat.getCreatedAt());
+        // 6. 트라이브 마지막 메시지 및 활동 시각 갱신
+        tribe.updateLastChat(chat.getId());
+        userTribeRepository.updateLastActivityAt(
+                tribeId,
+                UserTribeStatus.ACTIVE,
+                chat.getCreatedAt()
+        );
 
         // 7. 해당 트라이브 Active 유저 unreadCount +1 (발신자 제외)
         userTribeRepository.incrementUnreadCountForActiveMembers(

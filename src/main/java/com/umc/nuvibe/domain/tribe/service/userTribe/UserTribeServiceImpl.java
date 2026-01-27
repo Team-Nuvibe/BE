@@ -110,9 +110,9 @@ public class UserTribeServiceImpl implements UserTribeService {
         List<ActiveTribeRow> rows = userTribeRepository.findActiveTribes(
                 userId, UserTribeStatus.ACTIVE, hasCursor,
                 hasCursor ? cursor.favInt()     : 0,
-                hasCursor ? cursor.unreadInt()  : 0,
-                hasCursor ? cursor.lastChatAt() : null,
-                hasCursor ? cursor.tribeId()    : 0L,
+                hasCursor ? cursor.lastActivityAt()  : null,
+                hasCursor ? cursor.unreadInt()       : 0,
+                hasCursor ? cursor.lastChatId()      : 0L,
                 pageable
         );
 
@@ -127,7 +127,7 @@ public class UserTribeServiceImpl implements UserTribeService {
                         r.imageTag(),
                         r.counts(),
                         r.isFavorite(),
-                        r.lastChatAt(),
+                        r.lastActivityAt(),
                         r.unreadCount()
                 ))
                 .toList();
@@ -141,9 +141,9 @@ public class UserTribeServiceImpl implements UserTribeService {
 
             nextCursor = new ActiveTribeCursor(
                     last.isFavorite(),         // 즐겨찾기 여부
+                    last.lastActivityAt(),         // 마지막 채팅 시각
                     last.unreadCount() > 0,    // unreadCount → boolean 커서
-                    last.lastChatAt(),         // 마지막 채팅 시각
-                    last.tribeId()
+                    last.lastChatId()
             );
         }
 
@@ -157,7 +157,7 @@ public class UserTribeServiceImpl implements UserTribeService {
 
         // 1. 페이지 사이즈 및 커서 여부 판단
         // size 미지정 시 기본 20
-        int pageSize = (size == null || size < 1) ? 20 : size;;
+        int pageSize = (size == null || size < 1) ? 20 : size;
 
         // tribeId 커서가 있으면 다음 페이지 요청
         boolean hasCursor = cursorTribeId != null;

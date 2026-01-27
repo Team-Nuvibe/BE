@@ -42,44 +42,51 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
 
     /**
      * Active 트라이브 챗 목록 조회
-     * 고정, 안 읽음, 채팅시간, ID 순으로 정렬
+     * 고정, 최신 활동 시간(동일할 시 메시지 읽음 여부 순) 순으로 정렬
      */
     @Query("""
-    select new com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow(
-        t.id, t.imageTag, t.counts, ut.isFavorite, t.lastChatAt, ut.unreadCount)
-    from UserTribe ut
-    join ut.tribe t
-    where ut.user.id = :userId
-      and ut.userTribeStatus = :status
-      and (
-        :hasCursor = false
-        or (
-               (case when ut.isFavorite = true then 1 else 0 end) < :cFav
-            or ((case when ut.isFavorite = true then 1 else 0 end) = :cFav
-                and (case when ut.unreadCount > 0 then 1 else 0 end) < :cUnread)
-            or ((case when ut.isFavorite = true then 1 else 0 end) = :cFav
-                and (case when ut.unreadCount > 0 then 1 else 0 end) = :cUnread
-                and t.lastChatAt < :cLastAt)
-            or ((case when ut.isFavorite = true then 1 else 0 end) = :cFav
-                and (case when ut.unreadCount > 0 then 1 else 0 end) = :cUnread
-                and t.lastChatAt = :cLastAt
-                and t.id < :cTribeId)
-        )
-      )
-    order by
-      ut.isFavorite desc,
-      (case when ut.unreadCount > 0 then 1 else 0 end) desc,
-      t.lastChatAt desc,
-      t.id desc
-    """)
+select new com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow(
+    t.id,
+    t.imageTag,
+    t.counts,
+    ut.isFavorite,
+    ut.lastActivityAt,
+    ut.unreadCount,
+    t.lastChatId
+)
+from UserTribe ut
+join ut.tribe t
+where ut.user.id = :userId
+  and ut.userTribeStatus = :status
+  and (
+    :hasCursor = false
+    or (
+         (case when ut.isFavorite = true then 1 else 0 end) < :cFav
+      or ((case when ut.isFavorite = true then 1 else 0 end) = :cFav
+          and ut.lastActivityAt < :cActivityAt)
+      or ((case when ut.isFavorite = true then 1 else 0 end) = :cFav
+          and ut.lastActivityAt = :cActivityAt
+          and (case when ut.unreadCount > 0 then 1 else 0 end) < :cUnread)
+      or ((case when ut.isFavorite = true then 1 else 0 end) = :cFav
+          and ut.lastActivityAt = :cActivityAt
+          and (case when ut.unreadCount > 0 then 1 else 0 end) = :cUnread
+          and (case when t.lastChatId is null then 0 else t.lastChatId end) < :cLastChatId)
+    )
+  )
+order by
+  ut.isFavorite desc,
+  ut.lastActivityAt desc,
+  (case when ut.unreadCount > 0 then 1 else 0 end) desc,
+  (case when t.lastChatId is null then 0 else t.lastChatId end) desc
+""")
     List<ActiveTribeRow> findActiveTribes(
             @Param("userId") Long userId,
             @Param("status") UserTribeStatus status,
             @Param("hasCursor") boolean hasCursor,
             @Param("cFav") int cFav,
+            @Param("cActivityAt") LocalDateTime cActivityAt,
             @Param("cUnread") int cUnread,
-            @Param("cLastAt") LocalDateTime cLastAt,
-            @Param("cTribeId") Long cTribeId,
+            @Param("cLastChatId") long cLastChatId,
             Pageable pageable
     );
 
@@ -130,4 +137,19 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM UserTribe ut WHERE ut.tribe.id = :tribeId")
     int deleteByTribeId(@Param("tribeId") Long tribeId);
+
+    // 마지막 활동 시간 갱신
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+    update UserTribe ut
+       set ut.lastActivityAt = :activityAt
+     where ut.tribe.id = :tribeId
+       and ut.userTribeStatus = :status
+""")
+    int updateLastActivityAt(
+            Long tribeId,
+            UserTribeStatus status,
+            LocalDateTime activityAt
+    );
+
 }

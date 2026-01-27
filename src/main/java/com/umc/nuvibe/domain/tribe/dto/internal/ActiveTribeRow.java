@@ -11,8 +11,9 @@ public record ActiveTribeRow(
         ImageTag imageTag,
         Integer counts,
         boolean isFavorite,
-        LocalDateTime lastChatAt,
-        int unreadCount
+        LocalDateTime lastActivityAt,
+        int unreadCount,
+        Long lastChatId
 
 ) {
 }

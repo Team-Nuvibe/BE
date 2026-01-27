@@ -41,9 +41,6 @@ public class Tribe extends BaseEntity {
     // 마지막 채팅 ID (정렬/읽음 기준)
     private Long lastChatId;
 
-    // 마지막 채팅 시각 (목록 정렬 기준)
-    private LocalDateTime lastChatAt;
-
     public static Tribe create(ImageTag imageTag, Integer version){
         return Tribe.builder()
                 .imageTag(imageTag)
@@ -51,13 +48,11 @@ public class Tribe extends BaseEntity {
                 .version(version)
                 .status(TribeStatus.INACTIVE)
                 .lastChatId(null)
-                .lastChatAt(LocalDateTime.now())
                 .build();
     }
 
-    public void updateLastChat(Long lastChatId, LocalDateTime lastChatAt){
+    public void updateLastChat(Long lastChatId){
         this.lastChatId = lastChatId;
-        this.lastChatAt = lastChatAt;
     }
 
 

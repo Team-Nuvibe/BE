@@ -44,7 +44,7 @@ public class UserTribeController {
 
     // 활성화된 트라이브 챗 목록 조회
     @GetMapping("/active")
-    @Operation(summary = "활성화된 트라이브 목록 조회", description = "트라이브 챗 목록을 고정, 안 읽은 채팅, 최신 채팅, Id 순으로 정렬")
+    @Operation(summary = "활성화된 트라이브 목록 조회", description = "트라이브 챗 목록을 고정, 마지막 활동 시각(동률 시 안 읽은 메시지 여부 순), 마지막 chatId 순으로 정렬")
     public Response<ActiveTribeListRes> getActiveTribeList(
             @AuthUser Long userId,
             @ParameterObject ActiveTribeListReq req
