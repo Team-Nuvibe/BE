@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -156,7 +157,7 @@ public class UserTribeServiceImpl implements UserTribeService {
 
         // 1. 페이지 사이즈 및 커서 여부 판단
         // size 미지정 시 기본 20
-        int pageSize = (size == null) ? 20 : size;
+        int pageSize = (size == null || size < 1) ? 20 : size;;
 
         // tribeId 커서가 있으면 다음 페이지 요청
         boolean hasCursor = cursorTribeId != null;
@@ -196,23 +197,24 @@ public class UserTribeServiceImpl implements UserTribeService {
         );
         if (!isActiveMember) {throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);}
 
-        // 2. 최신 chatId 조회 (읽음 처리 기준)
-        Long lastChatId = tribeRepository.findLastChatId(tribeId);
+        // 2. 최신 chatId(없으면 empty) 조회
+        Optional<Long> lastChatId = tribeRepository.findLastChatId(tribeId);
 
-        // 3. 메시지 0개 트라이브 챗은 업데이트 없이 성공 반환
-        if (lastChatId == null) {
+        // 3. 채팅 0개면 그대로 성공 반환
+        if (lastChatId.isEmpty()) {
             return new TribeReadRes(tribeId, null);
         }
 
         // 4. 안 읽은 메시지 수 0건으로 초기화
+        Long lastId = lastChatId.get();
         userTribeRepository.readChat(
                 userId,
                 tribeId,
-                lastChatId,
+                lastId,
                 UserTribeStatus.ACTIVE
         );
 
-        return new TribeReadRes(tribeId, lastChatId);
+        return new TribeReadRes(tribeId, lastId);
 
     }
 

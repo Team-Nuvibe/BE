@@ -72,5 +72,5 @@ public interface TribeRepository extends JpaRepository<Tribe, Long> {
         from Tribe t
         where t.id = :tribeId
     """)
-    Long findLastChatId(@Param("tribeId") Long tribeId);
+    Optional<Long> findLastChatId(@Param("tribeId") Long tribeId);
 }
