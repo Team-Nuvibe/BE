@@ -41,34 +41,39 @@ public class NotificationScheduler {
     @Scheduled(cron = "0 0 0/12 * * *", zone = "Asia/Seoul")
     public void sendTribeCloseWarning() {
         LocalDateTime now = LocalDateTime.now(clock);
-        // 6일 전 (종료 하루 전 예고)
         LocalDateTime cutoff = now.minusHours(144L);
-        // 7일 전 (이미 종료 대상인 건 제외)
         LocalDateTime excludeCutoff = now.minusHours(168L);
 
-        Slice<CloseTargetView> warningTargets = tribeRepository.findCloseWarningTargets(
-                cutoff,
-                excludeCutoff,
-                UserTribeStatus.ACTIVE,
-                MIN_ACTIVE_COUNT,
-                PageRequest.of(0, 100)
-        );
+        int page = 0;
+        Slice<CloseTargetView> warningTargets;
 
-        for (CloseTargetView target : warningTargets) {
-            try {
-                List<User> participants = userTribeRepository.findUsersByTribeId(target.getTribeId());
-                String tag = target.getImageTag() != null ? target.getImageTag().name() : "";
+        do {
+            warningTargets = tribeRepository.findCloseWarningTargets(
+                    cutoff,
+                    excludeCutoff,
+                    UserTribeStatus.ACTIVE,
+                    MIN_ACTIVE_COUNT,
+                    PageRequest.of(page, 100)
+            );
 
-                fcmService.sendNotificationToUsers(
-                        participants,
-                        NotificationType.NOTI_05,
-                        tag,
-                        target.getTribeId()
-                );
-            } catch (Exception e) {
-                log.error("NOTI-05 발송 실패. tribeId={}", target.getTribeId(), e);
+            for (CloseTargetView target : warningTargets) {
+                try {
+                    List<User> participants = userTribeRepository.findUsersByTribeId(target.getTribeId());
+                    String tag = target.getImageTag() != null ? target.getImageTag().name() : "";
+
+                    fcmService.sendNotificationToUsers(
+                            participants,
+                            NotificationType.NOTI_05,
+                            tag,
+                            target.getTribeId()
+                    );
+                } catch (Exception e) {
+                    log.error("NOTI-05 발송 실패. tribeId={}", target.getTribeId(), e);
+                }
             }
-        }
+
+            page++;
+        } while (warningTargets.hasNext());
     }
 
 
@@ -80,22 +85,31 @@ public class NotificationScheduler {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime todayStart = now.toLocalDate().atStartOfDay();
 
-        // 오늘 드랍 안 한 사용자 조회
-        List<User> usersWithoutDrop = userRepository.findUsersWithoutDropToday(todayStart);
+        int page = 0;
+        Slice<User> usersWithoutDrop;
 
-        for (User user : usersWithoutDrop) {
-            try {
-                fcmService.sendNotification(
-                        user,
-                        NotificationType.NOTI_07,
-                        null,
-                        null,
-                        null
-                );
-            } catch (Exception e) {
-                log.error("NOTI-07 발송 실패. userId={}", user.getId(), e);
+        do {
+            usersWithoutDrop = userRepository.findUsersWithoutDropToday(
+                    todayStart,
+                    PageRequest.of(page, 100)
+            );
+
+            for (User user : usersWithoutDrop) {
+                try {
+                    fcmService.sendNotification(
+                            user,
+                            NotificationType.NOTI_07,
+                            null,
+                            null,
+                            null
+                    );
+                } catch (Exception e) {
+                    log.error("NOTI-07 발송 실패. userId={}", user.getId(), e);
+                }
             }
-        }
+
+            page++;
+        } while (usersWithoutDrop.hasNext());
     }
 
 
@@ -107,28 +121,28 @@ public class NotificationScheduler {
         LocalDateTime now = LocalDateTime.now(clock);
         LocalDateTime threeDaysAgo = now.minusDays(3);
 
-        // 최근 3일간 드랍 없는 사용자 조회
-        List<User> inactiveUsers = userRepository.findUsersWithoutDropSince(threeDaysAgo);
-
-        // 랜덤 추천 태그 선정
         ImageTag[] allTags = ImageTag.values();
-
         Random random = new Random();
-        for (User user : inactiveUsers) {
-            try {
-                ImageTag randomTag = allTags[random.nextInt(allTags.length)];
 
-                fcmService.sendNotification(
-                        user,
-                        NotificationType.NOTI_08,
-                        randomTag.name(),
-                        null,
-                        null
-                );
-            } catch (Exception e) {
-                log.error("NOTI-08 발송 실패. userId={}", user.getId(), e);
+        int page = 0;
+        Slice<User> inactiveUsers;
+
+        do {
+            inactiveUsers = userRepository.findUsersWithoutDropSince(
+                    threeDaysAgo,
+                    PageRequest.of(page, 100)
+            );
+
+            for (User user : inactiveUsers) {
+                try {
+                    ImageTag randomTag = allTags[random.nextInt(allTags.length)];
+                    fcmService.sendNotification(user, NotificationType.NOTI_08, randomTag.name(), null, null);
+                } catch (Exception e) {
+                    log.error("NOTI-08 발송 실패. userId={}", user.getId(), e);
+                }
             }
-        }
+            page++;
+        } while (inactiveUsers.hasNext());
     }
 
 
@@ -141,22 +155,25 @@ public class NotificationScheduler {
         LocalDateTime weekStart = now.minusWeeks(1).toLocalDate().atStartOfDay();
         LocalDateTime weekEnd = now.toLocalDate().atStartOfDay();
 
-        // 지난 주 드랍한 사용자 조회
-        List<User> usersWithWeeklyDrop = userRepository.findUsersWithDropBetween(weekStart, weekEnd);
+        int page = 0;
+        Slice<User> usersWithWeeklyDrop;
 
-        for (User user : usersWithWeeklyDrop) {
-            try {
-                fcmService.sendNotification(
-                        user,
-                        NotificationType.NOTI_09,
-                        null,
-                        null,
-                        null
-                );
-            } catch (Exception e) {
-                log.error("NOTI-09 발송 실패. userId={}", user.getId(), e);
+        do {
+            usersWithWeeklyDrop = userRepository.findUsersWithDropBetween(
+                    weekStart,
+                    weekEnd,
+                    PageRequest.of(page, 100)
+            );
+
+            for (User user : usersWithWeeklyDrop) {
+                try {
+                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null);
+                } catch (Exception e) {
+                    log.error("NOTI-09 발송 실패. userId={}", user.getId(), e);
+                }
             }
-        }
+            page++;
+        } while (usersWithWeeklyDrop.hasNext());
     }
 
 
@@ -169,22 +186,25 @@ public class NotificationScheduler {
         LocalDateTime monthStart = now.minusMonths(1).withDayOfMonth(1).toLocalDate().atStartOfDay();
         LocalDateTime monthEnd = now.withDayOfMonth(1).toLocalDate().atStartOfDay();
 
-        // 지난 달 드랍한 사용자 조회
-        List<User> usersWithMonthlyDrop = userRepository.findUsersWithDropBetween(monthStart, monthEnd);
+        int page = 0;
+        Slice<User> usersWithMonthlyDrop;
 
-        for (User user : usersWithMonthlyDrop) {
-            try {
-                fcmService.sendNotification(
-                        user,
-                        NotificationType.NOTI_10,
-                        null,
-                        null,
-                        null
-                );
-            } catch (Exception e) {
-                log.error("NOTI-10 발송 실패. userId={}", user.getId(), e);
+        do {
+            usersWithMonthlyDrop = userRepository.findUsersWithDropBetween(
+                    monthStart,
+                    monthEnd,
+                    PageRequest.of(page, 100)
+            );
+
+            for (User user : usersWithMonthlyDrop) {
+                try {
+                    fcmService.sendNotification(user, NotificationType.NOTI_10, null, null, null);
+                } catch (Exception e) {
+                    log.error("NOTI-10 발송 실패. userId={}", user.getId(), e);
+                }
             }
-        }
+            page++;
+        } while (usersWithMonthlyDrop.hasNext());
     }
 
 }

@@ -1,6 +1,8 @@
 package com.umc.nuvibe.domain.user.repository;
 
 import com.umc.nuvibe.domain.user.entity.User;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,7 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         WHERE bi.createdAt >= :todayStart
     )
     """)
-    List<User> findUsersWithoutDropToday(@Param("todayStart") LocalDateTime todayStart);
+    Slice<User> findUsersWithoutDropToday(LocalDateTime todayStart, Pageable pageable);
 
     // 특정 날짜 이후 드랍 없는 사용자 조회
     @Query("""
@@ -35,7 +37,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         WHERE bi.createdAt >= :since
     )
     """)
-    List<User> findUsersWithoutDropSince(@Param("since") LocalDateTime since);
+    Slice<User> findUsersWithoutDropSince(@Param("since") LocalDateTime since, Pageable pageable);
 
 
     // 특정 기간 내 드랍한 사용자 조회 (NOTI-09, 10 공통)
@@ -45,9 +47,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     JOIN BoardImage bi ON bi.board = ab
     WHERE bi.createdAt >= :start AND bi.createdAt < :end
     """)
-    List<User> findUsersWithDropBetween(
+    Slice<User> findUsersWithDropBetween(
             @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("end") LocalDateTime end,
+            Pageable pageable
     );
     
     boolean existsByEmail(String email);
