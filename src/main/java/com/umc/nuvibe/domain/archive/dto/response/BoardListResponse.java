@@ -9,13 +9,15 @@ import com.umc.nuvibe.domain.archive.entity.ArchiveBoard;
 public record BoardListResponse(
         Long boardId,
         String name,
-        String thumbnailUrl
+        String thumbnailUrl,
+        Integer tagCount
 ) {
-    public static BoardListResponse from(ArchiveBoard board, String thumbnailUrl) {
+    public static BoardListResponse from(ArchiveBoard board, String thumbnailUrl, Integer tagCount) {
         return new BoardListResponse(
                 board.getId(),
                 board.getName(),
-                thumbnailUrl
+                thumbnailUrl,
+                tagCount
         );
     }
 }

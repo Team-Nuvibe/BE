@@ -47,30 +47,41 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     // 보드 목록 조회
     @Override
     public List<BoardListResponse> getBoards(Long userId, String keyword) {
-    // keyword가 null이거나 공백이면 전체 조회, 있으면 검색
-    List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
-            ? archiveBoardRepository.findByUserId(userId)
-            : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
-        
+        List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
+                ? archiveBoardRepository.findByUserId(userId)
+                : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
+
         if (boards.isEmpty()) {
             return List.of();
         }
-        
-        // 썸네일 한 번에 조회 (n+1 방지)
+
         List<Long> boardIds = boards.stream()
                 .map(ArchiveBoard::getId)
                 .toList();
-        
+
+        // 썸네일 조회 (기존)
         Map<Long, String> thumbnailMap = boardImageRepository.findLatestByBoardIds(boardIds)
                 .stream()
                 .collect(Collectors.toMap(
                         bi -> bi.getBoard().getId(),
                         bi -> bi.getImage().getImageUrl(),
-                        (existing, replacement) -> existing  // 중복 시 첫 번째 값 유지
+                        (existing, replacement) -> existing
                 ));
-        
+
+        // 태그 개수 조회 (추가)
+        Map<Long, Long> tagCountMap = boardImageRepository.countDistinctTagsByBoardIds(boardIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],      // boardId
+                        row -> (Long) row[1]       // tagCount
+                ));
+
         return boards.stream()
-                .map(board -> BoardListResponse.from(board, thumbnailMap.get(board.getId())))
+                .map(board -> BoardListResponse.from(
+                        board,
+                        thumbnailMap.get(board.getId()),
+                        tagCountMap.getOrDefault(board.getId(), 0L).intValue()  // 태그 없으면 0
+                ))
                 .toList();
     }
 

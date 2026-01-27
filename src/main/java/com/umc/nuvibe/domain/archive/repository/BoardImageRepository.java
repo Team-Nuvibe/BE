@@ -258,4 +258,12 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
             @Param("userId") Long userId,
             @Param("date") LocalDate date
     );
+
+    // 각 보드별 고유 태그 개수 조회
+    @Query("SELECT bi.board.id, COUNT(DISTINCT i.imageTag) " +
+            "FROM BoardImage bi " +
+            "JOIN bi.image i " +
+            "WHERE bi.board.id IN :boardIds " +
+            "GROUP BY bi.board.id")
+    List<Object[]> countDistinctTagsByBoardIds(@Param("boardIds") List<Long> boardIds);
 }
