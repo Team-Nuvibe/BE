@@ -4,6 +4,9 @@ import com.umc.nuvibe.domain.image.vo.ImageTag;
 
 public record ImageRes(
         String imageURL,
+        String fileName,
+        Long ImageId,
         ImageTag imageTag
+
 ) {
 }
