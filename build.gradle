@@ -62,6 +62,9 @@ dependencies {
 	//mail
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+	// firebase
+	implementation 'com.google.firebase:firebase-admin:9.7.0'
+
 	//grafana
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-registry-prometheus'

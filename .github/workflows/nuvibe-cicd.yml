@@ -30,6 +30,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # firebase CI 설정
+      - name: Create Firebase credential file
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
+
       - name: Run tests
         run: ./gradlew test
 
@@ -53,6 +63,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # firebase CD 설정
+      - name: Create Firebase credential file
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
+
       - name: Build with Gradle
         run: ./gradlew build -x test
 
@@ -75,7 +95,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: AWS_ACCESS_KEY,AWS_S3_BUCKET,AWS_SECRET_KEY,DOCKERHUB_USERNAME,FRONT_URL,GMAIL_ADDRESS,GMAIL_PASSWORD,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY,JWT_SECRET_KEY,PROD_DB_PASSWORD,PROD_DB_URL,PROD_DB_USERNAME,SERVER_URL,AWS_QUEUE_NAME
+          envs: AWS_ACCESS_KEY,AWS_S3_BUCKET,AWS_SECRET_KEY,DOCKERHUB_USERNAME,FRONT_URL,GMAIL_ADDRESS,GMAIL_PASSWORD,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY,JWT_SECRET_KEY,PROD_DB_PASSWORD,PROD_DB_URL,PROD_DB_USERNAME,SERVER_URL,FIREBASE_CREDENTIALS_PATH,AWS_QUEUE_NAME
           script: |
             # 배포 디렉토리 생성
             mkdir -p /home/ubuntu/nuvibe
@@ -117,6 +137,9 @@ jobs:
                   
                   # Frontend 설정
                   - FRONT_URL=${FRONT_URL}
+                  
+                  # Firebase 설정
+                  - FIREBASE_CREDENTIALS_PATH=${FIREBASE_CREDENTIALS_PATH}
             
                 restart: unless-stopped
                 logging:
@@ -152,3 +175,5 @@ jobs:
           PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
           PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           SERVER_URL: ${{ secrets.SERVER_URL }}
+          FIREBASE_CREDENTIALS_PATH: ${{ secrets.FIREBASE_CREDENTIALS_PATH }}
+

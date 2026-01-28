@@ -4,6 +4,7 @@ import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import com.umc.nuvibe.domain.user.entity.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,4 +28,10 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM UserTribe ut WHERE ut.tribe.id = :tribeId")
     int deleteByTribeId(@Param("tribeId") Long tribeId);
+
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.userTribeStatus = 'ACTIVE'")
+    List<User> findUsersByTribeId(@Param("tribeId") Long tribeId);
+
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'ACTIVE'")
+    List<User> findUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
 }
