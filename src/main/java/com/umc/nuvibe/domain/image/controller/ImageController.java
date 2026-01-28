@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.image.controller;
 
+import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.image.dto.response.ImageDetailRes;
 import com.umc.nuvibe.domain.image.dto.response.ImageRes;
 import com.umc.nuvibe.domain.image.service.ImageService;
@@ -10,9 +11,7 @@ import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -21,10 +20,14 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) //multipart 데이터를 받기 위해 사용
-    public Response<ImageRes> uploadImage(@RequestPart("file") MultipartFile file, @RequestParam ImageTag tag) {
-        ImageRes response=imageService.uploadAndSave(file, tag);
-        return Response.ok(ImageResultCode.IMAGE_UPLOAD_OK,response);
+    @PostMapping("/presigned-url")
+    @Operation(summary = "Presigned URL 발급", description = "이미지 업로드를 위한 Presigned URL을 발급합니다. " +
+            "url 받으시면 put/url로 s3에 사용자가 직접 이미지 업로드하게 해주시면 될 것 같아요." +
+            "url 발급 이후로는 s3 업로드까지 프론트에서 맡아서 해주셔야 할 것 같습니다.." +
+            "POST 말고 PUT으로 이미지 쏴주시면 됩니다!!")
+    public Response<ImageRes> getPresignedUrl(@RequestBody PreSignedUrlReq request, @RequestParam ImageTag tag) {
+        ImageRes response = imageService.preSaveAndGetUrl(request, tag);
+        return Response.ok(ImageResultCode.IMAGE_UPLOAD_OK, response);
     }
 
     @GetMapping("/{imageId}")
