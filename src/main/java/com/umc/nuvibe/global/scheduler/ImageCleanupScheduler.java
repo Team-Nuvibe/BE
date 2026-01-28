@@ -25,7 +25,6 @@ public class ImageCleanupScheduler {
     private static final int IMAGE_EXPIRY_MINUTES = 10;
 
     @Scheduled(cron = "0 */10 * * * *") // 매 10분마다 실행
-    @Transactional
     public void cleanupPendingImages() {
         log.info("==== PENDING 이미지 정리 스케줄러 시작 ====");
 
@@ -63,10 +62,14 @@ public class ImageCleanupScheduler {
                         }
                     }
 
-                    // DB에서 삭제 (S3 삭제 실패해도 DB는 삭제)
-                    imageRepository.delete(image);
-                    successCount++;
-                    log.info("DB 레코드 삭제 성공 - ID: {}", image.getId());
+                    // DB에서 삭제
+                    if (s3Deleted) {
+                        imageRepository.delete(image);
+                        successCount++;
+                        log.info("DB 레코드 삭제 성공 - ID: {}", image.getId());
+                    } else{
+                        log.warn("S3 삭제 실패로 DB 레코드 유지 - ID: {}", image.getId());
+                    }
 
                 } catch (Exception e) {
                     failCount++;

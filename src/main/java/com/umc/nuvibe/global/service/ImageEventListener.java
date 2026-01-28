@@ -58,6 +58,11 @@ public class ImageEventListener {
 
     private void handleImageUpload(String fileName) {
         // db에서 파일명으로 파일 찾아다가 pending 이미지를 active로 바꾸기
+        if (!fileName.startsWith("images/")) {
+            log.info("이미지 prefix가 아닌 객체는 처리하지 않습니다: {}", fileName);
+            return;
+        }
+
         imageRepository.findByFileName(fileName)
                 .ifPresentOrElse(
                         image -> {
