@@ -95,7 +95,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: AWS_ACCESS_KEY,AWS_S3_BUCKET,AWS_SECRET_KEY,DOCKERHUB_USERNAME,FRONT_URL,GMAIL_ADDRESS,GMAIL_PASSWORD,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY,JWT_SECRET_KEY,PROD_DB_PASSWORD,PROD_DB_URL,PROD_DB_USERNAME,SERVER_URL,FIREBASE_CREDENTIALS_PATH
+          envs: AWS_ACCESS_KEY,AWS_S3_BUCKET,AWS_SECRET_KEY,DOCKERHUB_USERNAME,FRONT_URL,GMAIL_ADDRESS,GMAIL_PASSWORD,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY,JWT_SECRET_KEY,PROD_DB_PASSWORD,PROD_DB_URL,PROD_DB_USERNAME,SERVER_URL,FIREBASE_CREDENTIALS_PATH,AWS_QUEUE_NAME
           script: |
             # 배포 디렉토리 생성
             mkdir -p /home/ubuntu/nuvibe
@@ -118,6 +118,7 @@ jobs:
                   - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
                   - AWS_S3_BUCKET=${AWS_S3_BUCKET}
                   - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+                  - AWS_QUEUE_NAME=${AWS_QUEUE_NAME}
                   
                   # DB 설정
                   - PROD_DB_PASSWORD=${PROD_DB_PASSWORD}
@@ -162,6 +163,7 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_QUEUE_NAME: ${{ secrets.AWS_QUEUE_NAME }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           FRONT_URL: ${{ secrets.FRONT_URL }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
