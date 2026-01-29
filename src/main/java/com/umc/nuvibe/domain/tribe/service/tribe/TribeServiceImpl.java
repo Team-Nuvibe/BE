@@ -83,6 +83,4 @@ public class TribeServiceImpl implements TribeService {
             Tribe newTribe = Tribe.create(imageTag, nextVersion);
             return tribeRepository.save(newTribe);
     }
-
-
 }

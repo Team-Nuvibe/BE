@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Table(
@@ -36,14 +38,24 @@ public class UserTribe extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserTribeStatus userTribeStatus;
 
+    // 마지막으로 읽은 chatId
+    private Long lastReadChatId;
 
+    // 안 읽은 메시지 수
+    private int unreadCount;
+
+    // 마지막 활동 시각
+    private LocalDateTime lastActivityAt;
 
     @Builder
-    private UserTribe(User user, Tribe tribe, UserTribeStatus userTribeStatus, boolean isFavorite) {
+    private UserTribe(User user, Tribe tribe, UserTribeStatus userTribeStatus, boolean isFavorite, Long lastReadChatId, int unreadCount, LocalDateTime lastActivityAt) {
         this.user = user;
         this.tribe = tribe;
         this.userTribeStatus = userTribeStatus;
         this.isFavorite = isFavorite;
+        this.lastReadChatId = lastReadChatId;
+        this.unreadCount = unreadCount;
+        this.lastActivityAt = lastActivityAt;
     }
 
     public static UserTribe of(User user, Tribe tribe) {
@@ -52,6 +64,9 @@ public class UserTribe extends BaseEntity {
                 .tribe(tribe)
                 .userTribeStatus(UserTribeStatus.WAITING)
                 .isFavorite(false)
+                .lastReadChatId(null)
+                .unreadCount(0)
+                .lastActivityAt(LocalDateTime.now())
                 .build();
     }
 
@@ -61,6 +76,10 @@ public class UserTribe extends BaseEntity {
 
     public void toggleFavorite() {
         this.isFavorite = !this.isFavorite;
+    }
+
+    public void updateLastActivityAt(LocalDateTime lastActivityAt) {
+        this.lastActivityAt = lastActivityAt;
     }
 
 }

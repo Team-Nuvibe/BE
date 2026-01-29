@@ -6,6 +6,8 @@ import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Table(name = "tribes",
@@ -36,14 +38,23 @@ public class Tribe extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TribeStatus status;
 
+    // 마지막 채팅 ID (정렬/읽음 기준)
+    private Long lastChatId;
+
     public static Tribe create(ImageTag imageTag, Integer version){
         return Tribe.builder()
                 .imageTag(imageTag)
                 .counts(0)
                 .version(version)
                 .status(TribeStatus.INACTIVE)
+                .lastChatId(null)
                 .build();
     }
+
+    public void updateLastChat(Long lastChatId){
+        this.lastChatId = lastChatId;
+    }
+
 
     public void changeStatus(){
         this.status = TribeStatus.WAITING;

@@ -203,7 +203,7 @@ public class ChatServiceImpl implements ChatService {
             throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);
         }
 
-        // 3. 태그 검증
+        // 3. 태그 검증 (해당 트라이브 태그 사용)
         ImageTag tag = tribe.getImageTag();
         if (tag == null) {
             throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
@@ -212,15 +212,28 @@ public class ChatServiceImpl implements ChatService {
         // 4. 이미지 업로드 + 이미지 엔티티 저장
         Image image = imageService.uploadAndSaveEntity(file, tag);
 
-        // 5. 채팅 저장
+        // 5. 채팅 저장 (유저는 참조)
         User userRef = userRepository.getReferenceById(userId);
         Chat chat = Chat.of(userRef, tribe, image);
-        chatRepository.save(chat);
+        chat = chatRepository.saveAndFlush(chat);
 
-        // 6. 보드에 이미지 저장 (알림보다 먼저!)
+        // 6. 트라이브 마지막 메시지 및 활동 시각 갱신
+        tribe.updateLastChat(chat.getId());
+        userTribeRepository.updateLastActivityAt(
+                tribeId,
+                UserTribeStatus.ACTIVE,
+                chat.getCreatedAt()
+        );
+
+        // 7. 해당 트라이브 Active 유저 unreadCount +1 (발신자 제외)
+        userTribeRepository.incrementUnreadCountForActiveMembers(
+                tribeId, UserTribeStatus.ACTIVE, userId
+        );
+
+        // 8. 보드에 이미지 저장 (알림보다 먼저!)
         archiveBoardService.addBoardImage(userId, boardId, image.getId());
 
-        // 7. 발신할 record 생성
+        // 9. 발신할 record 생성
         ChatSend chatSend = new ChatSend(
                 chat.getId(),
                 userId,
@@ -231,7 +244,7 @@ public class ChatServiceImpl implements ChatService {
 
         registerChatPublish(tribeId, chatSend);
 
-        // 8. 트랜잭션 커밋 후 알림 발송(NOTI-03)
+        // 10. 트랜잭션 커밋 후 알림 발송(NOTI-03)
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override
