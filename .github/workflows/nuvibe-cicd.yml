@@ -159,7 +159,7 @@ jobs:
                     max-size: "10m"
                     max-file: "3"
                 healthcheck:
-                  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+                  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
@@ -231,4 +231,3 @@ jobs:
           PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           SERVER_URL: ${{ secrets.SERVER_URL }}
           FIREBASE_CREDENTIALS_PATH: ${{ secrets.FIREBASE_CREDENTIALS_PATH }}
-
