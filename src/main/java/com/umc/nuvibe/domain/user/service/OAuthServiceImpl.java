@@ -265,6 +265,7 @@ public class OAuthServiceImpl implements OAuthService {
                 .queryParam("response_type", "code")
                 .queryParam("state", state)
                 .build()
+                .encode()
                 .toUriString();
     }
 
@@ -275,6 +276,7 @@ public class OAuthServiceImpl implements OAuthService {
                 .queryParam("response_type", "code")
                 .queryParam("state", state)
                 .build()
+                .encode()
                 .toUriString();
     }
 }
