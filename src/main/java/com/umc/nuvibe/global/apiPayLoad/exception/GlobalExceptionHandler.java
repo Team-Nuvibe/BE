@@ -34,7 +34,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     // ===================== 사용자 정의 예외 ======================
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Response<Void>> handleBusinessException(BusinessException ex) {
+    public ResponseEntity<Response<Object>> handleBusinessException(BusinessException ex) {
+        if (ex.getData() != null) {
+            return ResponseEntity
+                    .status(ex.getHttpStatus())
+                    .body(Response.fail(ex.getErrorCode(), ex.getData()));
+        }
         return ResponseEntity
                 .status(ex.getHttpStatus())
                 .body(Response.fail(ex.getErrorCode()));

@@ -48,7 +48,8 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable) // 기본 로그인 폼 끄기
                 .httpBasic(AbstractHttpConfigurer::disable) // http basic 끄기
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/", "/api/auth/**").permitAll() // 인증 없이 접근 허용
+                        .requestMatchers("/api/auth/oauth2/signup/complete").authenticated()
+                        .requestMatchers("/", "/api/auth/**").permitAll()
                         .requestMatchers("/index.html", "/static/**", "/favicon.ico").permitAll() // 정적 파일 허용
                         .requestMatchers("/swagger", "/swagger/", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger 허용
                         .requestMatchers("/api/auth/kakao/callback","/api/auth/naver/callback").permitAll()
