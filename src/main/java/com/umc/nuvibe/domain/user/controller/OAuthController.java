@@ -89,10 +89,6 @@ public class OAuthController {
             @AuthenticationPrincipal Long userId,
             @RequestBody OAuthSignupReq request) {
 
-        if (userId == null) {
-            throw new BusinessException(AuthErrorCode.UNAUTHORIZED);  // 인증 필요
-        }
-
         // userDetails에서 유저 정보 가져와서 업데이트
         oAuthService.completeSignup(userId, request);
 

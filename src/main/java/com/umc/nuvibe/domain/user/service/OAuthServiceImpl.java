@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -61,6 +62,13 @@ public class OAuthServiceImpl implements OAuthService {
             case KAKAO -> buildKakaoAuthUrl(state);
             default -> throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         };
+    }
+
+    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    public void cleanupExpiredStates() {
+        long now = System.currentTimeMillis();
+        stateStore.entrySet().removeIf(entry ->
+                now - entry.getValue() > STATE_EXPIRY_MS);
     }
 
     @Override
@@ -172,10 +180,10 @@ public class OAuthServiceImpl implements OAuthService {
             }
             return attributes;
         } catch (WebClientResponseException e) {
-            log.error("OAuth user info fetch failed: {}", e.getMessage());
+            log.error("OAuth user info fetch failed: status={}, provider={}", e.getStatusCode(), provider);
             throw new BusinessException(AuthErrorCode.OAUTH_USER_INFO_NOT_FOUND);
         } catch (Exception e) {
-            log.error("OAuth communication error: {}", e.getMessage());
+            log.error("OAuth communication error: provider={}", provider);
             throw new BusinessException(AuthErrorCode.OAUTH_COMMUNICATION_ERROR);
         }
     }

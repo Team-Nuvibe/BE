@@ -63,10 +63,12 @@ public class UserServiceImpl implements UserService {
 
         LocalDateTime lastUpdated=user.getLastNicknameUpdatedDate();
 
-        if (!(lastUpdated == null || lastUpdated.plusDays(14).isBefore(LocalDateTime.now()))) {
-            LocalDate nextAvailableDate = lastUpdated.plusDays(14).toLocalDate();
-            throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED,
-                    Map.of("nextAvailableDate", nextAvailableDate.toString()));
+        if (lastUpdated != null) {
+            LocalDate nextAvailableDate = lastUpdated.toLocalDate().plusDays(14);
+            if (nextAvailableDate.isAfter(LocalDate.now())) {
+                throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED,
+                        Map.of("nextAvailableDate", nextAvailableDate.toString()));
+            }
         }
 
         user.updateNickname(nickname);
