@@ -42,6 +42,9 @@ spring:
           starttls:
             enable: true
 
+server:
+  forward-headers-strategy: framework
+
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY}
