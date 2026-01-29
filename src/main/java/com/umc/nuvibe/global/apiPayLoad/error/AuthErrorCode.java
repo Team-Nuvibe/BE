@@ -19,8 +19,14 @@ public enum AuthErrorCode implements ErrorCode {
     INVAILD_EMAIL_FORMAT(HttpStatus.BAD_REQUEST,"AUTH009","이메일 형식이 일치하지 않습니다."),
     EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST,"AUTH010","이미 존재하는 이메일입니다."),
     PASSWORD_UNMATCH_ERROR(HttpStatus.BAD_REQUEST,"AUTH011", "비밀번호가 일치하지 않습니다."),
+    UNSUPPORTED_OAUTH_PROVIDER(HttpStatus.BAD_REQUEST, "AUTH012", "지원하지 않는 소셜 로그인 제공자입니다."),
+    OAUTH_COMMUNICATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AUTH013", "소셜 로그인 서버와 통신 중 오류가 발생했습니다."),
+    OAUTH_USER_INFO_NOT_FOUND(HttpStatus.BAD_REQUEST, "AUTH014", "소셜 로그인 사용자 정보를 가져올 수 없습니다."),
+    OAUTH_EMAIL_NOT_PROVIDED(HttpStatus.BAD_REQUEST, "AUTH015", "소셜 계정에서 이메일 정보를 제공받지 못했습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH016", "인증이 필요합니다."),
+    OAUTH_EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "AUTH017", "이미 다른 방식으로 가입된 이메일입니다.");
 
-    ;
+
 
     private final HttpStatus httpStatus;
     private final String code;

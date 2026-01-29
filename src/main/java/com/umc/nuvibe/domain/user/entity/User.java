@@ -28,7 +28,7 @@ public class User extends BaseEntity {
     @Column(name="user_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String name;
 
     private String nickname;
@@ -67,6 +67,9 @@ public class User extends BaseEntity {
         this.nickname = nickname;
         this.lastNicknameUpdatedDate = LocalDateTime.now();
     }
+    public void createName(String name) {
+        this.name = name;
+    }
 
     public void updateEmail(String email) {
         this.email = email;
@@ -91,9 +94,8 @@ public class User extends BaseEntity {
                 .build();
     }
 
-    public static User createSoccialUser(String name,  String email, AuthProvider provider,String providerId) {
+    public static User createSocialUser(String email, AuthProvider provider, String providerId) {
         return User.builder()
-                .name(name)
                 .provider(provider)
                 .email(email)
                 .providerId(providerId)

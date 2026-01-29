@@ -53,6 +53,22 @@ jwt:
 firebase:
   credentials-path: ${FIREBASE_CREDENTIALS_PATH}
 
+
+# OAuth2 소셜 로그인 설정
+oauth2:
+  naver:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}
+    redirect-uri: ${SERVER_URL:http://localhost:8080}/api/auth/oauth2/callback/naver
+  kakao:
+    client-id: ${KAKAO_CLIENT_ID}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-uri: ${SERVER_URL:http://localhost:8080}/api/auth/oauth2/callback/kakao
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${SERVER_URL:http://localhost:8080}/api/auth/oauth2/callback/google
+
 management:
   endpoints:
     web:
