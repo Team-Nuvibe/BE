@@ -21,8 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -61,8 +63,12 @@ public class UserServiceImpl implements UserService {
 
         LocalDateTime lastUpdated=user.getLastNicknameUpdatedDate();
 
-        if (!(lastUpdated==null || lastUpdated.plusDays(14).isBefore(LocalDateTime.now()))) {
-            throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED);
+        if (lastUpdated != null) {
+            LocalDate nextAvailableDate = lastUpdated.toLocalDate().plusDays(14);
+            if (nextAvailableDate.isAfter(LocalDate.now())) {
+                throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED,
+                        Map.of("nextAvailableDate", nextAvailableDate.toString()));
+            }
         }
 
         user.updateNickname(nickname);
