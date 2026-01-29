@@ -89,4 +89,12 @@ public interface TribeRepository extends JpaRepository<Tribe, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Tribe t WHERE t.id = :tribeId")
     void deleteById(@Param("tribeId") Long tribeId);
+
+    // 읽음 처리의 기준이 되는 최신 chatId 조회
+    @Query("""
+        select t.lastChatId
+        from Tribe t
+        where t.id = :tribeId
+    """)
+    Optional<Long> findLastChatId(@Param("tribeId") Long tribeId);
 }
