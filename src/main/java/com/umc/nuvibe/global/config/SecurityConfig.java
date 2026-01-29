@@ -64,6 +64,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",  // 로컬 테스트용
                 "http://localhost:5173",
+                "https://nuvibe.site",
+                "https://www.nuvibe.site",
+                "https://api.nuvibe.site",
                 frontendUrl
         ));
 
