@@ -37,6 +37,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Transactional
 public class OAuthServiceImpl implements OAuthService {
+    private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final OAuth2Properties oAuth2Properties;
+    private final WebClient webClient = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create().responseTimeout(Duration.ofSeconds(10))
+            ))
+            .build();
 
     // state 저장용 (간단한 방식 - 운영에서는 Redis 권장)
     private final Map<String, Long> stateStore = new ConcurrentHashMap<>();
