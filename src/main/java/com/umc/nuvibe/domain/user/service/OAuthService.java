@@ -6,6 +6,6 @@ import com.umc.nuvibe.domain.user.vo.AuthProvider;
 
 public interface OAuthService {
     String getOAuthAuthorizationUrl(AuthProvider provider, String state);
-    OAuthLoginRes processOAuthCallback(AuthProvider provider, String code);
+    OAuthLoginRes processOAuthCallback(AuthProvider provider, String code, String state);  // state 추가
     void completeSignup(Long userId, OAuthSignupReq request);
 }

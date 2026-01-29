@@ -36,7 +36,13 @@ public class OAuthController {
     @GetMapping("/{provider}")
     @Operation(summary = "소셜 로그인 시작", description = "해당 소셜 서비스의 로그인 페이지로 리다이렉트합니다.(google, naver, kakao)")
     public ResponseEntity<Void> redirectToOAuth(@PathVariable String provider) {
-        AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        AuthProvider authProvider;
+        try {
+            authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER); //provider 예외
+        }
+
         String state = UUID.randomUUID().toString();
         String authUrl = oAuthService.getOAuthAuthorizationUrl(authProvider, state);
 
@@ -53,18 +59,24 @@ public class OAuthController {
             @RequestParam String code,
             @RequestParam(required = false) String state) {
 
-        AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
-        OAuthLoginRes response = oAuthService.processOAuthCallback(authProvider, code);
+        AuthProvider authProvider;
+        try {
+            authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
+        }
 
-        // 프론트엔드로 토큰과 함께 리다이렉트
+        OAuthLoginRes response = oAuthService.processOAuthCallback(authProvider, code, state);  // state 전달
+
+        // Fragment identifier 방식으로 변경 (# 사용)
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl)
                 .path("/oauth/callback")
-                .queryParam("accessToken", response.accessToken())
-                .queryParam("refreshToken", response.refreshToken())
-                .queryParam("isNewUser", response.isNewUser())
-                .queryParam("userId", response.userId())
                 .build()
-                .toUriString();
+                .toUriString()
+                + "#accessToken=" + response.accessToken()
+                + "&refreshToken=" + response.refreshToken()
+                + "&isNewUser=" + response.isNewUser()
+                + "&userId=" + response.userId();
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(redirectUrl))

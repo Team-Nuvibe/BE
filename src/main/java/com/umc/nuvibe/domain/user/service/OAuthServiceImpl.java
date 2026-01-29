@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -24,9 +25,12 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.netty.http.client.HttpClient;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -34,13 +38,15 @@ import java.util.Optional;
 @Transactional
 public class OAuthServiceImpl implements OAuthService {
 
-    private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final OAuth2Properties oAuth2Properties;
-    private final WebClient webClient = WebClient.builder().build();
+    // state 저장용 (간단한 방식 - 운영에서는 Redis 권장)
+    private final Map<String, Long> stateStore = new ConcurrentHashMap<>();
+    private static final long STATE_EXPIRY_MS = 5 * 60 * 1000; // 5분
 
     @Override
     public String getOAuthAuthorizationUrl(AuthProvider provider, String state) {
+        // state 저장 (생성 시간과 함께)
+        stateStore.put(state, System.currentTimeMillis());
+
         return switch (provider) {
             case GOOGLE -> buildGoogleAuthUrl(state);
             case NAVER -> buildNaverAuthUrl(state);
@@ -50,7 +56,10 @@ public class OAuthServiceImpl implements OAuthService {
     }
 
     @Override
-    public OAuthLoginRes processOAuthCallback(AuthProvider provider, String code) {
+    public OAuthLoginRes processOAuthCallback(AuthProvider provider, String code, String state) {
+        // state 검증
+        validateState(state);
+
         // 1. Authorization Code로 Access Token 발급
         String accessToken = getAccessToken(provider, code);
 
@@ -62,6 +71,23 @@ public class OAuthServiceImpl implements OAuthService {
 
         // 4. 사용자 처리
         return processOAuthUser(userInfo);
+    }
+
+    private void validateState(String state) {
+        if (state == null || state.isBlank()) {
+            throw new BusinessException(AuthErrorCode.INVALID_OAUTH_STATE);
+        }
+
+        Long createdTime = stateStore.remove(state);  // 사용 후 삭제
+
+        if (createdTime == null) {
+            throw new BusinessException(AuthErrorCode.INVALID_OAUTH_STATE);
+        }
+
+        // 만료 체크 (5분)
+        if (System.currentTimeMillis() - createdTime > STATE_EXPIRY_MS) {
+            throw new BusinessException(AuthErrorCode.OAUTH_STATE_EXPIRED);
+        }
     }
 
     private OAuthLoginRes processOAuthUser(OAuth2UserInfo userInfo) {
@@ -118,7 +144,7 @@ public class OAuthServiceImpl implements OAuthService {
             }
             throw new BusinessException(AuthErrorCode.OAUTH_COMMUNICATION_ERROR);
         } catch (WebClientResponseException e) {
-            log.error("OAuth token fetch failed: {}", e.getMessage());
+            log.error("OAuth token fetch failed: status={}, provider={}", e.getStatusCode(), provider);
             throw new BusinessException(AuthErrorCode.OAUTH_COMMUNICATION_ERROR);
         }
     }
@@ -127,12 +153,16 @@ public class OAuthServiceImpl implements OAuthService {
         String userInfoUrl = getUserInfoUrl(provider);
 
         try {
-            return webClient.get()
+            Map<String, Object> attributes = webClient.get()
                     .uri(userInfoUrl)
                     .header("Authorization", "Bearer " + accessToken)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
+            if (attributes == null) {
+                throw new BusinessException(AuthErrorCode.OAUTH_USER_INFO_NOT_FOUND);
+            }
+            return attributes;
         } catch (WebClientResponseException e) {
             log.error("OAuth user info fetch failed: {}", e.getMessage());
             throw new BusinessException(AuthErrorCode.OAUTH_USER_INFO_NOT_FOUND);
@@ -194,6 +224,7 @@ public class OAuthServiceImpl implements OAuthService {
                 params.add("client_secret", oAuth2Properties.getKakao().getClientSecret());
                 params.add("redirect_uri", oAuth2Properties.getKakao().getRedirectUri());
             }
+            default -> throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         }
 
         return params;
