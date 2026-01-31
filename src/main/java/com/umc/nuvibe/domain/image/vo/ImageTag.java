@@ -311,7 +311,7 @@ public enum ImageTag {
             List.of("투명", "반사"),
             "투명함, 반사, 굴절이 동시에 존재하는 재질을 담습니다. 창 너머 풍경, 유리컵, 반사된 빛이 겹치는 장면을 기록해보세요."
     ),
-    PAPER(
+    Paper(
             ImageTagCategory.TEXTURE,
             "종이",
             List.of("페이퍼", "질감"),
