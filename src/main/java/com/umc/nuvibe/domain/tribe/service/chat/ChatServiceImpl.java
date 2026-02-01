@@ -231,7 +231,7 @@ public class ChatServiceImpl implements ChatService {
         );
 
         // 8. 보드에 이미지 저장 (알림보다 먼저!)
-        archiveBoardService.addBoardImage(userId, boardId, image.getId());
+        archiveBoardService.addBoardImageForChat(userId, boardId, image.getId());
 
         // 9. 발신할 record 생성
         ChatSend chatSend = new ChatSend(

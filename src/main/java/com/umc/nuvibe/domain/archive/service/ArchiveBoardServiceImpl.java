@@ -222,39 +222,30 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     @Override
     @Transactional
     public void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request) {
-        //유저가 소유한 보드인지 확인
-        ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
-
-        //이미지 id가 존재하는 지 확인
-        Image image = imageRepository.findById(request.imageId())
-                        .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
-
-        //이미지가 이미 보드에 저장되어 있는 지 확인
-        if (boardImageRepository.existsByImageId(request.imageId())){
-            throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_ALREADY_EXISTS);
-        }
-
-        //이미지를 보드에 저장
-        boardImageRepository.save(BoardImage.builder().
-                board(board).
-                image(image).
-                build());
+        addBoardImageInternal(userId, boardId, request.imageId());
     }
 
     // 채팅 전송용 보드 이미지 추가
     @Override
     @Transactional
-    public void addBoardImage(Long userId, Long boardId, Long imageId) {
+    public void addBoardImageForChat(Long userId, Long boardId, Long imageId) {
+        addBoardImageInternal(userId, boardId, imageId);
+    }
 
+    private void addBoardImageInternal(Long userId, Long boardId, Long imageId) {
+        //유저가 소유한 보드인지 확인
         ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
 
+        //이미지 id가 존재하는 지 확인
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
 
+        //이미지가 이미 보드에 저장되어 있는 지 확인
         if (boardImageRepository.existsByImageId(imageId)){
             throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_ALREADY_EXISTS);
         }
 
+        //이미지를 보드에 저장
         boardImageRepository.save(BoardImage.builder().
                 board(board).
                 image(image).
