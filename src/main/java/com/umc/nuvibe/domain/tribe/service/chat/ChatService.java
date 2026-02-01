@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.service.chat;
 
+import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
@@ -22,5 +23,5 @@ public interface ChatService {
     ChatDetailRes getChatDetail(Long userId, Long chatId);
 
     // 채팅 발신
-    void chatSend(Long userId, Long tribeId, MultipartFile file, Long boardId);
+    void chatSend(Long userId, Long tribeId, PreSignedUrlReq req, Long boardId);
 }

@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
+import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatSendReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
@@ -64,17 +65,15 @@ public class ChatController {
         return Response.of(ChatResultCode.CHAT_DETAIL_SUCCESS, res);
     }
 
-    @PostMapping(
-            value = "/tribe/{tribeId}/send",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/tribe/{tribeId}/send")
     @Operation(summary = "채팅 발신", description = "이미지 업로드 및 선택 보드에 저장 후 채팅 발신")
     public Response<Void> sendChat(
             @AuthUser Long userId,
             @PathVariable Long tribeId,
-            @RequestPart("file") MultipartFile file,
+            @RequestBody PreSignedUrlReq req,
             @RequestParam Long boardId
             ){
-        chatService.chatSend(userId, tribeId, file, boardId);
+        chatService.chatSend(userId, tribeId, req, boardId);
         return Response.of(ChatResultCode.CHAT_SEND_SUCCESS);
 
     }

@@ -1,7 +1,10 @@
 package com.umc.nuvibe.domain.tribe.service.chat;
 
 import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
+import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
+import com.umc.nuvibe.domain.image.dto.response.ImageRes;
 import com.umc.nuvibe.domain.image.entity.Image;
+import com.umc.nuvibe.domain.image.repository.ImageRepository;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.notification.service.FcmService;
@@ -47,6 +50,7 @@ public class ChatServiceImpl implements ChatService {
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
 
     private final ImageService imageService;
     private final ArchiveBoardService archiveBoardService;
@@ -189,7 +193,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public void chatSend(Long userId, Long tribeId, MultipartFile file, Long boardId){
+    public void chatSend(Long userId, Long tribeId, PreSignedUrlReq req, Long boardId){
 
         // 1. 트라이브 존재 검증
         Tribe tribe = tribeRepository.findById(tribeId)
@@ -210,7 +214,10 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 4. 이미지 업로드 + 이미지 엔티티 저장
-        Image image = imageService.uploadAndSaveEntity(file, tag);
+        ImageRes res = imageService.preSaveAndGetUrl(req, tag);
+
+        Image image = imageRepository.findById(res.imageId())
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
 
         // 5. 채팅 저장 (유저는 참조)
         User userRef = userRepository.getReferenceById(userId);
