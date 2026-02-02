@@ -1,7 +1,6 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
-import com.umc.nuvibe.domain.tribe.dto.request.ChatSendReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
@@ -15,9 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -64,17 +61,15 @@ public class ChatController {
         return Response.of(ChatResultCode.CHAT_DETAIL_SUCCESS, res);
     }
 
-    @PostMapping(
-            value = "/tribe/{tribeId}/send",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/tribe/{tribeId}/send")
     @Operation(summary = "채팅 발신", description = "이미지 업로드 및 선택 보드에 저장 후 채팅 발신")
     public Response<Void> sendChat(
             @AuthUser Long userId,
             @PathVariable Long tribeId,
-            @RequestPart("file") MultipartFile file,
+            @RequestParam Long imageId,
             @RequestParam Long boardId
             ){
-        chatService.chatSend(userId, tribeId, file, boardId);
+        chatService.chatSend(userId, tribeId, imageId, boardId);
         return Response.of(ChatResultCode.CHAT_SEND_SUCCESS);
 
     }

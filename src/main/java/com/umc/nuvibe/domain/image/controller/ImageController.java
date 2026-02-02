@@ -3,6 +3,7 @@ package com.umc.nuvibe.domain.image.controller;
 import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.image.dto.response.ImageDetailRes;
 import com.umc.nuvibe.domain.image.dto.response.ImageRes;
+import com.umc.nuvibe.domain.image.dto.response.ImageStatusRes;
 import com.umc.nuvibe.domain.image.service.ImageService;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
@@ -38,6 +39,16 @@ public class ImageController {
     ){
         ImageDetailRes response = imageService.getImageDetail(userId,imageId);
         return Response.ok(ImageResultCode.IMAGE_DETAIL_OK, response);
+    }
+
+    @GetMapping("/{imageId}/status")
+    @Operation(summary = "이미지 상태 조회", description = "채팅 전송을 위해 이미지 상태를 확인합니다.")
+    public Response<ImageStatusRes> getImageStatus(
+            @AuthUser Long userId,
+            @PathVariable Long imageId
+    ){
+        ImageStatusRes res = imageService.getImageStatus(userId,imageId);
+        return Response.of(ImageResultCode.IMAGE_STATUS_OK, res);
     }
 
 
