@@ -10,7 +10,8 @@ public enum ImageResultCode implements ResultCode {
 
     IMAGE_UPLOAD_OK(HttpStatus.CREATED,"IMAGE001","이미지 업로드에 성공했습니다."),
 
-    IMAGE_DETAIL_OK(HttpStatus.OK, "IMAGE002", "이미지 상세정보 조회에 성공했습니다.")
+    IMAGE_DETAIL_OK(HttpStatus.OK, "IMAGE002", "이미지 상세정보 조회에 성공했습니다."),
+    IMAGE_STATUS_OK(HttpStatus.OK, "IMAGE003", "이미지 상태 조회에 성공했습니다.")
     ;
 
     private final HttpStatus httpStatus;

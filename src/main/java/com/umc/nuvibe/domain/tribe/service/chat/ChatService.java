@@ -23,5 +23,5 @@ public interface ChatService {
     ChatDetailRes getChatDetail(Long userId, Long chatId);
 
     // 채팅 발신
-    void chatSend(Long userId, Long tribeId, PreSignedUrlReq req, Long boardId);
+    void chatSend(Long userId, Long tribeId, Long imageId, Long boardId);
 }

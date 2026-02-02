@@ -18,6 +18,7 @@ public enum ImageErrorCode implements ErrorCode {
     IMAGE_BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE007", "이미지가 저장된 보드 조회에 실패했습니다."),
     IMAGE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "IMAGE008", "해당 이미지에 대한 접근 권한이 없습니다."),
     IMAGE_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE009","이미지 삭제에 실패했습니다"),
+    IMAGE_UPLOAD_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "IMAGE010","해딩 이미지 업로드가 완료되지 않았습니다."),
 
     ;
 

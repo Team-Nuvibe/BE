@@ -1,11 +1,9 @@
 package com.umc.nuvibe.domain.tribe.service.chat;
 
 import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
-import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
-import com.umc.nuvibe.domain.image.dto.response.ImageRes;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.repository.ImageRepository;
-import com.umc.nuvibe.domain.image.service.ImageService;
+import com.umc.nuvibe.domain.image.vo.ImageStatus;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.notification.service.FcmService;
 import com.umc.nuvibe.domain.notification.vo.NotificationType;
@@ -33,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,7 +49,6 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
 
-    private final ImageService imageService;
     private final ArchiveBoardService archiveBoardService;
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -193,7 +189,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public void chatSend(Long userId, Long tribeId, PreSignedUrlReq req, Long boardId){
+    public void chatSend(Long userId, Long tribeId, Long imageId, Long boardId){
 
         // 1. 트라이브 존재 검증
         Tribe tribe = tribeRepository.findById(tribeId)
@@ -213,11 +209,12 @@ public class ChatServiceImpl implements ChatService {
             throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
         }
 
-        // 4. 이미지 업로드 + 이미지 엔티티 저장
-        ImageRes res = imageService.preSaveAndGetUrl(req, tag);
-
-        Image image = imageRepository.findById(res.imageId())
+        // 4. 이미지 엔티티 저장 및 업로드 완료 검증
+        Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+        if (image.getStatus() != ImageStatus.ACTIVE) {
+            throw new BusinessException(ImageErrorCode.IMAGE_UPLOAD_NOT_COMPLETED);
+        }
 
         // 5. 채팅 저장 (유저는 참조)
         User userRef = userRepository.getReferenceById(userId);

@@ -70,10 +70,10 @@ public class ChatController {
     public Response<Void> sendChat(
             @AuthUser Long userId,
             @PathVariable Long tribeId,
-            @RequestBody PreSignedUrlReq req,
+            @RequestParam Long imageId,
             @RequestParam Long boardId
             ){
-        chatService.chatSend(userId, tribeId, req, boardId);
+        chatService.chatSend(userId, tribeId, imageId, boardId);
         return Response.of(ChatResultCode.CHAT_SEND_SUCCESS);
 
     }
