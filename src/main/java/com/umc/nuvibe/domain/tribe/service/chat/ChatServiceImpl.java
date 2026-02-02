@@ -24,8 +24,10 @@ import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -270,13 +273,16 @@ public class ChatServiceImpl implements ChatService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                messagingTemplate.convertAndSend(
-                        "/topic/tribe." + tribeId,
-                        chatSend
-                );
+                try{
+                    messagingTemplate.convertAndSend(
+                            "/topic/tribe." + tribeId,
+                            chatSend);
+                } catch (MessagingException e) {
+                    log.error("웹소켓을 통한 채팅 전송 실패. chatId={}, tribeId={}",
+                            chatSend.chatId(), tribeId, e);
+                }
             }
-        }
-        );
+        });
     }
 
 

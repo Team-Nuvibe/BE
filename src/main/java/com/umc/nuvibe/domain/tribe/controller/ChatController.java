@@ -1,8 +1,6 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
-import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
-import com.umc.nuvibe.domain.tribe.dto.request.ChatSendReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
@@ -16,9 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor

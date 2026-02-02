@@ -1,12 +1,10 @@
 package com.umc.nuvibe.domain.tribe.service.chat;
 
-import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatDetailRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatGridListRes;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.ChatTimelineListRes;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface ChatService {
 
