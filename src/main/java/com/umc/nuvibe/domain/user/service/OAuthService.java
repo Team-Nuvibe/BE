@@ -8,4 +8,6 @@ public interface OAuthService {
     String getOAuthAuthorizationUrl(AuthProvider provider, String state);
     OAuthLoginRes processOAuthCallback(AuthProvider provider, String code, String state);  // state 추가
     void completeSignup(Long userId, OAuthSignupReq request);
+    void saveRedirectUri(String state, String redirectUri);
+    String getRedirectUri(String state, String defaultUrl);
 }
