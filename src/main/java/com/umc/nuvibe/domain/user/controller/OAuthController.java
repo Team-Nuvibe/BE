@@ -92,7 +92,7 @@ public class OAuthController {
         String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
                 .path("/oauth/callback")
                 .fragment(UriUtils.encodeFragment(fragmentRaw, StandardCharsets.UTF_8))
-                .build()
+                .build(true)
                 .toUriString();
 
         return ResponseEntity.status(HttpStatus.FOUND)
