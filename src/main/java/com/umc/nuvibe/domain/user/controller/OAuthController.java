@@ -17,8 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RestController
@@ -80,16 +82,18 @@ public class OAuthController {
 
         String targetUrl = oAuthService.getRedirectUri(state, frontendUrl);  // 추가
 
-        String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
-                .path("/oauth/callback")
-                .build()
-                .toUriString()
-                + "#accessToken=" + response.accessToken()
+        String fragmentRaw = "accessToken=" + response.accessToken()
                 + "&refreshToken=" + response.refreshToken()
                 + "&isNewUser=" + response.isNewUser()
                 + "&userId=" + response.userId()
-                + "&email=" + response.email()                    // 추가
-                + "&provider=" + response.provider().name();      // 추가 (enum이라 .name() 사용)
+                + "&email=" + response.email()
+                + "&provider=" + response.provider().name();
+
+        String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
+                .path("/oauth/callback")
+                .fragment(UriUtils.encodeFragment(fragmentRaw, StandardCharsets.UTF_8))
+                .build()
+                .toUriString();
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(redirectUrl))
