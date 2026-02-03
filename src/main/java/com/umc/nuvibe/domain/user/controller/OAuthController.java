@@ -87,7 +87,7 @@ public class OAuthController {
                 + "&isNewUser=" + response.isNewUser()
                 + "&userId=" + response.userId()
                 + "&email=" + response.email()
-                + "&provider=" + response.provider().name();
+                + "&provider=" + response.provider().name(); // enum
 
         String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
                 .path("/oauth/callback")
