@@ -159,7 +159,14 @@ public class OAuthServiceImpl implements OAuthService {
         user.updateRefreshToken(refreshToken);
         userRepository.save(user);
 
-        return new OAuthLoginRes(accessToken, refreshToken, isNewUser, user.getId());
+        return new OAuthLoginRes(
+                accessToken,
+                refreshToken,
+                isNewUser,
+                user.getId(),
+                user.getEmail(),           // 추가
+                user.getProvider()         // 추가
+        );
     }
 
     private User createNewOAuthUser(OAuth2UserInfo userInfo) {
