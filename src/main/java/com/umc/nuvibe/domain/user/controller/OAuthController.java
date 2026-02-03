@@ -17,8 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RestController
@@ -33,17 +35,27 @@ public class OAuthController {
     private String frontendUrl;
 
     // 소셜 로그인 페이지로 리다이렉트
+    // 소셜 로그인 페이지로 리다이렉트
     @GetMapping("/{provider}")
     @Operation(summary = "소셜 로그인 시작", description = "해당 소셜 서비스의 로그인 페이지로 리다이렉트합니다.(google, naver, kakao)")
-    public ResponseEntity<Void> redirectToOAuth(@PathVariable String provider) {
+    public ResponseEntity<Void> redirectToOAuth(
+            @PathVariable String provider,
+            @RequestParam(required = false) String redirect_uri) {  // 추가
+
         AuthProvider authProvider;
         try {
             authProvider = AuthProvider.valueOf(provider.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER); //provider 예외
+            throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         }
 
         String state = UUID.randomUUID().toString();
+
+        // redirect_uri 저장 (추가)
+        if (redirect_uri != null) {
+            oAuthService.saveRedirectUri(state, redirect_uri);
+        }
+
         String authUrl = oAuthService.getOAuthAuthorizationUrl(authProvider, state);
 
         return ResponseEntity.status(HttpStatus.FOUND)
@@ -66,17 +78,22 @@ public class OAuthController {
             throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         }
 
-        OAuthLoginRes response = oAuthService.processOAuthCallback(authProvider, code, state);  // state 전달
+        OAuthLoginRes response = oAuthService.processOAuthCallback(authProvider, code, state);
 
-        // Fragment identifier 방식으로 변경 (# 사용)
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl)
-                .path("/oauth/callback")
-                .build()
-                .toUriString()
-                + "#accessToken=" + response.accessToken()
+        String targetUrl = oAuthService.getRedirectUri(state, frontendUrl);  // 추가
+
+        String fragmentRaw = "accessToken=" + response.accessToken()
                 + "&refreshToken=" + response.refreshToken()
                 + "&isNewUser=" + response.isNewUser()
-                + "&userId=" + response.userId();
+                + "&userId=" + response.userId()
+                + "&email=" + response.email()
+                + "&provider=" + response.provider().name();
+
+        String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
+                .path("/oauth/callback")
+                .fragment(UriUtils.encodeFragment(fragmentRaw, StandardCharsets.UTF_8))
+                .build(true)
+                .toUriString();
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(redirectUrl))

@@ -2,7 +2,8 @@ package com.umc.nuvibe.domain.tribe.service.chat;
 
 import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
 import com.umc.nuvibe.domain.image.entity.Image;
-import com.umc.nuvibe.domain.image.service.ImageService;
+import com.umc.nuvibe.domain.image.repository.ImageRepository;
+import com.umc.nuvibe.domain.image.vo.ImageStatus;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.notification.service.FcmService;
 import com.umc.nuvibe.domain.notification.vo.NotificationType;
@@ -23,20 +24,22 @@ import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -47,8 +50,8 @@ public class ChatServiceImpl implements ChatService {
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
 
-    private final ImageService imageService;
     private final ArchiveBoardService archiveBoardService;
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -189,7 +192,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional
-    public void chatSend(Long userId, Long tribeId, MultipartFile file, Long boardId){
+    public void chatSend(Long userId, Long tribeId, Long imageId, Long boardId){
 
         // 1. 트라이브 존재 검증
         Tribe tribe = tribeRepository.findById(tribeId)
@@ -209,8 +212,12 @@ public class ChatServiceImpl implements ChatService {
             throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
         }
 
-        // 4. 이미지 업로드 + 이미지 엔티티 저장
-        Image image = imageService.uploadAndSaveEntity(file, tag);
+        // 4. 이미지 엔티티 저장 및 업로드 완료 검증
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+        if (image.getStatus() != ImageStatus.ACTIVE) {
+            throw new BusinessException(ImageErrorCode.IMAGE_UPLOAD_NOT_COMPLETED);
+        }
 
         // 5. 채팅 저장 (유저는 참조)
         User userRef = userRepository.getReferenceById(userId);
@@ -231,7 +238,7 @@ public class ChatServiceImpl implements ChatService {
         );
 
         // 8. 보드에 이미지 저장 (알림보다 먼저!)
-        archiveBoardService.addBoardImage(userId, boardId, image.getId());
+        archiveBoardService.addBoardImageForChat(userId, boardId, image.getId());
 
         // 9. 발신할 record 생성
         ChatSend chatSend = new ChatSend(
@@ -266,13 +273,16 @@ public class ChatServiceImpl implements ChatService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                messagingTemplate.convertAndSend(
-                        "/topic/tribe." + tribeId,
-                        chatSend
-                );
+                try{
+                    messagingTemplate.convertAndSend(
+                            "/topic/tribe." + tribeId,
+                            chatSend);
+                } catch (MessagingException e) {
+                    log.error("웹소켓을 통한 채팅 전송 실패. chatId={}, tribeId={}",
+                            chatSend.chatId(), tribeId, e);
+                }
             }
-        }
-        );
+        });
     }
 
 

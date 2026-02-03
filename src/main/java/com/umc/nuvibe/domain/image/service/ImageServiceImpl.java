@@ -6,6 +6,7 @@ import com.umc.nuvibe.domain.archive.repository.BoardImageRepository;
 import com.umc.nuvibe.domain.image.dto.request.PreSignedUrlReq;
 import com.umc.nuvibe.domain.image.dto.response.ImageDetailRes;
 import com.umc.nuvibe.domain.image.dto.response.ImageRes;
+import com.umc.nuvibe.domain.image.dto.response.ImageStatusRes;
 import com.umc.nuvibe.domain.image.dto.response.PreSignedUrlRes;
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.repository.ImageRepository;
@@ -75,22 +76,13 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    @Transactional
-    public Image uploadAndSaveEntity(MultipartFile file, ImageTag tag) {
-        validateFile(file);
+    @Transactional(readOnly = true)
+    public ImageStatusRes getImageStatus(Long userId, Long imageId) {
 
-        if (tag == null) {
-            throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
-        }
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
 
-        String imageURL=uploadToS3(file);
-
-        Image newImage = Image.builder()
-                .imageUrl(imageURL)
-                .imageTag(tag)
-                .build();
-
-        return imageRepository.save(newImage);
+        return ImageStatusRes.from(image);
     }
 
     // 파일 검증 분리

@@ -29,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +47,8 @@ public class OAuthServiceImpl implements OAuthService {
                     HttpClient.create().responseTimeout(Duration.ofSeconds(10))
             ))
             .build();
+    // redirect_uri 저장소 추가
+    private final Map<String, String> redirectUriStore = new ConcurrentHashMap<>();
 
     // state 저장용 (간단한 방식 - 운영에서는 Redis 권장)
     private final Map<String, Long> stateStore = new ConcurrentHashMap<>();
@@ -62,6 +65,32 @@ public class OAuthServiceImpl implements OAuthService {
             case KAKAO -> buildKakaoAuthUrl(state);
             default -> throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
         };
+    }
+
+    // 허용된 URL 목록
+    private static final List<String> ALLOWED_REDIRECT_URIS = List.of(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "https://nuvibe.vercel.app"
+    );
+
+    // redirect_uri 저장
+    public void saveRedirectUri(String state, String redirectUri) {
+        if (redirectUri != null && isAllowedRedirectUri(redirectUri)) {
+            redirectUriStore.put(state, redirectUri);
+        }
+    }
+
+    // redirect_uri 조회
+    public String getRedirectUri(String state, String defaultUrl) {
+        String uri = redirectUriStore.remove(state);
+        return uri != null ? uri : defaultUrl;
+    }
+
+    // 화이트리스트 검증
+    private boolean isAllowedRedirectUri(String uri) {
+        return ALLOWED_REDIRECT_URIS.stream()
+                .anyMatch(uri::startsWith);
     }
 
     @Scheduled(fixedRate = 60000) // 1분마다 실행
@@ -130,7 +159,14 @@ public class OAuthServiceImpl implements OAuthService {
         user.updateRefreshToken(refreshToken);
         userRepository.save(user);
 
-        return new OAuthLoginRes(accessToken, refreshToken, isNewUser, user.getId());
+        return new OAuthLoginRes(
+                accessToken,
+                refreshToken,
+                isNewUser,
+                user.getId(),
+                user.getEmail(),           // 추가
+                user.getProvider()         // 추가
+        );
     }
 
     private User createNewOAuthUser(OAuth2UserInfo userInfo) {
