@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,6 +87,12 @@ public class UserTribeServiceImpl implements UserTribeService {
         User user = userTribe.getUser();
         String tag = userTribe.getTribe().getImageTag().name();
         Long tribeId = userTribe.getTribe().getId();
+
+        userTribeRepository.updateLastActivityAt(
+                tribeId,
+                UserTribeStatus.ACTIVE,
+                LocalDateTime.now()
+        );
 
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
