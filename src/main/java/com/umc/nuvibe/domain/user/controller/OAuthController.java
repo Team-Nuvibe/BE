@@ -86,7 +86,7 @@ public class OAuthController {
                 + "&refreshToken=" + response.refreshToken()
                 + "&isNewUser=" + response.isNewUser()
                 + "&userId=" + response.userId()
-                + "&email=" + response.email()
+                + "&email=" + response.email() // 추가
                 + "&provider=" + response.provider().name(); // enum
 
         String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
