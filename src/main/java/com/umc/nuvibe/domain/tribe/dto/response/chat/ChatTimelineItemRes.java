@@ -29,12 +29,16 @@ public record ChatTimelineItemRes(
         List<EmojiSummaryRes> reactionsSummary,
 
         @Schema(description = "내가 누른 이모지 타입 (없으면 null)")
-        EmojiType myReactionType
+        EmojiType myReactionType,
+
+        @Schema(description = "내가 스크랩했는지 여부")
+        boolean isScrapped
 ) {
     public static ChatTimelineItemRes from(
             Chat chat,
             List<EmojiSummaryRes> reactionsSummary,
-            EmojiType myReactionType
+            EmojiType myReactionType,
+            boolean isScrapped
     ) {
         return new ChatTimelineItemRes(
                 chat.getId(),
@@ -43,7 +47,8 @@ public record ChatTimelineItemRes(
                 chat.getCreatedAt(),
                 SenderRes.from(chat.getUser()),
                 reactionsSummary,
-                myReactionType
+                myReactionType,
+                isScrapped
         );
     }
 }
