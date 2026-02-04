@@ -156,6 +156,7 @@ public class UserTribeServiceImpl implements UserTribeService {
         List<ActiveTribeItemRes> items = content.stream()
                 .map(r -> new ActiveTribeItemRes(
                         r.tribeId(),
+                        r.userTribeId(),
                         r.imageTag(),
                         r.counts(),
                         r.isFavorite(),

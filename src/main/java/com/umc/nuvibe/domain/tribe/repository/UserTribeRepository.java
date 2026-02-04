@@ -48,6 +48,7 @@ public interface UserTribeRepository extends JpaRepository<UserTribe, Long>{
     @Query("""
 select new com.umc.nuvibe.domain.tribe.dto.internal.ActiveTribeRow(
     t.id,
+    ut.id,
     t.imageTag,
     t.counts,
     ut.isFavorite,

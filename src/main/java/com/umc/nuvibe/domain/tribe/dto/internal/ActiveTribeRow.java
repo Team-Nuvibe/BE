@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public record ActiveTribeRow(
 
         Long tribeId,
+        Long userTribeId,
         ImageTag imageTag,
         Integer counts,
         boolean isFavorite,
