@@ -6,8 +6,6 @@ import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Table(name = "tribes",
@@ -51,13 +49,14 @@ public class Tribe extends BaseEntity {
                 .build();
     }
 
+    public void incrementCounts() {this.counts++;}
+
+    public boolean isFull() {return this.counts >= 100;}
+
     public void updateLastChat(Long lastChatId){
         this.lastChatId = lastChatId;
     }
 
-
-    public void changeStatus(){
-        this.status = TribeStatus.WAITING;
-    }
+    public void changeStatus(){this.status = TribeStatus.WAITING;}
 
 }
