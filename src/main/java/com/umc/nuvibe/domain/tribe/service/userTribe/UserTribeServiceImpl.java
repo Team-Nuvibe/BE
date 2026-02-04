@@ -81,18 +81,14 @@ public class UserTribeServiceImpl implements UserTribeService {
             throw new BusinessException(TribeErrorCode.ACTIVATION_NOT_READY);
         }
 
+        // 유저 트라이브 활성화 및 활동 시각 최신화
         userTribe.activate();
+        userTribe.updateLastActivityAt(LocalDateTime.now());
 
         // 커밋 이후에 FCM 발송 (noti-02)
         User user = userTribe.getUser();
         String tag = userTribe.getTribe().getImageTag().name();
         Long tribeId = userTribe.getTribe().getId();
-
-        userTribeRepository.updateLastActivityAt(
-                tribeId,
-                UserTribeStatus.ACTIVE,
-                LocalDateTime.now()
-        );
 
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {

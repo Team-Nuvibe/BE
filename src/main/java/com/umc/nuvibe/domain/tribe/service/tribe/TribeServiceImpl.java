@@ -58,18 +58,22 @@ public class TribeServiceImpl implements TribeService {
         if (tribe.getCounts() >= 5) {
             tribe.changeStatus();
 
+            // 커밋 전에 필요한 데이터 미리 조회
+            Long tribeId = tribe.getId();
+            String tagName = tribe.getImageTag().name();
+            List<User> matchedUsers = userTribeRepository.findUsersByTribeId(tribeId);
+
             // 6. 커밋 이후에 알림 발송
             TransactionSynchronizationManager.registerSynchronization(
                     new TransactionSynchronization() {
                         @Override
                         public void afterCommit() {
                             // NOTI-01: 동일 태그로 매칭된 사용자들에게 알림 발송
-                            List<User> matchedUsers = userTribeRepository.findUsersByTribeId(tribe.getId());
                             fcmService.sendNotificationToUsers(
                                     matchedUsers,
                                     NotificationType.NOTI_01,
-                                    tribe.getImageTag().name(),  // tag
-                                    tribe.getId()                 // relatedId
+                                    tagName,  // tag
+                                    tribeId                // relatedId
                             );
                         }
                     }
