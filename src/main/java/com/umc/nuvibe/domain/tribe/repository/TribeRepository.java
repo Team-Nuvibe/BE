@@ -4,11 +4,11 @@ import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.tribe.dto.internal.CloseTargetView;
 import com.umc.nuvibe.domain.tribe.entity.Tribe;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -16,17 +16,19 @@ import java.util.Optional;
 
 public interface TribeRepository extends JpaRepository<Tribe, Long> {
 
+    // 100명 이하인 트라이브 챗 중 가장 오래된 버전의 트라이브 반환 (비관적 락 사용)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "javax.persistence.lock.timeout", value = "3000"))
     Optional<Tribe> findFirstByImageTagAndCountsLessThanOrderByVersionAsc(ImageTag imageTag, int counts);
 
     default Optional<Tribe> findAvailableRoom(ImageTag imageTag) {
         return findFirstByImageTagAndCountsLessThanOrderByVersionAsc(imageTag, 100);
     }
 
+    // 가장 최신 버전의 트라이브 챗 반환
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "javax.persistence.lock.timeout", value = "3000"))
     Optional<Tribe> findTopByImageTagOrderByVersionDesc(ImageTag imageTag);
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Tribe t SET t.counts = t.counts + 1 WHERE t.id = :id AND t.counts < 100")
-    int incrementCounts(@Param("id") Long id);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Tribe t SET t.counts = t.counts - 1 WHERE t.id = :tribeId AND t.counts > 0")

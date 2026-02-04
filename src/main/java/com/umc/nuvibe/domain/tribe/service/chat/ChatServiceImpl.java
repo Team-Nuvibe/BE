@@ -93,6 +93,11 @@ public class ChatServiceImpl implements ChatService {
             return new ChatTimelineListRes(List.of(), null, false);
         }
 
+        // 6-1. 채팅들에서 imageIds 추출 ← 추가
+        List<Long> imageIds = pageItems.stream()
+                .map(chat -> chat.getImage().getId())
+                .toList();
+
         // 7. 각 채팅당 이모지 집계 및 요약
         Map<Long, List<EmojiSummaryRes>> emojiSummaryMap =
                 buildEmojiSummaryMap(chatIds);
@@ -101,12 +106,17 @@ public class ChatServiceImpl implements ChatService {
         Map<Long, EmojiType> myEmojiMap =
                 buildMyEmojiMap(userId, chatIds);
 
+        // 8-1. 내가 스크랩한 이미지 매핑 ← 추가
+        Map<Long, Boolean> myScrapMap =
+                buildMyScrapMap(userId, tribeId, imageIds);
+
         // 9. dto로 매핑
         List<ChatTimelineItemRes> items = pageItems.stream()
                 .map(chat -> ChatTimelineItemRes.from(
                         chat,
                         emojiSummaryMap.getOrDefault(chat.getId(), List.of()),
-                        myEmojiMap.get(chat.getId())
+                        myEmojiMap.get(chat.getId()),
+                        myScrapMap.getOrDefault(chat.getImage().getId(), false)
                 ))
                 .toList();
 
@@ -331,5 +341,19 @@ public class ChatServiceImpl implements ChatService {
         if (!userTribeRepository.existsByUser_IdAndTribe_Id(userId, tribeId)) {
             throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND);
         }
+    }
+
+    // 이미지 스크랩 여부 반환
+    private Map<Long, Boolean> buildMyScrapMap(Long userId, Long tribeId, List<Long> imageIds) {
+        // 1. DB에서 스크랩된 imageId들만 조회 (1번의 쿼리)
+        List<Long> scrappedImageIds = scrapedImageRepository
+                .findImageIdsByUserIdAndTribeIdAndImageIds(userId, tribeId, imageIds);
+
+        // 2. Map으로 변환 (스크랩된 것들만 true로 저장)
+        return scrappedImageIds.stream()
+                .collect(Collectors.toMap(
+                        imageId -> imageId,
+                        imageId -> true
+                ));
     }
 }

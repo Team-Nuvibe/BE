@@ -9,6 +9,9 @@ public record WaitingTribeItemRes(
         @Schema(description = "트라이브 ID")
         Long tribeId,
 
+        @Schema(description = "유저 트라이브 ID")
+        Long userTribeId,
+
         @Schema(description = "이미지 태그 (Enum)", example = "CAFE")
         ImageTag imageTag,
 

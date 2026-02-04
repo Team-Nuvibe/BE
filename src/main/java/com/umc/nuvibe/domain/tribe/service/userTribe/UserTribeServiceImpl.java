@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,7 +81,9 @@ public class UserTribeServiceImpl implements UserTribeService {
             throw new BusinessException(TribeErrorCode.ACTIVATION_NOT_READY);
         }
 
+        // 유저 트라이브 활성화 및 활동 시각 최신화
         userTribe.activate();
+        userTribe.updateLastActivityAt(LocalDateTime.now());
 
         // 커밋 이후에 FCM 발송 (noti-02)
         User user = userTribe.getUser();
@@ -153,6 +156,7 @@ public class UserTribeServiceImpl implements UserTribeService {
         List<ActiveTribeItemRes> items = content.stream()
                 .map(r -> new ActiveTribeItemRes(
                         r.tribeId(),
+                        r.userTribeId(),
                         r.imageTag(),
                         r.counts(),
                         r.isFavorite(),

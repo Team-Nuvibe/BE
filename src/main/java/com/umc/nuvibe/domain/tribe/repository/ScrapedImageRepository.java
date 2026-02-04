@@ -65,4 +65,16 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
     @Modifying(clearAutomatically = true)
     @Query("DELETE FROM ScrapedImage si WHERE si.user.id = :userId AND si.tribe.id = :tribeId")
     void deleteAllByUserIdAndTribeId(@Param("userId") Long userId, @Param("tribeId") Long tribeId);
+
+    @Query("""
+        SELECT si.image.id FROM ScrapedImage si
+        WHERE si.user.id = :userId
+          AND si.tribe.id = :tribeId
+          AND si.image.id IN :imageIds
+    """)
+    List<Long> findImageIdsByUserIdAndTribeIdAndImageIds(
+            @Param("userId") Long userId,
+            @Param("tribeId") Long tribeId,
+            @Param("imageIds") List<Long> imageIds
+    );
 }
