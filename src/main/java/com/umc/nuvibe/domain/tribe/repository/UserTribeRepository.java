@@ -96,6 +96,7 @@ order by
     @Query("""
         select new com.umc.nuvibe.domain.tribe.dto.response.userTribe.WaitingTribeItemRes(
             t.id,
+            ut.id,
             t.imageTag,
             t.counts
         )
