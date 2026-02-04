@@ -54,7 +54,7 @@ public class TribeServiceImpl implements TribeService {
         }
         tribe.incrementCounts();
 
-        // 5. 인원 수가 5명 이상일 시 대기 상태로 전환
+        // 5. 인원 수가 5명일 시 상태 전환 및 알림 발송
         if (tribe.getCounts() >= 5) {
             tribe.changeStatus();
 
@@ -72,8 +72,8 @@ public class TribeServiceImpl implements TribeService {
                             fcmService.sendNotificationToUsers(
                                     matchedUsers,
                                     NotificationType.NOTI_01,
-                                    tagName,  // tag
-                                    tribeId                // relatedId
+                                    tagName,     // tag
+                                    tribeId      // relatedId
                             );
                         }
                     }
@@ -89,7 +89,7 @@ public class TribeServiceImpl implements TribeService {
 
     // 새로운 버전의 트라이브 챗 생성
     private Tribe createNewVersionRoom(ImageTag imageTag) {
-            int nextVersion =tribeRepository.findTopByImageTagOrderByVersionDesc(imageTag)
+            int nextVersion = tribeRepository.findTopByImageTagOrderByVersionDesc(imageTag)
                     .map(Tribe::getVersion)
                     .map(v -> v + 1)
                     .orElse(1);

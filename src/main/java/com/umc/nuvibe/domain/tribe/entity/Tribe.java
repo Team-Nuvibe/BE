@@ -57,9 +57,6 @@ public class Tribe extends BaseEntity {
         this.lastChatId = lastChatId;
     }
 
-
-    public void changeStatus(){
-        this.status = TribeStatus.WAITING;
-    }
+    public void changeStatus(){this.status = TribeStatus.WAITING;}
 
 }
