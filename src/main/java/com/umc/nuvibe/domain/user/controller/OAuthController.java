@@ -65,29 +65,57 @@ public class OAuthController {
 
     // OAuth Callback 처리
     @GetMapping("/callback/{provider}")
-    @Operation(summary = "OAuth Callback", description = "소셜 서비스 인증 후 콜백을 처리합니다.")
     public ResponseEntity<Void> handleOAuthCallback(
             @PathVariable String provider,
             @RequestParam String code,
             @RequestParam(required = false) String state) {
 
-        AuthProvider authProvider;
+        // ✅ 에러 발생 시에도 리다이렉트하기 위해 targetUrl을 먼저 결정
+        String targetUrl = oAuthService.getRedirectUri(state, frontendUrl);
+
         try {
-            authProvider = AuthProvider.valueOf(provider.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BusinessException(AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER);
+            AuthProvider authProvider;
+            try {
+                authProvider = AuthProvider.valueOf(provider.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return buildErrorRedirect(targetUrl,
+                        AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER.getCode(),  // AUTH012
+                        AuthErrorCode.UNSUPPORTED_OAUTH_PROVIDER.getMessage());
+            }
+
+            OAuthLoginRes response = oAuthService.processOAuthCallback(authProvider, code, state);
+
+            String fragmentRaw = "accessToken=" + response.accessToken()
+                    + "&refreshToken=" + response.refreshToken()
+                    + "&isNewUser=" + response.isNewUser()
+                    + "&userId=" + response.userId()
+                    + "&email=" + response.email()
+                    + "&provider=" + response.provider().name();
+
+            String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
+                    .path("/oauth/callback")
+                    .fragment(UriUtils.encodeFragment(fragmentRaw, StandardCharsets.UTF_8))
+                    .build(true)
+                    .toUriString();
+
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(redirectUrl))
+                    .build();
+
+        } catch (BusinessException e) {
+            // BusinessException → 프론트엔드로 에러와 함께 리다이렉트
+            return buildErrorRedirect(targetUrl, e.getErrorCode().getCode(), e.getMessage());
+        } catch (Exception e) {
+            return buildErrorRedirect(targetUrl,
+                    AuthErrorCode.OAUTH_UNKNOWN_ERROR.getCode(),
+                    AuthErrorCode.OAUTH_UNKNOWN_ERROR.getMessage());
         }
+    }
 
-        OAuthLoginRes response = oAuthService.processOAuthCallback(authProvider, code, state);
 
-        String targetUrl = oAuthService.getRedirectUri(state, frontendUrl);  // 추가
-
-        String fragmentRaw = "accessToken=" + response.accessToken()
-                + "&refreshToken=" + response.refreshToken()
-                + "&isNewUser=" + response.isNewUser()
-                + "&userId=" + response.userId()
-                + "&email=" + response.email() // 추가
-                + "&provider=" + response.provider().name(); // enum
+    // 에러 발생 시 프론트엔드로 에러 정보와 함께 리다이렉트
+    private ResponseEntity<Void> buildErrorRedirect(String targetUrl, String errorCode, String errorMessage) {
+        String fragmentRaw = "error=" + errorCode + "&errorMessage=" + errorMessage;
 
         String redirectUrl = UriComponentsBuilder.fromUriString(targetUrl)
                 .path("/oauth/callback")

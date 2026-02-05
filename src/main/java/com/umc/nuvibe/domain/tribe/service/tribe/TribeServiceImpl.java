@@ -73,7 +73,8 @@ public class TribeServiceImpl implements TribeService {
                                     matchedUsers,
                                     NotificationType.NOTI_01,
                                     tagName,     // tag
-                                    tribeId      // relatedId
+                                    tribeId,     // relatedId
+                                    null
                             );
                         }
                     }

@@ -65,7 +65,8 @@ public class NotificationScheduler {
                             participants,
                             NotificationType.NOTI_05,
                             tag,
-                            target.getTribeId()
+                            target.getTribeId(),
+                            null
                     );
                 } catch (Exception e) {
                     log.error("NOTI-05 발송 실패. tribeId={}", target.getTribeId(), e);
@@ -99,6 +100,7 @@ public class NotificationScheduler {
                     fcmService.sendNotification(
                             user,
                             NotificationType.NOTI_07,
+                            null,
                             null,
                             null,
                             null
@@ -136,7 +138,7 @@ public class NotificationScheduler {
             for (User user : inactiveUsers) {
                 try {
                     ImageTag randomTag = allTags[random.nextInt(allTags.length)];
-                    fcmService.sendNotification(user, NotificationType.NOTI_08, randomTag.name(), null, null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_08, randomTag.name(), null, null,null);
                 } catch (Exception e) {
                     log.error("NOTI-08 발송 실패. userId={}", user.getId(), e);
                 }
@@ -167,7 +169,7 @@ public class NotificationScheduler {
 
             for (User user : usersWithWeeklyDrop) {
                 try {
-                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null,null);
                 } catch (Exception e) {
                     log.error("NOTI-09 발송 실패. userId={}", user.getId(), e);
                 }
@@ -198,7 +200,7 @@ public class NotificationScheduler {
 
             for (User user : usersWithMonthlyDrop) {
                 try {
-                    fcmService.sendNotification(user, NotificationType.NOTI_10, null, null, null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_10, null, null, null,null);
                 } catch (Exception e) {
                     log.error("NOTI-10 발송 실패. userId={}", user.getId(), e);
                 }

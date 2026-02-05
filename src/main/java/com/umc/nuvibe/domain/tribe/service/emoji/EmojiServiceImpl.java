@@ -92,7 +92,8 @@ public class EmojiServiceImpl implements EmojiService {
                         NotificationType.NOTI_04,
                         null,
                         nickname,
-                        chatId
+                        chatId,
+                        tribeId
                 );
             }
 
@@ -123,7 +124,8 @@ public class EmojiServiceImpl implements EmojiService {
                             NotificationType.NOTI_04,
                             null,
                             nickname,
-                            chatId
+                            chatId,
+                            tribeId
                     );
                 }
             }

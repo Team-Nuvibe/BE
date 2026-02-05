@@ -1,6 +1,8 @@
 package com.umc.nuvibe.domain.user.service;
 
 import com.umc.nuvibe.domain.image.service.ImageService;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.user.dto.request.ReissuePasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
 import com.umc.nuvibe.domain.user.dto.response.UserNicknameUpdateRes;
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final EmailVerificationService verificationService;
     private final PasswordEncoder passwordEncoder;
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,7 +75,7 @@ public class UserServiceImpl implements UserService {
         }
 
         user.updateNickname(nickname);
-
+        fcmService.sendNotification(user, NotificationType.NOTI_12, null, null, null, null);
         return new UserNicknameUpdateRes(nickname);
     }
 
@@ -123,6 +126,8 @@ public class UserServiceImpl implements UserService {
 
         String encodedPassword = passwordEncoder.encode(request.password());
         user.updatePassword(encodedPassword);
+
+        fcmService.sendNotification(user, NotificationType.NOTI_11, null, null, null, null);
 
     }
 

@@ -271,7 +271,8 @@ public class ChatServiceImpl implements ChatService {
                                 participants,
                                 NotificationType.NOTI_03,
                                 tribe.getImageTag().name(),
-                                tribeId
+                                tribeId,
+                                null
                         );
                     }
                 }
