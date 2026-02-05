@@ -47,10 +47,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: prometheus, health, info
+        include: prometheus, health, info, metrics
   metrics:
     tags:
       application: nuvibe
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
 
 logging:
   file:
