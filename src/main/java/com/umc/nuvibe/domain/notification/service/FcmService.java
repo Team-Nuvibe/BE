@@ -37,14 +37,14 @@ public class FcmService {
     }
 
     // 단일 사용자 알림 - 위임
-    public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId) {
-        fcmAsyncService.sendNotification(user, type, tag, nickname, relatedId);
+    public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId, Long tribeId) {
+        fcmAsyncService.sendNotification(user, type, tag, nickname, relatedId, tribeId);
     }
 
     // 여러 사용자 알림 - 각각 비동기로 호출
-    public void sendNotificationToUsers(List<User> users, NotificationType type, String tag, Long relatedId) {
+    public void sendNotificationToUsers(List<User> users, NotificationType type, String tag, Long relatedId, Long tribeId) {
         for (User user : users) {
-            fcmAsyncService.sendNotification(user, type, tag, null, relatedId);
+            fcmAsyncService.sendNotification(user, type, tag, null, relatedId, tribeId);
         }
     }
 }

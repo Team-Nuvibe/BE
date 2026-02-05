@@ -26,7 +26,8 @@ public enum AuthErrorCode implements ErrorCode {
     OAUTH_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH016", "인증이 필요합니다."),
     OAUTH_EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "AUTH017", "이미 다른 방식으로 가입된 이메일입니다."),
     INVALID_OAUTH_STATE(HttpStatus.BAD_REQUEST, "AUTH018", "유효하지 않은 OAuth state입니다."),
-    OAUTH_STATE_EXPIRED(HttpStatus.BAD_REQUEST, "AUTH019", "OAuth 인증이 만료되었습니다. 다시 시도해주세요.");
+    OAUTH_STATE_EXPIRED(HttpStatus.BAD_REQUEST, "AUTH019", "OAuth 인증이 만료되었습니다. 다시 시도해주세요."),
+    OAUTH_UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "AUTH020", "소셜 로그인 처리 중 오류가 발생했습니다.");
 
 
 
