@@ -1,6 +1,8 @@
 package com.umc.nuvibe.domain.user.service;
 
 import com.umc.nuvibe.domain.image.service.ImageService;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
 import com.umc.nuvibe.domain.user.dto.request.ReissuePasswordReq;
 import com.umc.nuvibe.domain.user.dto.request.UserSettingReq;
 import com.umc.nuvibe.domain.user.dto.response.UserNicknameUpdateRes;
@@ -19,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -36,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final EmailVerificationService verificationService;
     private final PasswordEncoder passwordEncoder;
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,7 +77,18 @@ public class UserServiceImpl implements UserService {
         }
 
         user.updateNickname(nickname);
-
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            fcmService.sendNotification(user, NotificationType.NOTI_12, null, null, null, null);
+                        } catch (Exception ex) {
+                            log.warn("FCM 알림 전송 실패: NOTI_12", ex);
+                        }
+                    }
+                }
+        );
         return new UserNicknameUpdateRes(nickname);
     }
 
@@ -124,6 +140,18 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = passwordEncoder.encode(request.password());
         user.updatePassword(encodedPassword);
 
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            fcmService.sendNotification(user, NotificationType.NOTI_11, null, null, null, null);
+                        } catch (Exception ex) {
+                            log.warn("FCM 알림 전송 실패: NOTI_11", ex);
+                        }
+                    }
+                }
+        );
     }
 
     @Override

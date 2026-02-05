@@ -99,7 +99,8 @@ public class UserTribeServiceImpl implements UserTribeService {
                                 NotificationType.NOTI_02,
                                 tag,
                                 null,
-                                tribeId
+                                tribeId,
+                                null
                         );
                     }
                 }

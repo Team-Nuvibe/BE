@@ -64,7 +64,8 @@ public class TribeCloseProcessor {
                                     participants,
                                     NotificationType.NOTI_06,
                                     tagName,
-                                    tribeId
+                                    tribeId,
+                                    null
                             );
                         }
                     }

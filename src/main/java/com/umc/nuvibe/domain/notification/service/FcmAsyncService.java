@@ -30,7 +30,7 @@ public class FcmAsyncService {
 
     @Async
     @Transactional
-    public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId) {
+    public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId, Long tribeId) {
         // 1. DB에 알림 저장
         com.umc.nuvibe.domain.notification.entity.Notification notification =
                 com.umc.nuvibe.domain.notification.entity.Notification.builder()
@@ -40,15 +40,21 @@ public class FcmAsyncService {
                         .mainMessage(type.formatMainMessage(tag))
                         .actionMessage(type.getActionMessage())
                         .relatedId(relatedId)
+                        .tribeId(tribeId)
                         .build();
         notificationRepository.save(notification);
 
-        // 2. 알림 설정 체크
+        // 2. 푸시 메시지가 없으면 FCM 발송 스킵 (추가)
+        if (type.getPushMessage() == null) {
+            return;
+        }
+
+        // 3. 알림 설정 체크
         if (!isNotificationEnabled(user, type)) {
             return;
         }
 
-        // 3. FCM 푸시 발송
+        // 4. FCM 푸시 발송
         String pushMessage = type.formatPushMessage(tag, nickname);
         List<Fcm> tokens = fcmRepository.findByUserAndIsActiveTrue(user);
         for (Fcm fcm : tokens) {
@@ -66,6 +72,7 @@ public class FcmAsyncService {
             case NOTI_04 -> Boolean.TRUE.equals(setting.getIsReactionAlert());
             case NOTI_07, NOTI_08 -> Boolean.TRUE.equals(setting.getIsRecommendAlert());
             case NOTI_09, NOTI_10 -> Boolean.TRUE.equals(setting.getIsRecapAlert());
+            case NOTI_11, NOTI_12 -> true;  // 푸시 없으니 항상 true
         };
     }
 

@@ -45,7 +45,8 @@ public class Notification extends BaseEntity {
     @Column(name = "related_id")
     private Long relatedId;
 
-    // [삭제] private String content; 삭제됨
+    @Column(name = "tribe_id")
+    private Long tribeId;
 
     @Column(name = "is_read")
     private boolean isRead = false;
@@ -53,13 +54,14 @@ public class Notification extends BaseEntity {
     // [추가] Builder 패턴
     @Builder
     private Notification(User user, NotificationType type, String category,
-                         String mainMessage, String actionMessage, Long relatedId) {
+                         String mainMessage, String actionMessage, Long relatedId, Long tribeId) {
         this.user = user;
         this.type = type;
         this.category = category;
         this.mainMessage = mainMessage;
         this.actionMessage = actionMessage;
         this.relatedId = relatedId;
+        this.tribeId = tribeId;  // 추가
     }
 
     public void read() {
