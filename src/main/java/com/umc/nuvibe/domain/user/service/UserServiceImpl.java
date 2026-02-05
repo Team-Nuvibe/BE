@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -75,7 +77,14 @@ public class UserServiceImpl implements UserService {
         }
 
         user.updateNickname(nickname);
-        fcmService.sendNotification(user, NotificationType.NOTI_12, null, null, null, null);
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        fcmService.sendNotification(user, NotificationType.NOTI_12, null, null, null, null);
+                    }
+                }
+        );
         return new UserNicknameUpdateRes(nickname);
     }
 
@@ -127,8 +136,14 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = passwordEncoder.encode(request.password());
         user.updatePassword(encodedPassword);
 
-        fcmService.sendNotification(user, NotificationType.NOTI_11, null, null, null, null);
-
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        fcmService.sendNotification(user, NotificationType.NOTI_11, null, null, null, null);
+                    }
+                }
+        );
     }
 
     @Override
