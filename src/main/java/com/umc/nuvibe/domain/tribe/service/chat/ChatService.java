@@ -19,4 +19,7 @@ public interface ChatService {
 
     //채팅 이미지 상세 조회
     ChatDetailRes getChatDetail(Long userId, Long chatId);
+
+    // 채팅 발신
+    void chatSend(Long userId, Long tribeId, Long imageId, Long boardId);
 }

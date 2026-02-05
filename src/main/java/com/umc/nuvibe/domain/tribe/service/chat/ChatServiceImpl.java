@@ -1,38 +1,62 @@
 package com.umc.nuvibe.domain.tribe.service.chat;
 
-import com.umc.nuvibe.domain.tribe.dto.internal.EmojiAggRow;
-import com.umc.nuvibe.domain.tribe.dto.internal.MyEmojiRow;
+import com.umc.nuvibe.domain.archive.service.ArchiveBoardService;
+import com.umc.nuvibe.domain.image.entity.Image;
+import com.umc.nuvibe.domain.image.repository.ImageRepository;
+import com.umc.nuvibe.domain.image.vo.ImageStatus;
+import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.notification.service.FcmService;
+import com.umc.nuvibe.domain.notification.vo.NotificationType;
+import com.umc.nuvibe.domain.tribe.dto.internal.*;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatGridReq;
 import com.umc.nuvibe.domain.tribe.dto.request.ChatTimelineReq;
 import com.umc.nuvibe.domain.tribe.dto.response.chat.*;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
-import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
-import com.umc.nuvibe.domain.tribe.repository.EmojiRepository;
-import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
+import com.umc.nuvibe.domain.tribe.entity.Tribe;
+import com.umc.nuvibe.domain.tribe.repository.*;
 import com.umc.nuvibe.domain.tribe.vo.EmojiType;
+import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
+import com.umc.nuvibe.domain.user.entity.User;
+import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.global.apiPayLoad.error.ChatErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.ImageErrorCode;
+import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
     private final EmojiRepository emojiRepository;
+    private final TribeRepository tribeRepository;
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
+    private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
+
+    private final ArchiveBoardService archiveBoardService;
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private final FcmService fcmService;
 
     @Override
     @Transactional(readOnly = true)
@@ -69,6 +93,11 @@ public class ChatServiceImpl implements ChatService {
             return new ChatTimelineListRes(List.of(), null, false);
         }
 
+        // 6-1. 채팅들에서 imageIds 추출 ← 추가
+        List<Long> imageIds = pageItems.stream()
+                .map(chat -> chat.getImage().getId())
+                .toList();
+
         // 7. 각 채팅당 이모지 집계 및 요약
         Map<Long, List<EmojiSummaryRes>> emojiSummaryMap =
                 buildEmojiSummaryMap(chatIds);
@@ -77,12 +106,17 @@ public class ChatServiceImpl implements ChatService {
         Map<Long, EmojiType> myEmojiMap =
                 buildMyEmojiMap(userId, chatIds);
 
+        // 8-1. 내가 스크랩한 이미지 매핑 ← 추가
+        Map<Long, Boolean> myScrapMap =
+                buildMyScrapMap(userId, tribeId, imageIds);
+
         // 9. dto로 매핑
         List<ChatTimelineItemRes> items = pageItems.stream()
                 .map(chat -> ChatTimelineItemRes.from(
                         chat,
                         emojiSummaryMap.getOrDefault(chat.getId(), List.of()),
-                        myEmojiMap.get(chat.getId())
+                        myEmojiMap.get(chat.getId()),
+                        myScrapMap.getOrDefault(chat.getImage().getId(), false)
                 ))
                 .toList();
 
@@ -166,9 +200,104 @@ public class ChatServiceImpl implements ChatService {
         return ChatDetailRes.from(chat, isScraped);
     }
 
+    @Override
+    @Transactional
+    public void chatSend(Long userId, Long tribeId, Long imageId, Long boardId){
+
+        // 1. 트라이브 존재 검증
+        Tribe tribe = tribeRepository.findById(tribeId)
+                .orElseThrow(() -> new BusinessException(TribeErrorCode.TRIBE_NOT_FOUND));
+
+        // 2. 발신 권한 검증
+        boolean canSend = userTribeRepository.existsByUser_IdAndTribe_IdAndUserTribeStatus(
+                userId, tribeId, UserTribeStatus.ACTIVE
+        );
+        if (!canSend) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_FORBIDDEN);
+        }
+
+        // 3. 태그 검증 (해당 트라이브 태그 사용)
+        ImageTag tag = tribe.getImageTag();
+        if (tag == null) {
+            throw new BusinessException(ImageErrorCode.IMAGETAG_IS_NULL);
+        }
+
+        // 4. 이미지 엔티티 저장 및 업로드 완료 검증
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+        if (image.getStatus() != ImageStatus.ACTIVE) {
+            throw new BusinessException(ImageErrorCode.IMAGE_UPLOAD_NOT_COMPLETED);
+        }
+
+        // 5. 채팅 저장 (유저는 참조)
+        User userRef = userRepository.getReferenceById(userId);
+        Chat chat = Chat.of(userRef, tribe, image);
+        chat = chatRepository.saveAndFlush(chat);
+
+        // 6. 트라이브 마지막 메시지 및 활동 시각 갱신
+        tribe.updateLastChat(chat.getId());
+        userTribeRepository.updateLastActivityAt(
+                tribeId,
+                UserTribeStatus.ACTIVE,
+                chat.getCreatedAt()
+        );
+
+        // 7. 해당 트라이브 Active 유저 unreadCount +1 (발신자 제외)
+        userTribeRepository.incrementUnreadCountForActiveMembers(
+                tribeId, UserTribeStatus.ACTIVE, userId
+        );
+
+        // 8. 보드에 이미지 저장 (알림보다 먼저!)
+        archiveBoardService.addBoardImageForChat(userId, boardId, image.getId());
+
+        // 9. 발신할 record 생성
+        ChatSend chatSend = new ChatSend(
+                chat.getId(),
+                userId,
+                image.getId(),
+                image.getImageUrl(),
+                chat.getCreatedAt()
+        );
+
+        registerChatPublish(tribeId, chatSend);
+
+        // 10. 트랜잭션 커밋 후 알림 발송(NOTI-03)
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        List<User> participants = userTribeRepository.findUsersByTribeIdExcept(tribeId, userId);
+                        fcmService.sendNotificationToUsers(
+                                participants,
+                                NotificationType.NOTI_03,
+                                tribe.getImageTag().name(),
+                                tribeId
+                        );
+                    }
+                }
+        );
+    }
+
+    // 커밋 이후 채팅을 소속 트라이브로 발송
+    private void registerChatPublish(Long tribeId, ChatSend chatSend) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                try{
+                    messagingTemplate.convertAndSend(
+                            "/topic/tribe." + tribeId,
+                            chatSend);
+                } catch (MessagingException e) {
+                    log.error("웹소켓을 통한 채팅 전송 실패. chatId={}, tribeId={}",
+                            chatSend.chatId(), tribeId, e);
+                }
+            }
+        });
+    }
+
 
     /**
-     * 각 chatId에 대해 이모지 타입별 개수를 집계 및 요약한 결과
+     * 각 채팅에 대해 이모지 타입별 개수를 집계 및 요약한 결과
      * EmojiSummaryRes 목록 형태로 변환
      */
     private Map<Long, List<EmojiSummaryRes>> buildEmojiSummaryMap(List<Long> chatIds) {
@@ -212,5 +341,19 @@ public class ChatServiceImpl implements ChatService {
         if (!userTribeRepository.existsByUser_IdAndTribe_Id(userId, tribeId)) {
             throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND);
         }
+    }
+
+    // 이미지 스크랩 여부 반환
+    private Map<Long, Boolean> buildMyScrapMap(Long userId, Long tribeId, List<Long> imageIds) {
+        // 1. DB에서 스크랩된 imageId들만 조회 (1번의 쿼리)
+        List<Long> scrappedImageIds = scrapedImageRepository
+                .findImageIdsByUserIdAndTribeIdAndImageIds(userId, tribeId, imageIds);
+
+        // 2. Map으로 변환 (스크랩된 것들만 true로 저장)
+        return scrappedImageIds.stream()
+                .collect(Collectors.toMap(
+                        imageId -> imageId,
+                        imageId -> true
+                ));
     }
 }

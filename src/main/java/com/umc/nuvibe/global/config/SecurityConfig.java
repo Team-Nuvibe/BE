@@ -50,6 +50,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers("/", "/api/auth/**").permitAll() // 인증 없이 접근 허용
                         .requestMatchers("/actuator/**").permitAll() // 프로메테우스 메트릭 수집용
+                        .requestMatchers("/api/auth/oauth2/signup/complete").authenticated()
+                        .requestMatchers("/", "/api/auth/**").permitAll()
                         .requestMatchers("/index.html", "/static/**", "/favicon.ico").permitAll() // 정적 파일 허용
                         .requestMatchers("/swagger", "/swagger/", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger 허용
                         .requestMatchers("/api/auth/kakao/callback","/api/auth/naver/callback").permitAll()
@@ -65,6 +67,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",  // 로컬 테스트용
                 "http://localhost:5173",
+                "https://nuvibe.site",
+                "https://www.nuvibe.site",
+                "https://api.nuvibe.site",
                 frontendUrl
         ));
 

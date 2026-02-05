@@ -1,9 +1,7 @@
 package com.umc.nuvibe.domain.tribe.controller;
 
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
-import com.umc.nuvibe.domain.tribe.dto.response.tribe.TribeListRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
-import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.dto.request.ActiveTribeListReq;
+import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
 import com.umc.nuvibe.global.apiPayLoad.result.UserTribeResultCode;
 import com.umc.nuvibe.domain.tribe.service.userTribe.UserTribeService;
 import com.umc.nuvibe.global.apiPayLoad.response.Response;
@@ -11,6 +9,7 @@ import com.umc.nuvibe.global.security.annotation.AuthUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,16 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserTribeController {
 
     private final UserTribeService userTribeService;
-
-    //트라이브 챗 목록 조회
-    @GetMapping
-    @Operation(summary = "활성화된 챗 목록 조회", description = "최신순으로 조회, 조회 기준들 추가 예정")
-    public Response<TribeListRes> getTribeList(
-            @AuthUser Long userId){
-        TribeListRes res = userTribeService.getTribeList(userId);
-
-        return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
-    }
 
     //트라이브 챗 활성화
     @PatchMapping("/{userTribeId}/activate")
@@ -52,6 +41,41 @@ public class UserTribeController {
         UserTribeFavoriteRes res = userTribeService.toggleFavorite(userId, userTribeId);
         return Response.of(UserTribeResultCode.USERTRIBE_FAVORITE_SUCCESS, res);
     }
+
+    // 활성화된 트라이브 챗 목록 조회
+    @GetMapping("/active")
+    @Operation(summary = "활성화된 트라이브 목록 조회", description = "트라이브 챗 목록을 고정, 마지막 활동 시각(동률 시 안 읽은 메시지 여부 순), 마지막 chatId 순으로 정렬")
+    public Response<ActiveTribeListRes> getActiveTribeList(
+            @AuthUser Long userId,
+            @ParameterObject ActiveTribeListReq req
+    ){
+        ActiveTribeListRes res = userTribeService.getActiveTribeList(userId, req);
+        return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
+    }
+
+    // 대기 중 트라이브 챗 목록 조회
+    @GetMapping("/waiting")
+    @Operation(summary = "대기 중인 트라이브 목록 조회", description = "대기 중 트라이브 챗 목록 tribeId 순으로 정렬")
+    public Response<WaitingTribeListRes> getWaitingTribeList(
+            @AuthUser Long userId,
+            @RequestParam(required = false) Long cursorTribeId,
+            @RequestParam(required = false) Integer size
+    ){
+        WaitingTribeListRes res = userTribeService.getWaitingTribeList(userId, cursorTribeId, size);
+        return Response.of(UserTribeResultCode.GET_USERTRIBE_SUCCESS, res);
+    }
+
+    // 트라이브 챗 읽음 처리
+    @PatchMapping("/tribe/{tribeId}/read")
+    @Operation(summary = "트라이브 챗 읽음 처리", description = "안 읽은 메시지 수를 0개로 초기화")
+    public Response<TribeReadRes> readChat(
+            @AuthUser Long userId,
+            @PathVariable Long tribeId
+    ){
+        TribeReadRes res = userTribeService.readChat(userId, tribeId);
+        return Response.of(UserTribeResultCode.USERTRIBE_READ_SUCCESS, res);
+    }
+
 
     //트라이브 챗 퇴장
     @DeleteMapping("/{userTribeId}")

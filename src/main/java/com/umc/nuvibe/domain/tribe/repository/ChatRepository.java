@@ -116,6 +116,9 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query("SELECT c.id FROM Chat c WHERE c.tribe.id = :tribeId")
     List<Long> findIdsByTribeId(@Param("tribeId") Long tribeId);
 
+    @Query("select c.tribe.id from Chat c where c.id = :chatId")
+    Optional<Long> findTribeIdByChatId(@Param("chatId") Long chatId);
+
     // 채팅 하드 삭제
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Chat c WHERE c.tribe.id = :tribeId")

@@ -47,30 +47,41 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     // 보드 목록 조회
     @Override
     public List<BoardListResponse> getBoards(Long userId, String keyword) {
-    // keyword가 null이거나 공백이면 전체 조회, 있으면 검색
-    List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
-            ? archiveBoardRepository.findByUserId(userId)
-            : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
-        
+        List<ArchiveBoard> boards = (keyword == null || keyword.trim().isEmpty())
+                ? archiveBoardRepository.findByUserId(userId)
+                : archiveBoardRepository.findByUserIdAndNameContainingIgnoreCase(userId, keyword.trim());
+
         if (boards.isEmpty()) {
             return List.of();
         }
-        
-        // 썸네일 한 번에 조회 (n+1 방지)
+
         List<Long> boardIds = boards.stream()
                 .map(ArchiveBoard::getId)
                 .toList();
-        
+
+        // 썸네일 조회 (기존)
         Map<Long, String> thumbnailMap = boardImageRepository.findLatestByBoardIds(boardIds)
                 .stream()
                 .collect(Collectors.toMap(
                         bi -> bi.getBoard().getId(),
                         bi -> bi.getImage().getImageUrl(),
-                        (existing, replacement) -> existing  // 중복 시 첫 번째 값 유지
+                        (existing, replacement) -> existing
                 ));
-        
+
+        // 태그 개수 조회 (추가)
+        Map<Long, Long> tagCountMap = boardImageRepository.countDistinctTagsByBoardIds(boardIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],      // boardId
+                        row -> (Long) row[1]       // tagCount
+                ));
+
         return boards.stream()
-                .map(board -> BoardListResponse.from(board, thumbnailMap.get(board.getId())))
+                .map(board -> BoardListResponse.from(
+                        board,
+                        thumbnailMap.get(board.getId()),
+                        tagCountMap.getOrDefault(board.getId(), 0L).intValue()  // 태그 없으면 0
+                ))
                 .toList();
     }
 
@@ -211,15 +222,26 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
     @Override
     @Transactional
     public void addBoardImage(Long userId, Long boardId, BoardImageAddRequest request) {
+        addBoardImageInternal(userId, boardId, request.imageId());
+    }
+
+    // 채팅 전송용 보드 이미지 추가
+    @Override
+    @Transactional
+    public void addBoardImageForChat(Long userId, Long boardId, Long imageId) {
+        addBoardImageInternal(userId, boardId, imageId);
+    }
+
+    private void addBoardImageInternal(Long userId, Long boardId, Long imageId) {
         //유저가 소유한 보드인지 확인
         ArchiveBoard board = findBoardByIdAndUserId(boardId, userId);
 
         //이미지 id가 존재하는 지 확인
-        Image image = imageRepository.findById(request.imageId())
-                        .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new BusinessException(ImageErrorCode.IMAGE_NOT_FOUND));
 
         //이미지가 이미 보드에 저장되어 있는 지 확인
-        if (boardImageRepository.existsByImageId(request.imageId())){
+        if (boardImageRepository.existsByImageId(imageId)){
             throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_ALREADY_EXISTS);
         }
 
@@ -228,6 +250,11 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 board(board).
                 image(image).
                 build());
-
     }
+
+
+
+
+
+
 }

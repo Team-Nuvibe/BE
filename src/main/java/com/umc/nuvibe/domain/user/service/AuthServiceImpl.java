@@ -1,25 +1,22 @@
 package com.umc.nuvibe.domain.user.service;
 
-import com.umc.nuvibe.domain.user.dto.request.CheckPasswordReq;
-import com.umc.nuvibe.domain.user.dto.request.LoginReq;
-import com.umc.nuvibe.domain.user.dto.request.SignUpReq;
+import com.umc.nuvibe.domain.user.dto.request.*;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.domain.user.vo.AuthProvider;
+import com.umc.nuvibe.domain.user.vo.VerificationType;
 import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import com.umc.nuvibe.global.security.jwt.JwtTokenProvider;
 import com.umc.nuvibe.global.service.EmailVerificationService;
-import jakarta.servlet.http.HttpServletResponse;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -31,11 +28,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailVerificationService verificationService;
 
-    @Value("${frontend.redirect.auth-verify-success}")
-    private String authVerifySuccessUrl;
-
-    @Value("${frontend.redirect.auth-verify-failed}")
-    private String authVerifyFailedUrl;
 
     public AuthServiceImpl(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
@@ -57,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 이메일이 인증되었는지 확인
-        verificationService.checkEmailIsVerified(request.email());
+        verificationService.checkEmailVerified(request.email());
 
         String encodedPassword=passwordEncoder.encode(request.password());
 
@@ -110,28 +102,70 @@ public class AuthServiceImpl implements AuthService {
         userRepository.delete(user);
     }
 
+
     @Override
-    // 사용하는 이메일인지 인증하기 위한 메서드
-    public void sendJoinVerificationEmail(String email) {
+    public void sendJoinVerificationCode(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
 
-        verificationService.sendVerificationEmail(email);
+        verificationService.sendVerificationCode(email, VerificationType.JOIN);
     }
 
     @Override
     @Transactional
-    public void verifyJoinEmailAndRedirect(String token, HttpServletResponse response) throws IOException {
-        try {
-            String verifiedEmail = verificationService.verifyToken(token);
-
-            response.sendRedirect(authVerifySuccessUrl);
-        } catch (BusinessException e) {
-
-            response.sendRedirect(authVerifyFailedUrl + "&code=" + e.getErrorCode().getCode());
+    public void verifyJoinCode(String email, String code) {
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
+
+        verificationService.verifyCode(email, code, VerificationType.JOIN);
     }
+
+    @Override
+    public void sendPasswordResetCode(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        verificationService.sendVerificationCode(email, VerificationType.PASSWORD_RESET);
+    }
+
+    @Override
+    @Transactional
+    public void verifyPasswordResetCode(VerifyCodeReq request) {
+        if (!userRepository.existsByEmail(request.email())) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        verificationService.verifyCode(request.email(), request.code(), VerificationType.PASSWORD_RESET);
+    }
+
+    @Override
+    @Transactional
+    public void resetPasswordWithCode(PasswordResetReq request) {
+        // 비밀번호 유효성 검사
+        validatePassword(request.newPassword(), request.confirmPassword());
+
+        // 코드가 인증되었는지 확인
+        verificationService.checkCodeIsVerified(request.email(), VerificationType.PASSWORD_RESET);
+
+        // 사용자 조회
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        // 비밀번호 변경
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
+        user.updatePassword(encodedPassword);
+
+        // RefreshToken 무효화
+        user.updateRefreshToken(null);
+        userRepository.save(user);
+
+        // 사용된 인증 코드 삭제
+        verificationService.deleteVerificationToken(request.email(), VerificationType.PASSWORD_RESET);
+    }
+
 
     @Override
     public void checkCurrentPassword(Long userId, CheckPasswordReq request) {
@@ -141,6 +175,33 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new BusinessException(AuthErrorCode.PASSWORD_UNMATCH_ERROR);
         }
+    }
+
+    @Override
+    @Transactional
+    public TokenRes reissueToken(String authorizationHeader) {
+        String refreshToken = jwtTokenProvider.extractBearerToken(authorizationHeader);
+
+        jwtTokenProvider.validateToken(refreshToken);
+
+        Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.getRefreshToken() == null || !user.getRefreshToken().equals(refreshToken)) {
+            throw new BusinessException(AuthErrorCode.JWT_INVALID_TOKEN);
+        }
+
+        Claims claims = jwtTokenProvider.parseClaims(refreshToken);
+        AuthProvider authProvider = AuthProvider.valueOf(claims.get("AuthProvider", String.class));
+
+        String newAccessToken = jwtTokenProvider.createAccessToken(user, authProvider);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(user, authProvider);
+
+        user.updateRefreshToken(newRefreshToken);
+
+        return new TokenRes(newAccessToken, newRefreshToken);
     }
 
 
@@ -156,6 +217,16 @@ public class AuthServiceImpl implements AuthService {
 
         if (!EMAIL_PATTERN.matcher(request.email()).matches()) {
             throw new BusinessException(AuthErrorCode.INVAILD_EMAIL_FORMAT);
+        }
+    }
+
+    private void validatePassword(String password, String confirmPassword) {
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new BusinessException(AuthErrorCode.INVALID_PASSWORD_FORMAT);
+        }
+
+        if (!password.equals(confirmPassword)) {
+            throw new BusinessException(AuthErrorCode.CONFIRM_PASSWORD_MISMATCH);
         }
     }
 

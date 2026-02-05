@@ -30,6 +30,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # firebase CI 설정
+      - name: Create Firebase credential file
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
+
       - name: Run tests
         run: ./gradlew test
 
@@ -53,6 +63,16 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # firebase CD 설정
+      - name: Create Firebase credential file
+        run: |
+          mkdir -p src/main/resources/firebase
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" | base64 -d > src/main/resources/firebase/nuvibe-web-firebase.json
+          if [ ! -s src/main/resources/firebase/nuvibe-web-firebase.json ]; then
+            echo "Error: Firebase credential file is empty or not created"
+            exit 1
+          fi
+
       - name: Build with Gradle
         run: ./gradlew build -x test
 
@@ -75,13 +95,20 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: AWS_ACCESS_KEY,AWS_S3_BUCKET,AWS_SECRET_KEY,DOCKERHUB_USERNAME,FRONT_URL,GMAIL_ADDRESS,GMAIL_PASSWORD,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY,JWT_SECRET_KEY,PROD_DB_PASSWORD,PROD_DB_URL,PROD_DB_USERNAME,SERVER_URL
+          envs: AWS_ACCESS_KEY,AWS_S3_BUCKET,AWS_SECRET_KEY,DOCKERHUB_USERNAME,FRONT_URL,GMAIL_ADDRESS,GMAIL_PASSWORD,JWT_ACCESS_TOKEN_VALIDITY,JWT_REFRESH_TOKEN_VALIDITY,JWT_SECRET_KEY,PROD_DB_PASSWORD,PROD_DB_URL,PROD_DB_USERNAME,SERVER_URL,FIREBASE_CREDENTIALS_PATH,AWS_QUEUE_NAME,NAVER_CLIENT_ID,NAVER_CLIENT_SECRET,KAKAO_CLIENT_ID,KAKAO_CLIENT_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
           script: |
             # 배포 디렉토리 생성
             mkdir -p /home/ubuntu/nuvibe
             cd /home/ubuntu/nuvibe
+            
+            # Nginx 설정 디렉토리 생성
+            mkdir -p nginx/conf.d certbot/conf certbot/www logs
+            
+            # Git에서 Nginx 설정 파일 다운로드
+            curl -f -o nginx/nginx.conf https://raw.githubusercontent.com/Team-Nuvibe/BE/main/nginx/nginx.conf
+            curl -f -o nginx/conf.d/default.conf https://raw.githubusercontent.com/Team-Nuvibe/BE/main/nginx/conf.d/default.conf
 
-            # docker-compose.yml 생성
+            # docker-compose.yml 생성 (Nginx + Certbot 포함)
             cat << 'COMPOSE_EOF' > docker-compose.yml
             version: '3.8'
 
@@ -89,8 +116,8 @@ jobs:
               app:
                 image: ${DOCKERHUB_USERNAME}/nuvibe:latest
                 container_name: nuvibe-app
-                ports:
-                  - "80:8080"
+                expose:
+                  - "8080"
                 environment:
                   - SPRING_PROFILES_ACTIVE=prod
                   
@@ -98,6 +125,7 @@ jobs:
                   - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
                   - AWS_S3_BUCKET=${AWS_S3_BUCKET}
                   - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+                  - AWS_QUEUE_NAME=${AWS_QUEUE_NAME}
                   
                   # DB 설정
                   - PROD_DB_PASSWORD=${PROD_DB_PASSWORD}
@@ -116,7 +144,50 @@ jobs:
                   
                   # Frontend 설정
                   - FRONT_URL=${FRONT_URL}
+                  
+                  # Firebase 설정
+                  - FIREBASE_CREDENTIALS_PATH=${FIREBASE_CREDENTIALS_PATH}
+                  
+                  # OAuth2 설정
+                  - NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
+                  - NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
+                  - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+                  - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
+                  - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+                  - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
             
+                networks:
+                  - nuvibe-network
+                restart: unless-stopped
+                volumes:
+                  - ./logs:/logs
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 40s
+
+              nginx:
+                image: nginx:alpine
+                container_name: nuvibe-nginx
+                ports:
+                  - "80:80"
+                  - "443:443"
+                volumes:
+                  - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+                  - ./nginx/conf.d:/etc/nginx/conf.d:ro
+                  - ./certbot/conf:/etc/letsencrypt:ro
+                  - ./certbot/www:/var/www/certbot:ro
+                networks:
+                  - nuvibe-network
+                depends_on:
+                  - app
                 restart: unless-stopped
                 logging:
                   driver: "json-file"
@@ -124,6 +195,21 @@ jobs:
                     max-size: "10m"
                     max-file: "3"
 
+              certbot:
+                image: certbot/certbot
+                container_name: nuvibe-certbot
+                volumes:
+                  - ./certbot/conf:/etc/letsencrypt
+                  - ./certbot/www:/var/www/certbot
+                entrypoint: >-
+                  /bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'
+                networks:
+                  - nuvibe-network
+                restart: unless-stopped
+
+            networks:
+              nuvibe-network:
+                driver: bridge
             COMPOSE_EOF
 
             # 최신 이미지 Pull
@@ -135,10 +221,13 @@ jobs:
 
             # 사용하지 않는 이미지 정리
             sudo docker image prune -f
+            
+            echo "Deployment completed at $(date)"
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_QUEUE_NAME: ${{ secrets.AWS_QUEUE_NAME }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           FRONT_URL: ${{ secrets.FRONT_URL }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
@@ -150,3 +239,10 @@ jobs:
           PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
           PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
           SERVER_URL: ${{ secrets.SERVER_URL }}
+          FIREBASE_CREDENTIALS_PATH: ${{ secrets.FIREBASE_CREDENTIALS_PATH }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

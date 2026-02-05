@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.image.entity;
 
+import com.umc.nuvibe.domain.image.vo.ImageStatus;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.global.apiPayLoad.common.BaseEntity;
 import jakarta.persistence.*;
@@ -26,5 +27,20 @@ public class Image extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ImageTag imageTag;
 
+    @Column(nullable = true, unique = true)
+    private String fileName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private ImageStatus status = ImageStatus.PENDING;
+
+    public void activate() {
+        this.status = ImageStatus.ACTIVE;
+    }
+
+    public void updateImageUrl(String newUrl) {
+        this.imageUrl = newUrl;
+    }
 
 }

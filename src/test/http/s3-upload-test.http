@@ -1,0 +1,52 @@
+### [변수 설정] 로컬 서버 주소 (이걸 맨 위에 두세요!)
+@host = http://localhost:8080
+
+### -----------------------------------------------------------
+### Step 1: Pre-signed URL 발급 요청
+### -----------------------------------------------------------
+# @name requestUrl
+
+# [시간 측정 시작] 요청 보내기 직전에 현재 시간을 기록합니다.
+< {%
+    client.global.set("step1_start", new Date().getTime());
+%}
+
+POST {{host}}/api/images/presigned-url?tag=BLUR
+Content-Type: application/json
+
+{
+  "prefix": "test",
+  "originalFileName": "test.jpg"
+}
+
+> {%
+    // [시간 측정 종료]
+    let endTime = new Date().getTime();
+    let startTime = client.global.get("step1_start");
+    client.log("⏱️ Step 1 소요 시간: " + (endTime - startTime) + "ms");
+
+    // [기존 로직] URL 저장
+    client.global.set("s3_url", response.body.data.imageURL);
+    client.log("🔗 발급된 URL: " + client.global.get("s3_url"));
+%}
+
+### -----------------------------------------------------------
+### Step 2: S3로 파일 직접 업로드 (PUT)
+### -----------------------------------------------------------
+
+# [시간 측정 시작]
+< {%
+    client.global.set("step2_start", new Date().getTime());
+%}
+
+PUT {{s3_url}}
+Content-Type: image/jpeg
+
+< ./test.jpg
+
+> {%
+    // [시간 측정 종료]
+    let endTime = new Date().getTime();
+    let startTime = client.global.get("step2_start");
+    client.log("⏱️ Step 2 소요 시간: " + (endTime - startTime) + "ms");
+%}

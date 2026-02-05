@@ -9,6 +9,7 @@ import com.umc.nuvibe.domain.user.dto.response.UserSettingUpdateRes;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
 import com.umc.nuvibe.domain.user.vo.UserSetting;
+import com.umc.nuvibe.domain.user.vo.VerificationType;
 import com.umc.nuvibe.global.apiPayLoad.error.AuthErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
@@ -20,8 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -60,8 +63,12 @@ public class UserServiceImpl implements UserService {
 
         LocalDateTime lastUpdated=user.getLastNicknameUpdatedDate();
 
-        if (!(lastUpdated==null || lastUpdated.plusDays(14).isBefore(LocalDateTime.now()))) {
-            throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED);
+        if (lastUpdated != null) {
+            LocalDate nextAvailableDate = lastUpdated.toLocalDate().plusDays(14);
+            if (nextAvailableDate.isAfter(LocalDate.now())) {
+                throw new BusinessException(UserErrorCode.NICKNAME_UPDATE_RESTRICTED,
+                        Map.of("nextAvailableDate", nextAvailableDate.toString()));
+            }
         }
 
         user.updateNickname(nickname);
@@ -76,14 +83,24 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
         }
 
-        verificationService.sendVerificationEmail(email);
+        verificationService.sendVerificationCode(email, VerificationType.EMAIL_CHANGE);
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmailCode(String email, String code) {
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
+        }
+
+        verificationService.verifyCode(email, code, VerificationType.EMAIL_CHANGE);
     }
 
     @Override
     @Transactional
     public void updateEmail(Long userId, String newEmail) {
         // 이메일이 인증되었는지 확인
-        verificationService.checkEmailIsVerified(newEmail);
+        verificationService.checkCodeIsVerified(newEmail, VerificationType.EMAIL_CHANGE);
 
         if (userRepository.existsByEmail(newEmail)) {
             throw new BusinessException(AuthErrorCode.EMAIL_ALREADY_EXIST);
