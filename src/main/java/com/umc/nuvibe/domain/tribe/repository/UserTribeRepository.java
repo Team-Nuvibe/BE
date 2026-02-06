@@ -167,7 +167,11 @@ order by
     @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId")
     List<User> findAllUsersByTribeId(@Param("tribeId") Long tribeId);
 
-    // 추가: WAITING 유저만 — NOTI-02용 (5명 도달 시 기존 대기자)
+    // 추가: WAITING 유저만 — NOTI-01용 (5명 도달 시 전원)
     @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.userTribeStatus = 'WAITING'")
     List<User> findWaitingUsersByTribeId(@Param("tribeId") Long tribeId);
+
+    // 추가: WAITING 유저 중 특정 유저 제외 — NOTI-02용 (기존 대기자만)
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'WAITING'")
+    List<User> findWaitingUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
 }

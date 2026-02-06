@@ -83,11 +83,8 @@ public class TribeServiceImpl implements TribeService {
                     }
             );
         } else {
-            // 6-B. 5명 미만 → 기존 대기자들에게 NOTI-02 발송
-            List<User> existingWaiters = userTribeRepository.findWaitingUsersByTribeId(tribeId)
-                    .stream()
-                    .filter(u -> !u.getId().equals(userId))
-                    .toList();
+            // 6-B. 5명 미만 → 기존 대기자들에게 NOTI-02 발송 (방금 참여한 유저 제외)
+            List<User> existingWaiters = userTribeRepository.findWaitingUsersByTribeIdExcept(tribeId, userId);
 
             if (!existingWaiters.isEmpty()) {
                 TransactionSynchronizationManager.registerSynchronization(

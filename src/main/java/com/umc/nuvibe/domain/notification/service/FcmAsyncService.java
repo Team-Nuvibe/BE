@@ -31,7 +31,11 @@ public class FcmAsyncService {
     @Async
     public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId, Long tribeId) {
         // 1. DB에 알림 저장 (별도 트랜잭션)
-        fcmDbService.saveNotification(user, type, tag, relatedId, tribeId);
+        try {
+            fcmDbService.saveNotification(user, type, tag, relatedId, tribeId);
+        } catch (Exception e) {
+            log.error("알림 DB 저장 실패. userId={}, type={}", user.getId(), type, e);
+        }
 
         // 2. 푸시 메시지가 없으면 FCM 발송 스킵
         if (type.getPushMessage() == null) {

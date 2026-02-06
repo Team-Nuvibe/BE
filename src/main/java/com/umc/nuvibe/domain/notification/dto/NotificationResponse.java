@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 //알림 목록 응답 DTO
 public record NotificationResponse(
         @Schema(description = "알림 ID") Long notificationId,
-        @Schema(description = "알림 타입", example = "TRIBE_CHAT_OPENED") String type,
+        @Schema(description = "알림 타입") String type,
         @Schema(description = "알림 종류") String category,
         @Schema(description = "메인 메시지") String mainMessage,
         @Schema(description = "행동 유도 메시지") String actionMessage,

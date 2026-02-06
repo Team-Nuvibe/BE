@@ -28,7 +28,7 @@ public class Emoji extends BaseEntity {
     private Chat chat;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     private Emoji(EmojiType type, Chat chat, User user) {

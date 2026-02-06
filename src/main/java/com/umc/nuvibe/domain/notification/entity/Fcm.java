@@ -20,7 +20,7 @@ public class Fcm extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @Column(nullable = false)  // [수정] nullable = false 추가
