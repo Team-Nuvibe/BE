@@ -19,7 +19,9 @@ public class Chat extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_chat_user",
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL"))
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -61,12 +61,12 @@ public class FcmAsyncService {
         if (setting == null) return true;
 
         return switch (type) {
-            case NOTI_01, NOTI_02 -> Boolean.TRUE.equals(setting.getIsTribeCreateAlert());
-            case NOTI_03, NOTI_05, NOTI_06 -> Boolean.TRUE.equals(setting.getIsTribeChatAlert());
-            case NOTI_04 -> Boolean.TRUE.equals(setting.getIsReactionAlert());
-            case NOTI_07, NOTI_08 -> Boolean.TRUE.equals(setting.getIsRecommendAlert());
-            case NOTI_09, NOTI_10 -> Boolean.TRUE.equals(setting.getIsRecapAlert());
-            case NOTI_11, NOTI_12 -> true;  // 푸시 없으니 항상 true
+            case NOTI_01 -> Boolean.TRUE.equals(setting.getIsTribeCreateAlert());
+            case NOTI_02, NOTI_04, NOTI_05 -> Boolean.TRUE.equals(setting.getIsTribeChatAlert());
+            case NOTI_03 -> Boolean.TRUE.equals(setting.getIsReactionAlert());
+            case NOTI_06, NOTI_07 -> Boolean.TRUE.equals(setting.getIsRecommendAlert());
+            case NOTI_08, NOTI_09 -> Boolean.TRUE.equals(setting.getIsRecapAlert());
+            case NOTI_10, NOTI_11 -> true;  // 푸시 없으니 항상 true
         };
     }
 

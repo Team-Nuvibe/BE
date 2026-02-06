@@ -54,7 +54,7 @@ public class TribeCloseProcessor {
         // 5. Tribe
         tribeRepository.deleteById(tribeId);
 
-        // 트랜잭션 커밋 후 알림 발송(NOTI-06)
+        // 트랜잭션 커밋 후 알림 발송(NOTI-05)
         if (tribe != null && !participants.isEmpty()) {
             TransactionSynchronizationManager.registerSynchronization(
                     new TransactionSynchronization() {
@@ -62,7 +62,7 @@ public class TribeCloseProcessor {
                         public void afterCommit() {
                             fcmService.sendNotificationToUsers(
                                     participants,
-                                    NotificationType.NOTI_06,
+                                    NotificationType.NOTI_05,
                                     tagName,
                                     tribeId,
                                     null

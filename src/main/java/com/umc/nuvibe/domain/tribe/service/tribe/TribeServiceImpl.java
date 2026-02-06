@@ -61,29 +61,11 @@ public class TribeServiceImpl implements TribeService {
         Long tribeId = tribe.getId();
         String tagName = tribe.getImageTag().name();
 
-        if (tribe.getCounts() == 5) {
-            // 6-A. 5명 도달 → 상태 전환 + NOTI-01 전원 발송
+        if (tribe.getCounts() >= 5) {
+            // 6-A. 5명 도달 이후 → 상태 전환만 (알림 없음)
             tribe.changeStatus();
-
-            List<User> allUsers = userTribeRepository.findWaitingUsersByTribeId(tribeId);
-
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronization() {
-                        @Override
-                        public void afterCommit() {
-                            // NOTI-01: 전원에게 "새로운 트라이브 챗이 열렸어요"
-                            fcmService.sendNotificationToUsers(
-                                    allUsers,
-                                    NotificationType.NOTI_01,
-                                    tagName,
-                                    null,       // relatedId
-                                    tribeId     // tribeId
-                            );
-                        }
-                    }
-            );
         } else {
-            // 6-B. 5명 미만 → 기존 대기자들에게 NOTI-02 발송 (방금 참여한 유저 제외)
+            // 6-B. 5명 미만 → 기존 대기자들에게 NOTI-01 발송 (방금 참여한 유저 제외)
             List<User> existingWaiters = userTribeRepository.findWaitingUsersByTribeIdExcept(tribeId, userId);
 
             if (!existingWaiters.isEmpty()) {
@@ -91,10 +73,10 @@ public class TribeServiceImpl implements TribeService {
                         new TransactionSynchronization() {
                             @Override
                             public void afterCommit() {
-                                // NOTI-02: 기존 대기자에게 "기다리던 트라이브 챗이 열렸어요"
+                                // NOTI-01: 기존 대기자에게 "기다리던 트라이브 챗이 열렸어요"
                                 fcmService.sendNotificationToUsers(
                                         existingWaiters,
-                                        NotificationType.NOTI_02,
+                                        NotificationType.NOTI_01,
                                         tagName,
                                         null,       // relatedId
                                         tribeId     // tribeId

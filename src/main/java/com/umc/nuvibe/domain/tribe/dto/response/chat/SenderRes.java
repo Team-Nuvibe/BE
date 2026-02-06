@@ -16,10 +16,9 @@ public record SenderRes(
         String profileImage
 ) {
     public static SenderRes from(User user) {
-        return new SenderRes(
-                user.getId(),
-                user.getNickname(),
-                user.getProfileImage()
-        );
+        if (user == null) {
+            return new SenderRes(null, "(알 수 없음)", null);
+        }
+        return new SenderRes(user.getId(), user.getNickname(), user.getProfileImage());
     }
 }
