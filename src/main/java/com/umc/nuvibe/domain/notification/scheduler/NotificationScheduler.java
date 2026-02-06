@@ -58,18 +58,18 @@ public class NotificationScheduler {
 
             for (CloseTargetView target : warningTargets) {
                 try {
-                    List<User> participants = userTribeRepository.findUsersByTribeId(target.getTribeId());
+                    List<User> participants = userTribeRepository.findActiveUsersByTribeId(target.getTribeId());
                     String tag = target.getImageTag() != null ? target.getImageTag().name() : "";
 
                     fcmService.sendNotificationToUsers(
                             participants,
-                            NotificationType.NOTI_05,
+                            NotificationType.NOTI_04,
                             tag,
                             target.getTribeId(),
                             null
                     );
                 } catch (Exception e) {
-                    log.error("NOTI-05 발송 실패. tribeId={}", target.getTribeId(), e);
+                    log.error("NOTI-04 발송 실패. tribeId={}", target.getTribeId(), e);
                 }
             }
 
@@ -78,7 +78,7 @@ public class NotificationScheduler {
     }
 
 
-    // NOTI-07: 드랍 미션 리마인드
+    // NOTI-06: 드랍 미션 리마인드
     // 매일 저녁 6시에 실행당일
     // 이미지 업로드 안 한 사용자 대상
     @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
@@ -99,14 +99,14 @@ public class NotificationScheduler {
                 try {
                     fcmService.sendNotification(
                             user,
-                            NotificationType.NOTI_07,
+                            NotificationType.NOTI_06,
                             null,
                             null,
                             null,
                             null
                     );
                 } catch (Exception e) {
-                    log.error("NOTI-07 발송 실패. userId={}", user.getId(), e);
+                    log.error("NOTI-06 발송 실패. userId={}", user.getId(), e);
                 }
             }
 
@@ -115,7 +115,7 @@ public class NotificationScheduler {
     }
 
 
-    // NOTI-08: 태그 추천 알림
+    // NOTI-07: 태그 추천 알림
     // 매주 수, 토 오후 15시에 실행
     // 최근 3일간 드랍 없는 사용자 대상
     @Scheduled(cron = "0 0 15 * * WED,SAT", zone = "Asia/Seoul")
@@ -138,9 +138,9 @@ public class NotificationScheduler {
             for (User user : inactiveUsers) {
                 try {
                     ImageTag randomTag = allTags[random.nextInt(allTags.length)];
-                    fcmService.sendNotification(user, NotificationType.NOTI_08, randomTag.name(), null, null,null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_07, randomTag.name(), null, null,null);
                 } catch (Exception e) {
-                    log.error("NOTI-08 발송 실패. userId={}", user.getId(), e);
+                    log.error("NOTI-07 발송 실패. userId={}", user.getId(), e);
                 }
             }
             page++;
@@ -148,7 +148,7 @@ public class NotificationScheduler {
     }
 
 
-    // NOTI-09: 주간 리캡 알림
+    // NOTI-08: 주간 리캡 알림
     // 매주 일요일 15시에 실행
     // 지난 주 드랍 기록이 있는 사용자 대상
     @Scheduled(cron = "0 0 15 * * SUN", zone = "Asia/Seoul")
@@ -169,9 +169,9 @@ public class NotificationScheduler {
 
             for (User user : usersWithWeeklyDrop) {
                 try {
-                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null,null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_08, null, null, null,null);
                 } catch (Exception e) {
-                    log.error("NOTI-09 발송 실패. userId={}", user.getId(), e);
+                    log.error("NOTI-08 발송 실패. userId={}", user.getId(), e);
                 }
             }
             page++;
@@ -179,7 +179,7 @@ public class NotificationScheduler {
     }
 
 
-    // NOTI-10: 전체 리캡 알림
+    // NOTI-09: 전체 리캡 알림
     // 매월 1일 오전 18시에 실행
     // 지난 달 드랍 기록이 있는 사용자 대상
     @Scheduled(cron = "0 0 18 1 * *", zone = "Asia/Seoul")
@@ -200,9 +200,9 @@ public class NotificationScheduler {
 
             for (User user : usersWithMonthlyDrop) {
                 try {
-                    fcmService.sendNotification(user, NotificationType.NOTI_10, null, null, null,null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null,null);
                 } catch (Exception e) {
-                    log.error("NOTI-10 발송 실패. userId={}", user.getId(), e);
+                    log.error("NOTI-09 발송 실패. userId={}", user.getId(), e);
                 }
             }
             page++;

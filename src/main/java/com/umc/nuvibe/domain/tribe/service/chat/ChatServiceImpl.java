@@ -261,15 +261,15 @@ public class ChatServiceImpl implements ChatService {
 
         registerChatPublish(tribeId, chatSend);
 
-        // 10. 트랜잭션 커밋 후 알림 발송(NOTI-03)
+        // 10. 트랜잭션 커밋 후 알림 발송(NOTI-02)
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        List<User> participants = userTribeRepository.findUsersByTribeIdExcept(tribeId, userId);
+                        List<User> participants = userTribeRepository.findActiveUsersByTribeIdExcept(tribeId, userId);
                         fcmService.sendNotificationToUsers(
                                 participants,
-                                NotificationType.NOTI_03,
+                                NotificationType.NOTI_02,
                                 tribe.getImageTag().name(),
                                 tribeId,
                                 null

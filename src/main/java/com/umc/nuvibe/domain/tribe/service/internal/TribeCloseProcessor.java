@@ -33,7 +33,7 @@ public class TribeCloseProcessor {
         // 삭제 전에 알림에 필요한 데이터 미리 조회
         Tribe tribe = tribeRepository.findById(tribeId).orElse(null);
         String tagName = tribe != null ? tribe.getImageTag().name() : null;
-        List<User> participants = tribe != null ? userTribeRepository.findUsersByTribeId(tribeId) : List.of();
+        List<User> participants = tribe != null ? userTribeRepository.findAllUsersByTribeId(tribeId) : List.of();
 
         // 삭제 순서
         // 1. Emoji
@@ -54,7 +54,7 @@ public class TribeCloseProcessor {
         // 5. Tribe
         tribeRepository.deleteById(tribeId);
 
-        // 트랜잭션 커밋 후 알림 발송(NOTI-06)
+        // 트랜잭션 커밋 후 알림 발송(NOTI-05)
         if (tribe != null && !participants.isEmpty()) {
             TransactionSynchronizationManager.registerSynchronization(
                     new TransactionSynchronization() {
@@ -62,7 +62,7 @@ public class TribeCloseProcessor {
                         public void afterCommit() {
                             fcmService.sendNotificationToUsers(
                                     participants,
-                                    NotificationType.NOTI_06,
+                                    NotificationType.NOTI_05,
                                     tagName,
                                     tribeId,
                                     null

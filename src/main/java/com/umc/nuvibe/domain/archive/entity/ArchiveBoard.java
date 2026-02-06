@@ -17,7 +17,9 @@ public class ArchiveBoard extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_archive_board_user",
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL"))
     private User user;
 
     @Column(length = 15 , nullable = false)

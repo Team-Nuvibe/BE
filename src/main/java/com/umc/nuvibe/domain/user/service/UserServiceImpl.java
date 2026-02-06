@@ -82,9 +82,9 @@ public class UserServiceImpl implements UserService {
                     @Override
                     public void afterCommit() {
                         try {
-                            fcmService.sendNotification(user, NotificationType.NOTI_12, null, null, null, null);
+                            fcmService.sendNotification(user, NotificationType.NOTI_11, null, null, null, null);
                         } catch (Exception ex) {
-                            log.warn("FCM 알림 전송 실패: NOTI_12", ex);
+                            log.warn("FCM 알림 전송 실패: NOTI_11", ex);
                         }
                     }
                 }
@@ -145,9 +145,9 @@ public class UserServiceImpl implements UserService {
                     @Override
                     public void afterCommit() {
                         try {
-                            fcmService.sendNotification(user, NotificationType.NOTI_11, null, null, null, null);
+                            fcmService.sendNotification(user, NotificationType.NOTI_10, null, null, null, null);
                         } catch (Exception ex) {
-                            log.warn("FCM 알림 전송 실패: NOTI_11", ex);
+                            log.warn("FCM 알림 전송 실패: NOTI_10", ex);
                         }
                     }
                 }
