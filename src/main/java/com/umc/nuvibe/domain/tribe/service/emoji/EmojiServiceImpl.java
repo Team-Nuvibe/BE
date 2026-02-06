@@ -116,7 +116,7 @@ public class EmojiServiceImpl implements EmojiService {
                 actorEmojiType = type.name();
 
                 // NOTI-03: 이모지 변경 시에도 알림 (본인 제외)
-                if (!imageOwner.getId().equals(userId)) {
+                if (imageOwner != null && !imageOwner.getId().equals(userId)) {
                     User reactor = userRepository.findById(userId).orElse(null);
                     String nickname = reactor != null ? reactor.getNickname() : "";
                     fcmService.sendNotification(

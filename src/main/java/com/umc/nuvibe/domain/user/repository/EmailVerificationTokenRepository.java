@@ -16,7 +16,7 @@ public interface EmailVerificationTokenRepository extends JpaRepository<EmailVer
     Optional<EmailVerificationToken> findByEmailAndVerificationType(String email, VerificationType verificationType);
     void deleteByEmailAndVerificationType(String email, VerificationType verificationType);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("DELETE FROM EmailVerificationToken t WHERE t.createdAt < :cutoff")
     int deleteAllCreatedBefore(@Param("cutoff") LocalDateTime cutoff);
 }
