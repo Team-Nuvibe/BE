@@ -58,7 +58,7 @@ public class NotificationScheduler {
 
             for (CloseTargetView target : warningTargets) {
                 try {
-                    List<User> participants = userTribeRepository.findUsersByTribeId(target.getTribeId());
+                    List<User> participants = userTribeRepository.findAllUsersByTribeId(target.getTribeId());
                     String tag = target.getImageTag() != null ? target.getImageTag().name() : "";
 
                     fcmService.sendNotificationToUsers(

@@ -156,9 +156,18 @@ order by
     );
 
 
+    // 기존: ACTIVE 유저만 (NOTI-03 채팅 알림 등에서 사용)
     @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.userTribeStatus = 'ACTIVE'")
-    List<User> findUsersByTribeId(@Param("tribeId") Long tribeId);
+    List<User> findActiveUsersByTribeId(@Param("tribeId") Long tribeId);
 
     @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'ACTIVE'")
-    List<User> findUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
+    List<User> findActiveUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
+
+    // 추가: 전체 참여 유저 (ACTIVE + WAITING) — NOTI-05, NOTI-06용
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId")
+    List<User> findAllUsersByTribeId(@Param("tribeId") Long tribeId);
+
+    // 추가: WAITING 유저만 — NOTI-02용 (5명 도달 시 기존 대기자)
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.userTribeStatus = 'WAITING'")
+    List<User> findWaitingUsersByTribeId(@Param("tribeId") Long tribeId);
 }

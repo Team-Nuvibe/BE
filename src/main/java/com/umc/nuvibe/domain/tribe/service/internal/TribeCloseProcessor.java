@@ -33,7 +33,7 @@ public class TribeCloseProcessor {
         // 삭제 전에 알림에 필요한 데이터 미리 조회
         Tribe tribe = tribeRepository.findById(tribeId).orElse(null);
         String tagName = tribe != null ? tribe.getImageTag().name() : null;
-        List<User> participants = tribe != null ? userTribeRepository.findUsersByTribeId(tribeId) : List.of();
+        List<User> participants = tribe != null ? userTribeRepository.findAllUsersByTribeId(tribeId) : List.of();
 
         // 삭제 순서
         // 1. Emoji

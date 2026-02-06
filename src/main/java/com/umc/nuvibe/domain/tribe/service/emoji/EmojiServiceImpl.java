@@ -90,7 +90,7 @@ public class EmojiServiceImpl implements EmojiService {
                 fcmService.sendNotification(
                         imageOwner,
                         NotificationType.NOTI_04,
-                        null,
+                        chat.getTribe().getImageTag().name(),
                         nickname,
                         chatId,
                         tribeId
@@ -122,7 +122,7 @@ public class EmojiServiceImpl implements EmojiService {
                     fcmService.sendNotification(
                             imageOwner,
                             NotificationType.NOTI_04,
-                            null,
+                            chat.getTribe().getImageTag().name(),
                             nickname,
                             chatId,
                             tribeId

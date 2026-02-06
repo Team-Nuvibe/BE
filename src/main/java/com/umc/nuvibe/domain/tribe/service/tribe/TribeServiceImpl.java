@@ -54,36 +54,59 @@ public class TribeServiceImpl implements TribeService {
         }
         tribe.incrementCounts();
 
-        // 5. 인원 수가 5명일 시 상태 전환 및 알림 발송
-        if (tribe.getCounts() >= 5) {
+        // 5. 유저 트라이브 생성 및 저장 (알림 대상 조회 전에 먼저 저장)
+        UserTribe userTribe = UserTribe.of(userRef, tribe);
+        userTribeRepository.save(userTribe);
+
+        Long tribeId = tribe.getId();
+        String tagName = tribe.getImageTag().name();
+
+        if (tribe.getCounts() == 5) {
+            // 6-A. 5명 도달 → 상태 전환 + NOTI-01 전원 발송
             tribe.changeStatus();
 
-            // 커밋 전에 필요한 데이터 미리 조회
-            Long tribeId = tribe.getId();
-            String tagName = tribe.getImageTag().name();
-            List<User> matchedUsers = userTribeRepository.findUsersByTribeId(tribeId);
+            List<User> allUsers = userTribeRepository.findWaitingUsersByTribeId(tribeId);
 
-            // 6. 커밋 이후에 알림 발송
             TransactionSynchronizationManager.registerSynchronization(
                     new TransactionSynchronization() {
                         @Override
                         public void afterCommit() {
-                            // NOTI-01: 동일 태그로 매칭된 사용자들에게 알림 발송
+                            // NOTI-01: 전원에게 "새로운 트라이브 챗이 열렸어요"
                             fcmService.sendNotificationToUsers(
-                                    matchedUsers,
+                                    allUsers,
                                     NotificationType.NOTI_01,
-                                    tagName,     // tag
-                                    tribeId,     // relatedId
-                                    null
+                                    tagName,
+                                    null,       // relatedId
+                                    tribeId     // tribeId
                             );
                         }
                     }
             );
-        }
+        } else {
+            // 6-B. 5명 미만 → 기존 대기자들에게 NOTI-02 발송
+            List<User> existingWaiters = userTribeRepository.findWaitingUsersByTribeId(tribeId)
+                    .stream()
+                    .filter(u -> !u.getId().equals(userId))
+                    .toList();
 
-        // 7. 유저 트라이브 생성 및 저장
-        UserTribe userTribe = UserTribe.of(userRef, tribe);
-        userTribeRepository.save(userTribe);
+            if (!existingWaiters.isEmpty()) {
+                TransactionSynchronizationManager.registerSynchronization(
+                        new TransactionSynchronization() {
+                            @Override
+                            public void afterCommit() {
+                                // NOTI-02: 기존 대기자에게 "기다리던 트라이브 챗이 열렸어요"
+                                fcmService.sendNotificationToUsers(
+                                        existingWaiters,
+                                        NotificationType.NOTI_02,
+                                        tagName,
+                                        null,       // relatedId
+                                        tribeId     // tribeId
+                                );
+                            }
+                        }
+                );
+            }
+        }
 
         return TribeJoinRes.from(tribe, userTribe);
         }
