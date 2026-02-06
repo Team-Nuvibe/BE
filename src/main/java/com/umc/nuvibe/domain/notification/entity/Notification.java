@@ -21,7 +21,9 @@ public class Notification extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = true,
+            foreignKey = @ForeignKey(name = "fk_notification_user",
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL"))
     private User user;
 
     // [추가] 알림 타입

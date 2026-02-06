@@ -83,14 +83,14 @@ public class EmojiServiceImpl implements EmojiService {
             action = "CREATED";
             actorEmojiType = type.name();
 
-            // NOTI-04: 이미지 작성자에게 리액션 알림 (본인이 본인 이미지에 반응한 경우 제외)
-            if (!imageOwner.getId().equals(userId)) {
+            // NOTI-03: 이미지 작성자에게 리액션 알림 (본인이 본인 이미지에 반응한 경우 제외)
+            if (imageOwner != null && !imageOwner.getId().equals(userId)) {
                 User reactor = userRepository.findById(userId).orElse(null);
                 String nickname = reactor != null ? reactor.getNickname() : "";
                 fcmService.sendNotification(
                         imageOwner,
-                        NotificationType.NOTI_04,
-                        null,
+                        NotificationType.NOTI_03,
+                        chat.getTribe().getImageTag().name(),
                         nickname,
                         chatId,
                         tribeId
@@ -115,14 +115,14 @@ public class EmojiServiceImpl implements EmojiService {
                 action = "UPDATED";
                 actorEmojiType = type.name();
 
-                // NOTI-04: 이모지 변경 시에도 알림 (본인 제외)
-                if (!imageOwner.getId().equals(userId)) {
+                // NOTI-03: 이모지 변경 시에도 알림 (본인 제외)
+                if (imageOwner != null && !imageOwner.getId().equals(userId)) {
                     User reactor = userRepository.findById(userId).orElse(null);
                     String nickname = reactor != null ? reactor.getNickname() : "";
                     fcmService.sendNotification(
                             imageOwner,
-                            NotificationType.NOTI_04,
-                            null,
+                            NotificationType.NOTI_03,
+                            chat.getTribe().getImageTag().name(),
                             nickname,
                             chatId,
                             tribeId
