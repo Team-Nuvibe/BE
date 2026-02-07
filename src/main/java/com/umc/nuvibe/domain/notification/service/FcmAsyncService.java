@@ -30,21 +30,21 @@ public class FcmAsyncService {
 
     @Async
     public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId, Long tribeId) {
-        // 1. DB에 알림 저장 (별도 트랜잭션)
+        // 1. 알림 설정 체크
+        User managedUser = userRepository.findById(user.getId()).orElse(null);
+        if (managedUser == null || !isNotificationEnabled(managedUser, type)) {
+            return;
+        }
+
+        // 2. DB에 알림 저장 (별도 트랜잭션)
         try {
             fcmDbService.saveNotification(user, type, tag, relatedId, tribeId);
         } catch (Exception e) {
             log.error("알림 DB 저장 실패. userId={}, type={}", user.getId(), type, e);
         }
 
-        // 2. 푸시 메시지가 없으면 FCM 발송 스킵
+        // 3. 푸시 메시지가 없으면 FCM 발송 스킵
         if (type.getPushMessage() == null) {
-            return;
-        }
-
-        // 3. 알림 설정 체크
-        User managedUser = userRepository.findById(user.getId()).orElse(null);
-        if (managedUser == null || !isNotificationEnabled(managedUser, type)) {
             return;
         }
 
@@ -66,7 +66,7 @@ public class FcmAsyncService {
             case NOTI_03 -> Boolean.TRUE.equals(setting.getIsReactionAlert());
             case NOTI_06, NOTI_07 -> Boolean.TRUE.equals(setting.getIsRecommendAlert());
             case NOTI_08, NOTI_09 -> Boolean.TRUE.equals(setting.getIsRecapAlert());
-            case NOTI_10, NOTI_11 -> true;  // 푸시 없으니 항상 true
+            case NOTI_10, NOTI_11 -> Boolean.TRUE.equals(setting.getIsSecurityAlert());
         };
     }
 
