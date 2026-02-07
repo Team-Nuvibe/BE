@@ -5,6 +5,7 @@ import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -41,7 +42,10 @@ public record BoardDetailResponse(
         String imageUrl,
         
         @Schema(description = "이미지 태그", example = "WARM")
-        ImageTag imageTag
+        ImageTag imageTag,
+
+        @Schema(description = "이미지 업로드 날짜", example = "2026-02-08T12:00:00")
+        LocalDateTime uploadedAt
     ) {
         
         public static ImageInfo from(BoardImage bi) {
@@ -49,7 +53,8 @@ public record BoardDetailResponse(
                     bi.getId(),
                     bi.getImage().getId(),
                     bi.getImage().getImageUrl(),
-                    bi.getImage().getImageTag()
+                    bi.getImage().getImageTag(),
+                    bi.getImage().getCreatedAt()
             );
         }
     }
