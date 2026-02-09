@@ -27,6 +27,9 @@ public record ScrapedImageItemRes(
         Long chatId,
 
         @Schema(description = "채팅 작성자 ID")
-        Long chatSenderId
+        Long chatSenderId,
+
+        @Schema(description = "채팅 작성자 닉네임")
+        String chatSenderNickname
 ) {
 }
