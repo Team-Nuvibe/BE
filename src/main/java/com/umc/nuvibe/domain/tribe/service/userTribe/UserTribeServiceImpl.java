@@ -7,14 +7,12 @@ import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.repository.*;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
 import com.umc.nuvibe.global.apiPayLoad.error.UserTribeErrorCode;
 import com.umc.nuvibe.domain.tribe.entity.UserTribe;
-import com.umc.nuvibe.domain.tribe.repository.ScrapedImageRepository;
-import com.umc.nuvibe.domain.tribe.repository.TribeRepository;
-import com.umc.nuvibe.domain.tribe.repository.UserTribeRepository;
 import com.umc.nuvibe.domain.tribe.vo.TribeStatus;
 import com.umc.nuvibe.global.apiPayLoad.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +32,8 @@ public class UserTribeServiceImpl implements UserTribeService {
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final TribeRepository tribeRepository;
+    private final ChatRepository chatRepository;
+    private final EmojiRepository emojiRepository;
 
     @Override
     @Transactional
@@ -50,6 +50,12 @@ public class UserTribeServiceImpl implements UserTribeService {
 
         // 원본 Image 엔티티는 유지하고 참조만 삭제
         scrapedImageRepository.deleteAllByUserIdAndTribeId(userId, tribeId);
+        // 내가 단 이모지 반응 삭제
+        emojiRepository.deleteAllByUserIdAndTribeId(userId, tribeId);
+        //내 채팅에 대한 다른 유저의 이모지 반응 삭제
+        emojiRepository.deleteAllOnMyChatsByUserIdAndTribeId(userId, tribeId);
+        // 내 채팅 삭제
+        chatRepository.deleteAllByUserIdAndTribeId(userId, tribeId);
 
         userTribeRepository.delete(userTribe);
         tribeRepository.decrementCounts(tribeId);

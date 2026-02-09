@@ -68,4 +68,23 @@ public interface EmojiRepository extends JpaRepository<Emoji, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("delete from Emoji e where e.chat.id in :chatIds")
     void deleteByChatIds(@Param("chatIds") List<Long> chatIds);
+
+    // 트라이브 챗 퇴장 시 해당 트라이브 챗 내 내가 단 이모지 반응 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        delete from Emoji e
+        where e.user.id = :userId
+          and e.chat.tribe.id = :tribeId
+    """)
+    void deleteAllByUserIdAndTribeId(@Param("userId") Long userId,
+                                    @Param("tribeId") Long tribeId);
+
+    // 트라이브 챗 퇴장 시 해당 트라이브 챗 내 내 채팅에 대한 이모지 반응 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        delete from Emoji e
+        where e.chat.user.id = :userId
+          and e.chat.tribe.id = :tribeId
+    """)
+    void deleteAllOnMyChatsByUserIdAndTribeId(@Param("userId") Long userId, @Param("tribeId") Long tribeId);
 }

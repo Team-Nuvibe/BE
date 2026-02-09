@@ -68,8 +68,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
         select c
         from Chat c
         join fetch c.image i
+        join fetch c.user u
         where c.tribe.id = :tribeId
-          and c.image is not null
         order by c.createdAt desc, c.id desc
     """)
     List<Chat> findChatGridFirstPage(
@@ -85,8 +85,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
         select c
         from Chat c
         join fetch c.image i
+        join fetch c.user u
         where c.tribe.id = :tribeId
-          and c.image is not null
           and (
                 c.createdAt < :cursorCreatedAt
                 or (c.createdAt = :cursorCreatedAt and c.id < :cursorChatId)
@@ -123,4 +123,9 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Chat c WHERE c.tribe.id = :tribeId")
     void deleteByTribeId(@Param("tribeId") Long tribeId);
+
+    // 트라이브 챗 퇴장 시 해당 트라이브 챗 내 채팅 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Chat c where c.user.id = :userId and c.tribe.id = :tribeId")
+    void deleteAllByUserIdAndTribeId(@Param("userId") Long userId, @Param("tribeId") Long tribeId);
 }
