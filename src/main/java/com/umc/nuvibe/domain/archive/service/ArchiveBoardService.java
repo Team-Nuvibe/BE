@@ -44,4 +44,7 @@ public interface ArchiveBoardService {
     // 보드 내 이미지 추가(채팅용)
     void addBoardImageForChat(Long userId, Long boardId, Long imageId);
 
+    // 보드 간 이미지 이동
+    void moveImages(Long userId, Long sourceBoardId, BoardImageMoveRequest request);
+
 }
