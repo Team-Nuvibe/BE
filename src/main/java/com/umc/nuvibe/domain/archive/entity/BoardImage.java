@@ -28,4 +28,9 @@ public class BoardImage extends BaseEntity {
         this.board = board;
         this.image = image;
     }
+    
+    public void moveToBoard(ArchiveBoard newBoard) {
+    this.board = newBoard;
+    }
+
 }
