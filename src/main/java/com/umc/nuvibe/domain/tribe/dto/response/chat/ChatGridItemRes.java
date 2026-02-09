@@ -2,6 +2,7 @@ package com.umc.nuvibe.domain.tribe.dto.response.chat;
 
 import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.tribe.entity.Chat;
+import com.umc.nuvibe.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -19,15 +20,20 @@ public record ChatGridItemRes(
         String imageUrl,
 
         @Schema(description = "이미지 업로드 시각 (정렬/날짜 섹션 기준)")
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+
+        @Schema(description = "채팅 전송자 닉네임")
+        String chatSenderNickname
 ) {
     public static ChatGridItemRes from(Chat chat) {
         Image image = chat.getImage();
+        User user = chat.getUser();
         return new ChatGridItemRes(
                 chat.getId(),
                 image.getId(),
                 image.getImageUrl(),
-                chat.getCreatedAt()
+                chat.getCreatedAt(),
+                user.getNickname()
         );
     }
 }
