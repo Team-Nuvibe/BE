@@ -162,9 +162,9 @@ public class ArchiveBoardController {
     @Operation(summary = "이미지 이동", description = "선택한 이미지를 다른 보드로 이동합니다.")
     public Response<Void> moveImages(
             @AuthUser Long userId,
-            @PathVariable Long boardId,
+            @Parameter(description = "보드 ID") @PathVariable Long boardId,
             @Valid @RequestBody BoardImageMoveRequest request) {
         archiveBoardService.moveImages(userId, boardId, request);
-        return Response.of(ArchiveResultCode.BOARD_IMAGE_MOVE_SUCCESS);
+        return Response.ok(ArchiveResultCode.BOARD_IMAGE_MOVE_SUCCESS,null);
     }
 }
