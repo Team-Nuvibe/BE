@@ -1,8 +1,6 @@
 package com.umc.nuvibe.domain.tribe.dto.response.scrapedImage;
 
-import com.umc.nuvibe.domain.image.entity.Image;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
-import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -23,16 +21,12 @@ public record ScrapedImageItemRes(
         ImageTag imageTag,
 
         @Schema(description = "스크랩 생성 일시 (정렬/날짜 섹션 기준)")
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+
+        @Schema(description = "채팅 ID")
+        Long chatId,
+
+        @Schema(description = "채팅 작성자 ID")
+        Long chatSenderId
 ) {
-        public static ScrapedImageItemRes from(ScrapedImage scrap) {
-                Image image = scrap.getImage();
-                return new ScrapedImageItemRes(
-                        scrap.getId(),
-                        image.getId(),
-                        image.getImageUrl(),
-                        image.getImageTag(),
-                        scrap.getCreatedAt()
-                );
-        }
 }
