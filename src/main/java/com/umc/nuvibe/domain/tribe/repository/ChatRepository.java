@@ -68,8 +68,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
         select c
         from Chat c
         join fetch c.image i
+        join fetch c.user u
         where c.tribe.id = :tribeId
-          and c.image is not null
         order by c.createdAt desc, c.id desc
     """)
     List<Chat> findChatGridFirstPage(
@@ -85,8 +85,8 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
         select c
         from Chat c
         join fetch c.image i
+        join fetch c.user u
         where c.tribe.id = :tribeId
-          and c.image is not null
           and (
                 c.createdAt < :cursorCreatedAt
                 or (c.createdAt = :cursorCreatedAt and c.id < :cursorChatId)

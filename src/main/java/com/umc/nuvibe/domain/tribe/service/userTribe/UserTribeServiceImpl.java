@@ -7,6 +7,7 @@ import com.umc.nuvibe.domain.tribe.dto.response.userTribe.*;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.LeaveRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeActivateRes;
 import com.umc.nuvibe.domain.tribe.dto.response.userTribe.UserTribeFavoriteRes;
+import com.umc.nuvibe.domain.tribe.repository.ChatRepository;
 import com.umc.nuvibe.domain.tribe.vo.UserTribeStatus;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.global.apiPayLoad.error.TribeErrorCode;
@@ -34,6 +35,7 @@ public class UserTribeServiceImpl implements UserTribeService {
     private final UserTribeRepository userTribeRepository;
     private final ScrapedImageRepository scrapedImageRepository;
     private final TribeRepository tribeRepository;
+    private final ChatRepository chatRepository;
 
     @Override
     @Transactional
