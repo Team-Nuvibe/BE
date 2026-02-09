@@ -71,7 +71,7 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
     void deleteByTribeId(@Param("tribeId") Long tribeId);
 
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM ScrapedImage si WHERE si.user.id = :userId AND si.tribe.id = :tribeId")
     void deleteAllByUserIdAndTribeId(@Param("userId") Long userId, @Param("tribeId") Long tribeId);
 

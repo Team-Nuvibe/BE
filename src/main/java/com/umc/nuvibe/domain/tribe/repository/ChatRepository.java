@@ -123,4 +123,9 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("DELETE FROM Chat c WHERE c.tribe.id = :tribeId")
     void deleteByTribeId(@Param("tribeId") Long tribeId);
+
+    // 트라이브 챗 퇴장 시 해당 트라이브 챗 내 채팅 삭제
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Chat c where c.user.id = :userId and c.tribe.id = :tribeId")
+    void deleteAllByUserIdAndTribeId(@Param("userId") Long userId, @Param("tribeId") Long tribeId);
 }
