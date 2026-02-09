@@ -1,6 +1,7 @@
 package com.umc.nuvibe.domain.tribe.repository;
 
 import com.umc.nuvibe.domain.image.vo.ImageTag;
+import com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes;
 import com.umc.nuvibe.domain.tribe.entity.ScrapedImage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,14 +23,18 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
 
     //첫 페이지 조회 (태그가 null이면 전체, 있으면 태그별 필터링 / 트라이브 ID 존재 시 방 별 조회)
     @Query("""
-        SELECT si FROM ScrapedImage si
-        JOIN FETCH si.image img
+        SELECT new com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes(
+            si.id, img.id, img.imageUrl, img.imageTag, si.createdAt, c.id, c.user.id
+            )
+        FROM ScrapedImage si
+        JOIN si.image img
+        JOIN Chat c ON c.image.id = img.id
         WHERE si.user.id = :userId
           AND (:imageTag IS NULL OR img.imageTag = :imageTag)
           AND (:tribeId IS NULL OR si.tribe.id = :tribeId)
         ORDER BY si.createdAt DESC, si.id DESC
     """)
-    List<ScrapedImage> findMyScrapsFirstPage(
+    List<ScrapedImageItemRes> findMyScrapsFirstPage(
             @Param("userId") Long userId,
             @Param("tribeId") Long tribeId,
             @Param("imageTag") ImageTag imageTag,
@@ -38,8 +43,12 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
 
     //다음 페이지 조회 (커서 조건 필수 + 태그 선택 + 트라이브 ID 선택)
     @Query("""
-        SELECT si FROM ScrapedImage si
-        JOIN FETCH si.image img
+        SELECT new com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes(
+            si.id, img.id, img.imageUrl, img.imageTag, si.createdAt, c.id, c.user.id
+            )
+        FROM ScrapedImage si
+        JOIN si.image img
+        JOIN Chat c ON c.image.id = img.id
         WHERE si.user.id = :userId
           AND (:imageTag IS NULL OR img.imageTag = :imageTag)
           AND (:tribeId IS NULL OR si.tribe.id = :tribeId)
@@ -47,7 +56,7 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
                OR (si.createdAt = :cursorCreatedAt AND si.id < :cursorId))
         ORDER BY si.createdAt DESC, si.id DESC
     """)
-    List<ScrapedImage> findMyScrapsNextPage(
+    List<ScrapedImageItemRes> findMyScrapsNextPage(
             @Param("userId") Long userId,
             @Param("tribeId") Long tribeId,
             @Param("imageTag") ImageTag imageTag,

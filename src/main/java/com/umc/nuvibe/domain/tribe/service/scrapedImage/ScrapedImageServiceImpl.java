@@ -85,23 +85,18 @@ public class ScrapedImageServiceImpl implements ScrapedImageService {
         Pageable pageable = PageRequest.of(0, limit + 1);
 
         // 2. 첫 페이지인지 여부에 따라 메서드 호출
-        List<ScrapedImage> scraps = (req.cursorCreatedAt() == null)
+        List<ScrapedImageItemRes> scraps = (req.cursorCreatedAt() == null)
                 ? scrapedImageRepository.findMyScrapsFirstPage(userId, tribeId, req.imageTag(), pageable)
                 : scrapedImageRepository.findMyScrapsNextPage(userId, tribeId, req.imageTag(), req.cursorCreatedAt(), req.cursorId(), pageable);
 
         // 3. 다음 페이지 여부 판단 및 다음 페이지 존재 시 1개 더 조회한 데이터 삭제 후 반환
         boolean hasNext = scraps.size() > limit;
-        List<ScrapedImage> resultItems = hasNext ? scraps.subList(0, limit) : scraps;
-
-        // 4. dto로 변환
-        List<ScrapedImageItemRes> items = resultItems.stream()
-                .map(ScrapedImageItemRes::from)
-                .toList();
+        List<ScrapedImageItemRes> items = hasNext ? scraps.subList(0, limit) : scraps;
 
         LocalDateTime nextCursorCreatedAt = null;
         Long nextCursorId = null;
 
-        // 5. 다음 페이지 존재 시 마지막 데이터 정보로 커서 설정
+        // 4. 다음 페이지 존재 시 마지막 데이터 정보로 커서 설정
         if (hasNext && !items.isEmpty()) {
             ScrapedImageItemRes lastItem = items.get(items.size() - 1);
             nextCursorCreatedAt = lastItem.createdAt();
