@@ -14,7 +14,8 @@ public enum ArchiveErrorCode implements ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "ARCHIVE003", "사용자를 찾을 수 없습니다."),
     DUPLICATE_BOARD_NAME(HttpStatus.CONFLICT, "ARCHIVE004", "이미 존재하는 보드 이름입니다."),
     BOARD_ACCESS_DENIED(HttpStatus.FORBIDDEN, "ARCHIVE005", "해당 보드에 접근 권한이 없습니다."),
-    BOARD_IMAGE_ALREADY_EXISTS(HttpStatus.CONFLICT, "ARCHIVE006", "이미 다른 보드에 포함된 이미지입니다.")
+    BOARD_IMAGE_ALREADY_EXISTS(HttpStatus.CONFLICT, "ARCHIVE006", "이미 다른 보드에 포함된 이미지입니다."),
+    SAME_BOARD_MOVE(HttpStatus.BAD_REQUEST, "ARCHIVE007", "같은 보드로는 이동할 수 없습니다.")
     ;
 
     private final HttpStatus httpStatus;

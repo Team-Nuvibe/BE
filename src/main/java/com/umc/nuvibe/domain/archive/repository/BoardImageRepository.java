@@ -266,4 +266,13 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
             "WHERE bi.board.id IN :boardIds " +
             "GROUP BY bi.board.id")
     List<Object[]> countDistinctTagsByBoardIds(@Param("boardIds") List<Long> boardIds);
+
+    // 보드 내 이미지 ID 목록으로 보드 이미지 조회
+    long countByIdInAndBoardId(List<Long> ids, Long boardId);
+
+    @Modifying
+    @Query("UPDATE BoardImage bi SET bi.board.id = :targetBoardId WHERE bi.id IN :ids AND bi.board.id = :sourceBoardId")
+    int bulkMoveToBoard(@Param("ids") List<Long> ids,
+                        @Param("sourceBoardId") Long sourceBoardId,
+                        @Param("targetBoardId") Long targetBoardId);
 }

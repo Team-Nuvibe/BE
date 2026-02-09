@@ -252,9 +252,27 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 build());
     }
 
+    // 보드 간 이미지 이동
+    @Override
+    @Transactional
+    public void moveImages(Long userId, Long sourceBoardId, BoardImageMoveRequest request) {
+        // 1. 출발/도착 보드 소유권 검증
+        ArchiveBoard sourceBoard = findBoardByIdAndUserId(sourceBoardId, userId);
+        ArchiveBoard targetBoard = findBoardByIdAndUserId(request.targetBoardId(), userId);
 
+        // 2. 같은 보드로 이동 방지
+        if (sourceBoard.getId().equals(targetBoard.getId())) {
+            throw new BusinessException(ArchiveErrorCode.SAME_BOARD_MOVE);
+        }
 
+        // 3. 이미지 존재 여부 검증 (중복 ID 방어 포함)
+        List<Long> uniqueIds = request.boardImageIds().stream().distinct().toList();
+        long count = boardImageRepository.countByIdInAndBoardId(uniqueIds, sourceBoardId);
+        if (count != uniqueIds.size()) {
+            throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_NOT_FOUND);
+        }
 
-
-
+        // 4. 벌크 업데이트
+        boardImageRepository.bulkMoveToBoard(uniqueIds, sourceBoardId, targetBoard.getId());
+    }
 }
