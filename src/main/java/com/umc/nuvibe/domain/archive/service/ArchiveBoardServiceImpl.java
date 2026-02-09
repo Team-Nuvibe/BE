@@ -277,7 +277,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
             throw new BusinessException(ArchiveErrorCode.BOARD_IMAGE_NOT_FOUND);
         }
 
-        // 벌크 연산
+        // 벌크 연산 처리
         boardImageRepository.bulkMoveToBoard(
                 request.boardImageIds(), sourceBoardId, targetBoard.getId()
         );
