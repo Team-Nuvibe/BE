@@ -24,7 +24,7 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
     //첫 페이지 조회 (태그가 null이면 전체, 있으면 태그별 필터링 / 트라이브 ID 존재 시 방 별 조회)
     @Query("""
         SELECT new com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes(
-            si.id, img.id, img.imageUrl, img.imageTag, si.createdAt, c.id, c.user.nickname
+            si.id, img.id, img.imageUrl, img.imageTag, si.createdAt, c.id, c.user.id, c.user.nickname
             )
         FROM ScrapedImage si
         JOIN si.image img
@@ -44,7 +44,7 @@ public interface ScrapedImageRepository extends JpaRepository<ScrapedImage, Long
     //다음 페이지 조회 (커서 조건 필수 + 태그 선택 + 트라이브 ID 선택)
     @Query("""
         SELECT new com.umc.nuvibe.domain.tribe.dto.response.scrapedImage.ScrapedImageItemRes(
-            si.id, img.id, img.imageUrl, img.imageTag, si.createdAt, c.id, c.user.nickname
+            si.id, img.id, img.imageUrl, img.imageTag, si.createdAt, c.id, c.user.id, c.user.nickname
             )
         FROM ScrapedImage si
         JOIN si.image img
