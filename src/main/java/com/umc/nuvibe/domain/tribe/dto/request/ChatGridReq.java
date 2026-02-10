@@ -12,7 +12,7 @@ public record ChatGridReq(
         @Schema(description = "마지막 데이터의 생성 시각 (커서)")
         LocalDateTime cursorCreatedAt,
 
-        @Schema(description = "마지막 데이터의 ID (보조 커서)", example = "1")
+        @Schema(description = "마지막 데이터의 ID (보조 커서)")
         Long cursorChatId,
 
         @Schema(description = "조회 개수 (기본 24, 최대 30)")
