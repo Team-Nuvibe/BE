@@ -132,12 +132,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     @Transactional(readOnly = true)
-    public ChatGridListRes getChatGridList(Long userId, Long tribeId, ChatGridReq req) {
+    public ChatGridListRes getChatGridList(Long tribeId, ChatGridReq req) {
 
-        // 1. 유저-트라이브 유효성 검증
-        validateUserInTribe(userId, tribeId);
-
-        // 1-1. 커서 유효성 체크
+        // 1. 커서 유효성 체크
         if (req.hasCursor() && !req.isCursorComplete()) {
             throw new BusinessException(ChatErrorCode.CHAT_CURSOR_INVALID);
         }
