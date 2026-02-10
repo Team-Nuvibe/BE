@@ -15,7 +15,7 @@ public interface ChatService {
     ChatTimelineListRes getChatTimelineList(Long userId, Long tribeId, ChatTimelineReq req);
 
     // 트라이브 챗 내 채팅 이미지 그리드 목록 조회
-    ChatGridListRes getChatGridList(Long userId, Long tribeId, ChatGridReq req);
+    ChatGridListRes getChatGridList(Long tribeId, ChatGridReq req);
 
     //채팅 이미지 상세 조회
     ChatDetailRes getChatDetail(Long userId, Long chatId);
