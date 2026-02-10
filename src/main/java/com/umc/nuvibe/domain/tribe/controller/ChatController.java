@@ -43,11 +43,10 @@ public class ChatController {
     @GetMapping("/tribe/{tribeId}/grid")
     @Operation(summary = "트라이브 챗 내 채팅 이미지 그리드 목록 조회", description = "챗 내 이미지 목록을 커서 기반으로 조회(최신순)")
     public Response<ChatGridListRes> getChatGrid(
-            @AuthUser Long userId,
             @PathVariable Long tribeId,
             @ParameterObject @Valid ChatGridReq req
     ){
-        ChatGridListRes res = chatService.getChatGridList(userId, tribeId, req);
+        ChatGridListRes res = chatService.getChatGridList(tribeId, req);
         return Response.of(ChatResultCode.CHAT_GRID_SUCCESS, res);
     }
 
