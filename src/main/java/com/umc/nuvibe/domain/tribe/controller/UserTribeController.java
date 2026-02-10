@@ -88,5 +88,15 @@ public class UserTribeController {
         return Response.of(UserTribeResultCode.USERTRIBE_LEAVE_SUCCESS, res);
     }
 
+    @PatchMapping("/{userTribeId}/mute")
+    @Operation(summary = "트라이브 챗 무음 설정", description = "특정 트라이브 챗의 푸시 알림 무음 토글")
+    public Response<UserTribeMuteRes> muteUserTribe(
+            @AuthUser Long userId,
+            @PathVariable Long userTribeId
+    ){
+        UserTribeMuteRes res = userTribeService.toggleMute(userId, userTribeId);
+        return Response.of(UserTribeResultCode.USERTRIBE_MUTE_SUCCESS, res);
+    }
+
 
 }

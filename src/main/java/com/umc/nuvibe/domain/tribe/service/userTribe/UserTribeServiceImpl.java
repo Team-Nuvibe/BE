@@ -232,4 +232,20 @@ public class UserTribeServiceImpl implements UserTribeService {
 
     }
 
+    @Override
+    @Transactional
+    public UserTribeMuteRes toggleMute(Long userId, Long userTribeId) {
+
+        UserTribe userTribe = userTribeRepository.findById(userTribeId)
+                .orElseThrow(() -> new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_FOUND));
+
+        if (!userTribe.getUser().getId().equals(userId)) {
+            throw new BusinessException(UserTribeErrorCode.USERTRIBE_NOT_JOINED);
+        }
+
+        userTribe.toggleMute();
+
+        return new UserTribeMuteRes(userTribe.getId(), userTribe.isMuted());
+    }
+
 }

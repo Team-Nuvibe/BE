@@ -20,5 +20,8 @@ public interface UserTribeService {
     // 트라이브 챗 내 채팅 읽음 처리
     TribeReadRes readChat(Long userId, Long tribeId);
 
+    // 트라이브 무음 알람 토글
+    UserTribeMuteRes toggleMute(Long userId, Long userTribeId);
+
 }
 
