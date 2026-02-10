@@ -1,5 +1,6 @@
 package com.umc.nuvibe.domain.user.service;
 
+import com.umc.nuvibe.domain.notification.service.FcmTokenService;
 import com.umc.nuvibe.domain.user.dto.request.*;
 import com.umc.nuvibe.domain.user.dto.response.TokenRes;
 import com.umc.nuvibe.domain.user.entity.User;
@@ -27,16 +28,19 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailVerificationService verificationService;
+    private final FcmTokenService fcmTokenService;
 
 
     public AuthServiceImpl(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
                           JwtTokenProvider jwtTokenProvider,
-                          EmailVerificationService verificationService) {
+                          EmailVerificationService verificationService,
+                           FcmTokenService fcmTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.verificationService = verificationService;
+        this.fcmTokenService = fcmTokenService;
     }
 
     @Override
@@ -90,6 +94,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         user.updateRefreshToken(null);
+        fcmTokenService.deactivateAllTokens(user);  // FCM 토큰 비활성화
         userRepository.save(user);
     }
 

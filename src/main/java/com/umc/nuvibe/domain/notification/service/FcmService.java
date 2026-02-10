@@ -28,6 +28,11 @@ public class FcmService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
+        // 1. 같은 토큰을 가진 다른 유저의 행 비활성화 (다계정 문제 방지)
+        List<Fcm> otherUserTokens = fcmRepository.findByTokenAndIsActiveTrueAndUserNot(token, user);
+        otherUserTokens.forEach(Fcm::deactivate);
+
+        // 2. 같은 유저 + 같은 토큰이 없을 때만 저장
         if (!fcmRepository.existsByUserAndToken(user, token)) {
             fcmRepository.save(Fcm.builder()
                     .user(user)
