@@ -29,7 +29,7 @@ public class FcmAsyncService {
     private final UserRepository userRepository;
 
     @Async
-    public void sendNotification(User user, NotificationType type, String tag, String nickname, Long relatedId, Long tribeId) {
+    public void sendNotification(User user, NotificationType type, String tag, Long relatedId, Long tribeId) {
         // 1. 알림 설정 체크
         User managedUser = userRepository.findById(user.getId()).orElse(null);
         if (managedUser == null || !isNotificationEnabled(managedUser, type)) {
@@ -49,7 +49,7 @@ public class FcmAsyncService {
         }
 
         // 4. FCM 푸시 발송
-        String pushMessage = type.formatPushMessage(tag, nickname);
+        String pushMessage = type.formatPushMessage(tag);
         List<Fcm> tokens = fcmRepository.findByUserAndIsActiveTrue(managedUser);
         for (Fcm fcm : tokens) {
             sendPushMessage(fcm.getToken(), pushMessage);
