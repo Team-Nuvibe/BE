@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,12 +29,18 @@ public class FcmService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        // 1. 같은 토큰을 가진 다른 유저의 행 비활성화 (다계정 문제 방지)
+        // 1. 같은 토큰의 다른 유저 행 비활성화
         List<Fcm> otherUserTokens = fcmRepository.findByTokenAndIsActiveTrueAndUserNot(token, user);
         otherUserTokens.forEach(Fcm::deactivate);
 
-        // 2. 같은 유저 + 같은 토큰이 없을 때만 저장
-        if (!fcmRepository.existsByUserAndToken(user, token)) {
+        // 2. 같은 유저 + 같은 토큰 행 조회
+        Optional<Fcm> existing = fcmRepository.findByUserAndToken(user, token);
+
+        if (existing.isPresent()) {
+            // 비활성이면 재활성화
+            existing.get().activate();
+        } else {
+            // 없으면 새로 저장
             fcmRepository.save(Fcm.builder()
                     .user(user)
                     .token(token)

@@ -95,7 +95,7 @@ public class UserTribeController {
             @PathVariable Long userTribeId
     ){
         UserTribeMuteRes res = userTribeService.toggleMute(userId, userTribeId);
-        return Response.of(UserTribeResultCode.USERTRIBE_MUTE_SUCCESS, res);
+        return Response.ok(UserTribeResultCode.USERTRIBE_MUTE_SUCCESS, res);
     }
 
 
