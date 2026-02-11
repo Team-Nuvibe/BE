@@ -93,7 +93,6 @@ public class EmojiServiceImpl implements EmojiService {
                             imageOwner,
                             NotificationType.NOTI_03,
                             chat.getTribe().getImageTag().name(),
-                            nickname,
                             chatId,
                             tribeId
                     );
@@ -128,7 +127,6 @@ public class EmojiServiceImpl implements EmojiService {
                                 imageOwner,
                                 NotificationType.NOTI_03,
                                 chat.getTribe().getImageTag().name(),
-                                nickname,
                                 chatId,
                                 tribeId
                         );

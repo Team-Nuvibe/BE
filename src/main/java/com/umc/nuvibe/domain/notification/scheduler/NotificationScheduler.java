@@ -102,7 +102,6 @@ public class NotificationScheduler {
                             NotificationType.NOTI_06,
                             null,
                             null,
-                            null,
                             null
                     );
                 } catch (Exception e) {
@@ -138,7 +137,7 @@ public class NotificationScheduler {
             for (User user : inactiveUsers) {
                 try {
                     ImageTag randomTag = allTags[random.nextInt(allTags.length)];
-                    fcmService.sendNotification(user, NotificationType.NOTI_07, randomTag.name(), null, null,null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_07, randomTag.name(), null, null);
                 } catch (Exception e) {
                     log.error("NOTI-07 발송 실패. userId={}", user.getId(), e);
                 }
@@ -169,7 +168,7 @@ public class NotificationScheduler {
 
             for (User user : usersWithWeeklyDrop) {
                 try {
-                    fcmService.sendNotification(user, NotificationType.NOTI_08, null, null, null,null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_08, null, null, null);
                 } catch (Exception e) {
                     log.error("NOTI-08 발송 실패. userId={}", user.getId(), e);
                 }
@@ -200,7 +199,7 @@ public class NotificationScheduler {
 
             for (User user : usersWithMonthlyDrop) {
                 try {
-                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null,null);
+                    fcmService.sendNotification(user, NotificationType.NOTI_09, null, null, null);
                 } catch (Exception e) {
                     log.error("NOTI-09 발송 실패. userId={}", user.getId(), e);
                 }
