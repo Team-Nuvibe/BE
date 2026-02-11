@@ -12,6 +12,8 @@ public record BoardImageResponse(
     ImageTag tag,
     String uploadedAt
 ) {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yy.MM.dd");
+
     public static BoardImageResponse from(BoardImage boardImage) {
         return new BoardImageResponse(
             boardImage.getImage().getId(),
@@ -30,6 +32,6 @@ public record BoardImageResponse(
         long hours = duration.toHours();
         if (hours < 24) return String.format("%02dh", hours);
 
-        return uploadedAt.format(DateTimeFormatter.ofPattern("yy.MM.dd"));
+        return uploadedAt.format(DATE_FORMATTER);
     }
 }
