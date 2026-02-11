@@ -174,4 +174,11 @@ order by
     // 추가: WAITING 유저 중 특정 유저 제외 — NOTI-02용 (기존 대기자만)
     @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'WAITING'")
     List<User> findWaitingUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
+
+    // NOTI_02용: ACTIVE + 무음 아닌 유저 (발신자 제외)
+    @Query("SELECT ut.user FROM UserTribe ut WHERE ut.tribe.id = :tribeId AND ut.user.id != :excludeUserId AND ut.userTribeStatus = 'ACTIVE' AND ut.isMuted = false")
+    List<User> findActiveUnmutedUsersByTribeIdExcept(@Param("tribeId") Long tribeId, @Param("excludeUserId") Long excludeUserId);
+
+    // NOTI_03용: 특정 유저가 해당 트라이브에서 무음인지 체크
+    boolean existsByUser_IdAndTribe_IdAndIsMutedTrue(Long userId, Long tribeId);
 }
