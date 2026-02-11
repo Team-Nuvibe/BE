@@ -263,7 +263,7 @@ public class ChatServiceImpl implements ChatService {
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        List<User> participants = userTribeRepository.findActiveUsersByTribeIdExcept(tribeId, userId);
+                        List<User> participants = userTribeRepository.findActiveUnmutedUsersByTribeIdExcept(tribeId, userId);
                         fcmService.sendNotificationToUsers(
                                 participants,
                                 NotificationType.NOTI_02,

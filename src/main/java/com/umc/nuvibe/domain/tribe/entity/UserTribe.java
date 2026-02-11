@@ -37,6 +37,13 @@ public class UserTribe extends BaseEntity {
     @Column(name = "is_favorite")
     private boolean isFavorite;
 
+    @Column(name = "is_muted")
+    private boolean isMuted = false;
+
+    public void toggleMute() {
+        this.isMuted = !this.isMuted;
+    }
+
     @Enumerated(EnumType.STRING)
     private UserTribeStatus userTribeStatus;
 
