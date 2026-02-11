@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum NotificationType {
     NOTI_01("NOTI-01","TRIBE_CHAT_JOINED","기다리던 {{tag}} 트라이브 챗이 열렸어요. 지금 들어가볼까요?", "채팅", "기다리던 트라이브 챗이 열렸어요", "{{tag}} 트라이브 챗에 지금 들어가 볼까요?"),
     NOTI_02("NOTI-02","TRIBE_CHAT_IMAGE_UPLOADED","{{tag}} 트라이브 챗에 새로운 바이브가 올라왔어요.", "채팅", "트라이브 챗에 새 바이브가 올라왔어요", "{{tag}} 트라이브 챗을 지금 확인해 보세요!"),
-    NOTI_03("NOTI-03","IMAGE_REACTION","{{nickname}}의 바이브에 반응이 남겨졌어요.", "채팅", "사람들이 내 바이브에 반응했어요", "{{tag}} 트라이브 챗 속 반응을 확인해 보세요!"),
+    NOTI_03("NOTI-03","IMAGE_REACTION","내가 올린 바이브에 반응이 남겨졌어요.", "채팅", "사람들이 내 바이브에 반응했어요", "{{tag}} 트라이브 챗 속 반응을 확인해 보세요!"),
     NOTI_04("NOTI-04","TRIBE_CHAT_CLOSING","{{tag}} 트라이브 챗이 하루 뒤 닫혀요.", "알림", "트라이브 챗이 곧 닫혀요", "{{tag}} 트라이브 챗에 마지막으로 참여해 볼까요?"),
     NOTI_05("NOTI-05","TRIBE_CHAT_CLOSED","{{tag}} 트라이브 챗이 종료되었어요.", "알림", "트라이브 챗이 종료되었어요", "또 다른 트라이브를 찾으러 갈까요? "),
     NOTI_06("NOTI-06","MISSION_REMINDER","오늘의 드랍이 아직 비어 있어요. 지금의 무드를 남겨볼까요?", "미션", "오늘의 드랍이 아직 비어 있어요", "지금의 무드를 남겨볼까요?"),
@@ -25,12 +25,11 @@ public enum NotificationType {
     private final String mainMessage;
     private final String actionMessage;
 
-    public String formatPushMessage(String tag, String nickname) {
+    public String formatPushMessage(String tag) {
         String formattedTag = (tag != null && !tag.isBlank()) ? "#" + tag + " " : "";
         return pushMessage
                 .replace("{{tag}} ", formattedTag)
-                .replace("{{tag}}", formattedTag.trim())
-                .replace("{{nickname}}", nickname != null ? nickname : "");
+                .replace("{{tag}}", formattedTag.trim());
     }
 
     public String formatMainMessage(String tag) {
