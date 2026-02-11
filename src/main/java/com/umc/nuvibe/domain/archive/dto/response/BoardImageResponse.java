@@ -4,6 +4,7 @@ import com.umc.nuvibe.domain.archive.entity.BoardImage;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public record BoardImageResponse(
     Long imageId,
@@ -28,10 +29,7 @@ public record BoardImageResponse(
         
         long hours = duration.toHours();
         if (hours < 24) return String.format("%02dh", hours);
-        
-        long days = duration.toDays();
-        if (days < 7) return days + "d";
-        
-        return (days / 7) + "w";
+
+        return uploadedAt.format(DateTimeFormatter.ofPattern("yy.MM.dd"));
     }
 }
