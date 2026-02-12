@@ -6,7 +6,7 @@
 
 | <img src="https://github.com/jaemin0413.png" width="100"> | <img src="https://github.com/yunseo-leeo.png" width="100"> | <img src="https://github.com/Chhun-Lee.png" width="100"> | <img src="https://github.com/wlsldm.png" width="100"> | <img src="https://github.com/Neo1228.png" width="100"> |
 | :---: | :---: | :---: | :---: | :---: |
-| [**이름1**](https://github.com/jaemin_0413) | [**이름2**](https://github.com/yunseo-leeo) | [**이름3**](https://github.com/Chhun-Lee) | [**이름4**](https://github.com/wlsldm) | [**이름5**](https://github.com/Neo1228) |
+| [**한재민**](https://github.com/jaemin_0413) | [**이윤서**](https://github.com/yunseo-leeo) | [**이창훈**](https://github.com/Chhun-Lee) | [**조수진**](https://github.com/wlsldm) | [**최민수**](https://github.com/Neo1228) |
 
 <br> 
 
@@ -27,7 +27,8 @@
 ## System Architecture
 
 <img width="1201" height="656" alt="image" src="https://github.com/user-attachments/assets/e18bed44-2986-44a8-a46c-ab3447ab6635" />
-
+- **인프라 환경**: AWS t3 인스턴스를 기반으로 가용성을 고려한 인프라 구축
+- **모니터링 서버 분리**: 운영 환경 리소스 및 로그 추적을 위해 SaaS를 통한 모니터링 구축
 
 <br> 
 
