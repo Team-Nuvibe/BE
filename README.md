@@ -27,8 +27,9 @@
 ## System Architecture
 
 <img width="1201" height="656" alt="image" src="https://github.com/user-attachments/assets/e18bed44-2986-44a8-a46c-ab3447ab6635" />
-- **인프라 환경**: AWS t3 인스턴스를 기반으로 가용성을 고려한 인프라 구축
-- **모니터링 서버 분리**: 운영 환경 리소스 및 로그 추적을 위해 SaaS를 통한 모니터링 구축
+
+- AWS t3 인스턴스를 기반으로 가용성을 고려한 인프라 구축
+- 운영 환경 리소스 및 로그 추적을 위해 SaaS를 통한 모니터링 구축
 
 <br> 
 
