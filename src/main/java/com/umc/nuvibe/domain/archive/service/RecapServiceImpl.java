@@ -88,10 +88,14 @@ public class RecapServiceImpl implements RecapService {
                 ))
                 .toList();
 
+        LocalDate endDate = (period == RecapPeriod.WEEK)
+                ? end.toLocalDate().minusDays(1)
+                : end.toLocalDate();
+
      return new RecapTagResponse(
              period,
              start.toLocalDate(),
-             end.toLocalDate(),
+             endDate,
              totalDrops,
              ranks
      );
@@ -123,11 +127,14 @@ public class RecapServiceImpl implements RecapService {
                 .map(bi -> bi.getImage().getImageUrl())
                 .toList();
 
+        LocalDate endDate = (period == RecapPeriod.WEEK)
+                ? end.toLocalDate().minusDays(1)
+                : end.toLocalDate();
 
             return new RecapBoardResponse(
                     period,
                     start.toLocalDate(),
-                    end.toLocalDate(),
+                    endDate,
                     count,
                     board.getId(),
                     board.getName(),
@@ -171,10 +178,14 @@ public class RecapServiceImpl implements RecapService {
         }
         String timeSlotMessage = RecapMessage.TimeSlot.from(topHour).getMessage(period);
 
+        LocalDate endDate = (period == RecapPeriod.WEEK)
+                ? end.toLocalDate().minusDays(1)
+                : end.toLocalDate();
+
         return new RecapActiveResponse(
                 period,
                 start.toLocalDate(),
-                end.toLocalDate(),
+                endDate,
                 dayMessage,
                 preferenceMessage,
                 timeSlotMessage,
