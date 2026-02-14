@@ -111,7 +111,7 @@ public class RecapServiceImpl implements RecapService {
         List<String> boardImageUrls = boardImageRepository.findTopByBoardIdOrderByCreatedAtDesc(
                 board.getId(), PageRequest.of(0, 3))
                 .stream()
-                .map(bi -> bi.getImage().getImageUrl())
+                .map(bi -> bi.getImage().getThumbnailUrl()) // 썸네일 URL 반환
                 .toList();
 
 

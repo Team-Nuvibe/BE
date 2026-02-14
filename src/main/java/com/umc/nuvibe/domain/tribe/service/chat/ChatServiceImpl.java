@@ -255,7 +255,7 @@ public class ChatServiceImpl implements ChatService {
                 chat.getId(),
                 userId,
                 image.getId(),
-                image.getImageUrl(),
+                image.getThumbnailUrl(), // 썸네일 URL 반환
                 chat.getCreatedAt()
         );
 

@@ -14,7 +14,7 @@ public record BoardImageResponse(
     public static BoardImageResponse from(BoardImage boardImage) {
         return new BoardImageResponse(
             boardImage.getImage().getId(),
-            boardImage.getImage().getImageUrl(),
+            boardImage.getImage().getThumbnailUrl(), // 썸네일 URL 반환
             boardImage.getImage().getImageTag(),
             formatUploadTime(boardImage.getCreatedAt())
         );

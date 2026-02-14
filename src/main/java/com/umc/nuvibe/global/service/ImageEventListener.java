@@ -51,7 +51,6 @@ public class ImageEventListener {
                 () -> {
                     log.warn("DB에 존재하지 않는 fileId: {}", event.fileId());
                     // Lambda가 생성한 파일이지만 DB에 없는 경우 (고아 파일)
-                    // TODO: S3에서 삭제 로직 추가 고려
                 }
             );
     }

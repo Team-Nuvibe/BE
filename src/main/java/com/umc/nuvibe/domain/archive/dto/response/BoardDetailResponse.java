@@ -52,7 +52,7 @@ public record BoardDetailResponse(
             return new ImageInfo(
                     bi.getId(),
                     bi.getImage().getId(),
-                    bi.getImage().getImageUrl(),
+                    bi.getImage().getThumbnailUrl(), // 썸네일 URL 반환
                     bi.getImage().getImageTag(),
                     bi.getImage().getCreatedAt()
             );

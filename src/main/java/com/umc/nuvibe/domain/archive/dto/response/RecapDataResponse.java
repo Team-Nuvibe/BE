@@ -18,7 +18,7 @@ public record RecapDataResponse (
             return new ImageDetail(
                     image.getId(),
                     image.getImageTag(),
-                    image.getImageUrl()
+                    image.getThumbnailUrl() // 썸네일 URL 반환
             );
         }
     }

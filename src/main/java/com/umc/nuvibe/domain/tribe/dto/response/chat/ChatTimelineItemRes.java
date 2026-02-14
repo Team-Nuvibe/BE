@@ -43,7 +43,7 @@ public record ChatTimelineItemRes(
         return new ChatTimelineItemRes(
                 chat.getId(),
                 chat.getImage().getId(),
-                chat.getImage().getImageUrl(),
+                chat.getImage().getThumbnailUrl(), // 썸네일 URL 반환
                 chat.getCreatedAt(),
                 SenderRes.from(chat.getUser()),
                 reactionsSummary,
