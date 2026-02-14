@@ -64,7 +64,7 @@ public class ArchiveBoardServiceImpl implements ArchiveBoardService {
                 .stream()
                 .collect(Collectors.toMap(
                         bi -> bi.getBoard().getId(),
-                        bi -> bi.getImage().getImageUrl(),
+                        bi -> bi.getImage().getThumbnailUrl(), // 썸네일 URL 반환
                         (existing, replacement) -> existing
                 ));
 

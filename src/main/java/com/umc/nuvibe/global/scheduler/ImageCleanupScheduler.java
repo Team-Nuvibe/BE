@@ -53,12 +53,14 @@ public class ImageCleanupScheduler {
                     boolean s3Deleted = true;
 
                     // S3에서 파일 삭제 (fileName이 있는 경우만)
+                    // Lambda 시스템에서는 raw/ prefix를 추가해야 함
                     if (image.getFileName() != null && !image.getFileName().isBlank()) {
-                        s3Deleted = s3Service.deleteFile(image.getFileName());
+                        String rawPath = "raw/" + image.getFileName();
+                        s3Deleted = s3Service.deleteFile(rawPath);
                         if (s3Deleted) {
-                            log.info("S3 파일 삭제 성공 - ID: {}, FileName: {}", image.getId(), image.getFileName());
+                            log.info("S3 파일 삭제 성공 - ID: {}, Path: {}", image.getId(), rawPath);
                         } else {
-                            log.warn("S3 파일 삭제 실패 - ID: {}, FileName: {}", image.getId(), image.getFileName());
+                            log.warn("S3 파일 삭제 실패 - ID: {}, Path: {}", image.getId(), rawPath);
                         }
                     }
 

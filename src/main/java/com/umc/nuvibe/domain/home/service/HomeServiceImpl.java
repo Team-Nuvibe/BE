@@ -53,7 +53,7 @@ public class HomeServiceImpl implements HomeService {
                                 return new DropMissionResponse(
                                                 tag,
                                                 image.getId(),
-                                                image.getImageUrl());
+                                                image.getThumbnailUrl()); // 썸네일 URL 반환
                         }
                 }
 
@@ -79,7 +79,7 @@ public class HomeServiceImpl implements HomeService {
                                 .stream()
                                 .collect(Collectors.toMap(
                                                 bi -> bi.getBoard().getId(),
-                                                bi -> bi.getImage().getImageUrl(),
+                                                bi -> bi.getImage().getThumbnailUrl(), // 썸네일 URL 반환
                                                 (existing, replacement) -> existing));
 
                 // 4. 각 보드의 가장 오래된 이미지 업로드 시간 조회 (타입 안전한 DTO 사용)
@@ -126,7 +126,7 @@ public class HomeServiceImpl implements HomeService {
                                         Optional<Image> imageOpt = imageRepository.findTopByImageTagOrderByIdDesc(tag);
                                         return new CategoryTagResponse(
                                                         tag,
-                                                        imageOpt.map(Image::getImageUrl).orElse(null));
+                                                        imageOpt.map(Image::getThumbnailUrl).orElse(null)); // 썸네일 URL 반환
                                 })
                                 .toList();
         }
@@ -138,7 +138,7 @@ public class HomeServiceImpl implements HomeService {
                                 tag, TRIBE_IMAGE_COUNT);
 
                 List<String> tribeImageUrls = chats.stream()
-                                .map(chat -> chat.getImage().getImageUrl())
+                                .map(chat -> chat.getImage().getThumbnailUrl()) // 썸네일 URL 반환
                                 .toList();
 
                 // 2. 트라이브 ID 조회
