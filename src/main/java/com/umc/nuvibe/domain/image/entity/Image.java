@@ -24,6 +24,9 @@ public class Image extends BaseEntity {
     @Column(name = "image_url", length = 512)
     private String imageUrl;
 
+    @Column(name = "thumbnail_url", length = 512)
+    private String thumbnailUrl;
+
     @Enumerated(EnumType.STRING)
     private ImageTag imageTag;
 
@@ -41,6 +44,17 @@ public class Image extends BaseEntity {
 
     public void updateImageUrl(String newUrl) {
         this.imageUrl = newUrl;
+    }
+
+    // 썸네일 URL이 없으면 원본 URL을 반환
+    public String getThumbnailUrl() {
+        return (thumbnailUrl != null && !thumbnailUrl.isBlank())
+            ? thumbnailUrl
+            : imageUrl;
+    }
+
+    public void updateThumbnailUrl(String newUrl) {
+        this.thumbnailUrl = newUrl;
     }
 
 }
