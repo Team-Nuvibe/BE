@@ -35,20 +35,23 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public ImageRes preSaveAndGetUrl(PreSignedUrlReq request, ImageTag tag) {
-        // prefix는 "images"로 통일
-        String prefix = "images";
+        // 썸네일 적용을 위해 prefix를 raw로 설정, 썸네일은 이 파일에서만 생성됨
+        String prefix = "raw";
 
         PreSignedUrlRes preSignedUrl = s3Service.getPreSignedUrl(request, prefix);
 
+        // fileName에서 prefix 제거
+        String pureFileName = preSignedUrl.fileName().replace("raw/", "");
+
         Image pendingImage = Image.builder()
-                .imageUrl(preSignedUrl.url())
-                .fileName(preSignedUrl.fileName())
+                .imageUrl(preSignedUrl.url()) // Presigned URL (raw/ 경로)
+                .fileName(pureFileName)        // "uuid.jpg" (prefix 제거)
                 .imageTag(tag)
                 .status(ImageStatus.PENDING)
                 .build();
         imageRepository.save(pendingImage);
 
-        return new ImageRes(preSignedUrl.url(), preSignedUrl.fileName(), pendingImage.getId(), pendingImage.getImageTag());
+        return new ImageRes(preSignedUrl.url(), pureFileName, pendingImage.getId(), pendingImage.getImageTag());
     }
 
     @Override
