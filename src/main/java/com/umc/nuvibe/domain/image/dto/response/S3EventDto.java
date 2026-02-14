@@ -2,23 +2,11 @@ package com.umc.nuvibe.domain.image.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-
+// lambda에서 sqs로 보내는 커스텀 메세지로 변경
 public record S3EventDto(
-        @JsonProperty("Records") List<S3Record> records
-) {
-    // 내부 레코드 구조
-    public record S3Record(
-            @JsonProperty("eventName") String eventName,
-            @JsonProperty("s3") S3Info s3
-    ) {}
+        @JsonProperty("fileId") String fileId,
+        @JsonProperty("originalUrl") String originalUrl,
+        @JsonProperty("thumbnailUrl") String thumbnailUrl,
+        @JsonProperty("status") String status
+) {}
 
-    public record S3Info(
-            @JsonProperty("object") S3ObjectInfo object
-    ) {}
-
-    public record S3ObjectInfo(
-            @JsonProperty("key") String key,   //파일명
-            @JsonProperty("size") Long size
-    ) {}
-}

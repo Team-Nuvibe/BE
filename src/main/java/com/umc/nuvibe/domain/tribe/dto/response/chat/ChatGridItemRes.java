@@ -31,7 +31,7 @@ public record ChatGridItemRes(
         return new ChatGridItemRes(
                 chat.getId(),
                 image.getId(),
-                image.getImageUrl(),
+                image.getThumbnailUrl(), // 썸네일 URL 반환
                 chat.getCreatedAt(),
                 user.getNickname()
         );
