@@ -33,7 +33,7 @@ public record ChatDetailRes (
         return new ChatDetailRes(
                 chat.getId(),
                 image.getId(),
-                image.getThumbnailUrl(), // 썸네일 URL 반환
+                image.getImageUrl(), // 상세 조회는 원본 URL 반환
                 image.getImageTag(),
                 chat.getCreatedAt(),
                 isScraped
