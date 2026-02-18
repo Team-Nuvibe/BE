@@ -9,6 +9,7 @@ import com.umc.nuvibe.domain.archive.repository.ArchiveBoardRepository;
 import com.umc.nuvibe.domain.archive.repository.BoardImageRepository;
 import com.umc.nuvibe.domain.archive.vo.RecapMessage;
 import com.umc.nuvibe.domain.archive.vo.RecapPeriod;
+import com.umc.nuvibe.domain.archive.vo.TimeRange;
 import com.umc.nuvibe.domain.image.vo.ImageTag;
 import com.umc.nuvibe.domain.user.entity.User;
 import com.umc.nuvibe.domain.user.repository.UserRepository;
@@ -25,6 +26,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.IntStream;
 
+
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -35,18 +38,22 @@ public class RecapServiceImpl implements RecapService {
     private final ArchiveBoardRepository archiveBoardRepository;
 
     //기간 계산 함수
-    private LocalDateTime calculateStartTime(RecapPeriod period, Long userId){
+    private TimeRange calculateStartTime(RecapPeriod period, Long userId){
 
-        LocalDateTime start;
         if (period == RecapPeriod.WEEK){
             LocalDate startWeek = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
-            start = startWeek.atStartOfDay();
+            LocalDateTime start = startWeek.atStartOfDay();
+            LocalDateTime end = startWeek.plusWeeks(1).atStartOfDay();
+            return new TimeRange(start, end);
+
         } else {
-            start = userRepository.findById(userId)
+            LocalDateTime start = userRepository.findById(userId)
                     .map(User::getCreatedAt)
                     .orElseThrow(()->new BusinessException(UserErrorCode.USER_NOT_FOUND));
+            LocalDateTime end = LocalDateTime.now();
+            return new TimeRange(start, end);
         }
-        return start;
+
 
     }
 
@@ -63,8 +70,9 @@ public class RecapServiceImpl implements RecapService {
     @Override
     public RecapTagResponse getRecapTags(Long userId, RecapPeriod period) {
 
-        LocalDateTime start =  calculateStartTime(period, userId);
-        LocalDateTime end = LocalDateTime.now();
+        TimeRange range = calculateStartTime(period, userId);
+        LocalDateTime start =  range.start();
+        LocalDateTime end = range.end();
 
         //총 drop한 이미지 개수
         Long totalDrops = validateHasData(userId, start, end);
@@ -80,10 +88,14 @@ public class RecapServiceImpl implements RecapService {
                 ))
                 .toList();
 
+        LocalDate endDate = (period == RecapPeriod.WEEK)
+                ? end.toLocalDate().minusDays(1)
+                : end.toLocalDate();
+
      return new RecapTagResponse(
              period,
              start.toLocalDate(),
-             end.toLocalDate(),
+             endDate,
              totalDrops,
              ranks
      );
@@ -92,8 +104,9 @@ public class RecapServiceImpl implements RecapService {
     //가장 많이 사용한 보드 조회
     @Override
     public RecapBoardResponse getRecapBoard(Long userId, RecapPeriod period) {
-        LocalDateTime start =  calculateStartTime(period, userId);
-        LocalDateTime end = LocalDateTime.now();
+        TimeRange range = calculateStartTime(period, userId);
+        LocalDateTime start =  range.start();
+        LocalDateTime end = range.end();
 
         validateHasData(userId, start, end);
 
@@ -114,11 +127,14 @@ public class RecapServiceImpl implements RecapService {
                 .map(bi -> bi.getImage().getThumbnailUrl()) // 썸네일 URL 반환
                 .toList();
 
+        LocalDate endDate = (period == RecapPeriod.WEEK)
+                ? end.toLocalDate().minusDays(1)
+                : end.toLocalDate();
 
             return new RecapBoardResponse(
                     period,
                     start.toLocalDate(),
-                    end.toLocalDate(),
+                    endDate,
                     count,
                     board.getId(),
                     board.getName(),
@@ -129,8 +145,9 @@ public class RecapServiceImpl implements RecapService {
     //사용자 업로드 패턴 조회
     @Override
     public RecapActiveResponse getRecapActive(Long userId, RecapPeriod period) {
-        LocalDateTime start =  calculateStartTime(period, userId);
-        LocalDateTime end = LocalDateTime.now();
+        TimeRange range = calculateStartTime(period, userId);
+        LocalDateTime start =  range.start();
+        LocalDateTime end = range.end();
 
         validateHasData(userId, start, end);
 
@@ -161,10 +178,14 @@ public class RecapServiceImpl implements RecapService {
         }
         String timeSlotMessage = RecapMessage.TimeSlot.from(topHour).getMessage(period);
 
+        LocalDate endDate = (period == RecapPeriod.WEEK)
+                ? end.toLocalDate().minusDays(1)
+                : end.toLocalDate();
+
         return new RecapActiveResponse(
                 period,
                 start.toLocalDate(),
-                end.toLocalDate(),
+                endDate,
                 dayMessage,
                 preferenceMessage,
                 timeSlotMessage,

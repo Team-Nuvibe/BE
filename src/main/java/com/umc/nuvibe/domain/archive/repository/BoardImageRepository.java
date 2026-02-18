@@ -170,10 +170,12 @@ public interface BoardImageRepository extends JpaRepository<BoardImage, Long> {
         );
 
     //총 태그 사용 횟수 조회
-    @Query ("select count(bi.image.imageTag) from BoardImage bi " +
+    @Query ("select count(distinct bi.image.imageTag) from BoardImage bi " +
             "where bi.board.user.id = :userId " +
             "and bi.image.createdAt >= :start " +
-            "and bi.image.createdAt <= :end")
+            "and bi.image.createdAt <= :end"
+    )
+
     long countTotalTagByPeriod(
             @Param("userId") Long userId,
             @Param("start")LocalDateTime start,
